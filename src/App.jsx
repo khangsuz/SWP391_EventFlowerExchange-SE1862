@@ -2,6 +2,7 @@ import React from "react";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import Home from "./page/home";
 import Login from "./page/login";
+import SignUp from "./page/signup"
 import Dashboard from "./page/admin";
 import PrivateRoute from "./component/private-route";
 
@@ -14,6 +15,10 @@ const App = () => {
     {
       path: "login",
       element: <Login />,
+    },
+    {
+      path: "signup",
+      element: <SignUp />,
     },
     {
       path: "admin",

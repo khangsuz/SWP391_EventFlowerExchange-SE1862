@@ -5,7 +5,7 @@ import { FiMail, FiLock } from 'react-icons/fi';
 import "../../index.css";
 import Header from "../../component/header";
 import api from "../../config/axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -87,7 +87,7 @@ const Login = () => {
                 </Button>
               </Form.Item>
               <p className="mt-4 text-center text-sm text-gray-600">
-                    Don't have an account? <a className="text-blue-500 hover:text-blue-600 font-semibold" href="/signup" >Sign up</a>
+                    Don't have an account? <Link to={"/signup"} className="text-blue-500 hover:text-blue-600 font-semibold">Signup</Link>
               </p>
             </Form>
           </div>
