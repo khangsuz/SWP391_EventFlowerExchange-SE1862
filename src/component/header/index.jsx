@@ -76,9 +76,6 @@ function Header() {
           <li>
             <Link to="/events" className="text-gray-700 hover:text-gray-900">Hoa Sự Kiện</Link>
           </li>
-          <li>
-            <Link to="/contact" className="text-gray-700 hover:text-gray-900">Liên Hệ</Link>
-          </li>
         </ul>
       </div>
       <div className="flex space-x-4">

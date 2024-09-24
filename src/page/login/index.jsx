@@ -10,12 +10,14 @@ import Footer from "../../component/footer";
 
 const Login = () => {
   const navigate = useNavigate();
+
   const handleLogin = async (values) => {
     console.log(values);
     try {
+      // Gửi yêu cầu đến server
       const response = await api.post("Users/login", {
-        Name: values.name,
-        Password: values.password,
+        Name: values.name, // Gửi tên người dùng
+        Password: values.password, // Gửi mật khẩu
         Email:values.email,
         Usertype:values.userType
       });
@@ -28,6 +30,7 @@ const Login = () => {
       alert(err.response?.data || "An error occurred during login.");
     }
   };
+
 
   const loginGoogle = useGoogleLogin({
     onSuccess: codeResponse => console.log(codeResponse),
@@ -67,38 +70,12 @@ const Login = () => {
               </div>
 
               <Form.Item className="block text-gray-700 text-sm font-bold mb-2"
-                label="Username"
-                name="name"
-                rules={[
-                  {
-                    required: true,
-                    message: "Vui lòng nhập tài khoản!",
-                  },
-                ]}
-              >
-                <Input type="text" placeholder="..." />
-              </Form.Item>
-
-              <Form.Item className="block text-gray-700 text-sm font-bold mb-2"
                 label="Email"
                 name="email"
                 rules={[
                   {
                     required: true,
                     message: "Vui lòng nhập email!",
-                  },
-                ]}
-              >
-                <Input type="text" placeholder="you@example.com" />
-              </Form.Item>
-
-              <Form.Item className="block text-gray-700 text-sm font-bold mb-2"
-                label="UserType"
-                name="userType"
-                rules={[
-                  {
-                    required: true,
-                    message: "Vui lòng nhập type!",
                   },
                 ]}
               >
