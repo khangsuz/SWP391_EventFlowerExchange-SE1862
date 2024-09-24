@@ -24,12 +24,19 @@ const Home = () => {
   return (
     <div className="home">
       <Header />
-
       <div className="home__main-content">
-        {/* cứ mỗi con cá => <ProductCard /> */}
-        {flowers.map((flower) => (
+        {/* {flowers.map((flower) => (
           <ProductCard flower={flower} />
-        ))}
+          
+        ))} */}
+        <ProductCard />
+        <ProductCard />
+        <ProductCard />
+        <ProductCard />
+        <ProductCard />
+        <ProductCard />
+        <ProductCard />
+        <ProductCard />
       </div>
     </div>
   );

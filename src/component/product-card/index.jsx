@@ -19,9 +19,9 @@ function ProductCard({ flower }) {
 
   return (
     <div className="product-card">
-      <img src={flower.image} alt="" />
-      <p className="name">{flower.name}</p>
-      <p className="price">{flower.price}</p>
+      <img src="https://i.postimg.cc/90Bs6nLP/top-view-roses-flowers.jpg" alt="" />
+      <p className="name">Bong Hoa</p>
+      <p className="price">100000</p>
       <center>
       <button onClick={handleAddToCart}>Thêm vào giỏ hàng</button>
       </center>

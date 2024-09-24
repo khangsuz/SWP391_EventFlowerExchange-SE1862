@@ -35,7 +35,7 @@ const Login = () => {
     <>
       <Header />
       <div className="login">
-        <div className="login__image">
+        <div className="login__image mt-1">
           <img
             src="https://i.postimg.cc/90Bs6nLP/top-view-roses-flowers.jpg"
             alt=""
