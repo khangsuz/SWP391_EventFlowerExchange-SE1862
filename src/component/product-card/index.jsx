@@ -1,11 +1,12 @@
 import React from "react";
 import "./index.scss";
 import api from "../../config/axios";
-function ProductCard({ koiFish }) {
+
+function ProductCard({ flower }) {
   const handleAddToCart = async () => {
     try {
       const response = await api.post("cart", {
-        productId: koiFish.id,
+        productId: flower.id,
         quantity: 1,
       });
 
@@ -18,13 +19,11 @@ function ProductCard({ koiFish }) {
 
   return (
     <div className="product-card">
-      <img src={koiFish.image} alt="" />
-
-      <p className="name">{koiFish.name}</p>
-      <p className="price">{koiFish.price}</p>
-
+      <img src="https://i.postimg.cc/90Bs6nLP/top-view-roses-flowers.jpg" alt="" />
+      <p className="name">Bong Hoa</p>
+      <p className="price">100.000₫</p>
       <center>
-        <button onClick={handleAddToCart}>Thêm vào giỏ hàng</button>
+      <button onClick={handleAddToCart}>Thêm vào giỏ hàng</button>
       </center>
     </div>
   );

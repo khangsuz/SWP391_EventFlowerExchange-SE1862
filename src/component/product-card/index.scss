@@ -1,22 +1,23 @@
 .product-card {
-  width: calc(100% / 4);
-  padding: 20px;
+  width: calc(100% / 3);
+  padding: 10px;
   img {
     border-radius: 8px;
     width: 100%;
-    aspect-ratio: 3/4;
+    aspect-ratio: 7/7;
   }
 
   p {
     text-align: center;
 
     &.name {
-      color: #4f85b8;
+      
       margin: 10px 0;
     }
 
     &.price {
       font-weight: 500;
+      color: #bc0000;
     }
   }
 

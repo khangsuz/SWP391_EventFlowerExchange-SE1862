@@ -1,7 +1,6 @@
 import axios from "axios";
-
-// Update the baseUrl to point to your API endpoint
-const baseUrl = "https://localhost:7288/api/"; // Change this to your actual API endpoint
+const baseUrl = "http://14.225.220.131:8080/api/";
+// const baseUrl = "http://localhost:8080/api/";
 
 const config = {
   baseURL: baseUrl, // Use baseURL instead of baseUrl
@@ -9,9 +8,11 @@ const config = {
 
 const api = axios.create(config);
 
-// Handle before call API
+api.defaults.baseURL = baseUrl;
+
+// handle before call API
 const handleBefore = (config) => {
-  // Handle actions before calling the API
+  // handle hành động trước khi call API
 
   // Get the token and attach it to the request
   const token = localStorage.getItem("token")?.replaceAll('"', "");
