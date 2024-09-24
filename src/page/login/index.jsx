@@ -26,44 +26,10 @@ const Login = () => {
     }
   };
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [emailError, setEmailError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-
   const loginGoogle = useGoogleLogin({
     onSuccess: codeResponse => console.log(codeResponse),
     flow: 'auth-code',
   });
-
-  const validateEmail = (email) => {
-    const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    return re.test(String(email).toLowerCase());
-  };
-
-  const validatePassword = (password) => {
-    return password.length >= 8;
-  };
-
-  const handleEmailChange = (e) => {
-    setEmail(e.target.value);
-    if (!validateEmail(e.target.value)) {
-      setEmailError('Please enter a valid email address');
-    } else {
-      setEmailError('');
-    }
-  };
-
-  const handlePasswordChange = (e) => {
-    setPassword(e.target.value);
-    if (!validatePassword(e.target.value)) {
-      setPasswordError('Password must be at least 8 characters long');
-    } else {
-      setPasswordError('');
-    }
-  };
 
   return (
     <>

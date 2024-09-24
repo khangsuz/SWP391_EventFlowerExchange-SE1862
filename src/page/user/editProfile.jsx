@@ -4,21 +4,49 @@ import "../../index.css";
 import api from "../../config/axios";
 
 const Account = () => {
+    const [userData, setUserData] = useState();
 
+    const fetchUserData = async () => {
+        try {
+            const response = await api.get('');
+            setUserData(response.data)
+        } catch (error) {
+            console.error("Error: ", error)
+        }
+    };
+
+    useEffect(() => {
+        fetchUserData();
+    }, []);
+    
     return (
         <>
             <Header />
-            <div class="bg-white overflow-hidden shadow rounded-lg border mtfixed flex justify-center mt-20">
-                <div class="border-t border-gray-200 px-4 py-5 sm:p-0">
-                    <dl class="sm:divide-y sm:divide-gray-200">
-                        <div class="py-3 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                            <dt class="flex text-center font-medium text-gray-500">
+            <div>
+                <h1 className="font-meri text-center text-3xl mt-10 mb-5">
+                    Thông tin tài khoản
+                </h1>
+            </div>
+            <div className="bg-white overflow-hidden shadow rounded-lg border mtfixed flex justify-center">
+                <div className="flex flex-col sm:flex-row items-center">
+                <div className="p-4">
+                        <img
+                            src="https://i.postimg.cc/pyNqGCzg/Githubjpg.png"
+                            alt="User Profile"
+                            className="rounded-full h-20 w-20 object-cover"
+                        />
+                    </div>
+                </div>
+                <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
+                    <dl className="sm:divide-y sm:divide-gray-200">
+                        <div className="py-3 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                            <dt className="flex text-center font-medium text-gray-500">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="mr-1 inline-block h-6 w-6 size-6">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                                 </svg>
                                 Fullname
                             </dt>
-                            <dd class="mt-1 bold text-gray-900 sm:mt-0 sm:col-span-2">
+                            <dd class="mt-1 text-gray-900 sm:mt-0 sm:col-span-2">
                                 User
                             </dd>
                         </div>
@@ -29,7 +57,7 @@ const Account = () => {
                                 </svg>
                                 Email address
                             </dt>
-                            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                                 you@example.com
                             </dd>
                         </div>
@@ -45,8 +73,8 @@ const Account = () => {
                                 (123) 456-7890
                             </dd>
                         </div>
-                        <div class="py-3 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                            <dt class="text-sm font-medium text-gray-500">
+                        <div className="py-3 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                            <dt className="text-sm font-medium text-gray-500">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="mr-1 inline-block h-6 w-6 size-6">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
@@ -54,7 +82,7 @@ const Account = () => {
 
                                 Address
                             </dt>
-                            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                                 123 Vo Thi Sau, VN 12345
                             </dd>
                         </div>
