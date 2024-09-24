@@ -38,7 +38,7 @@ const Login = () => {
         <div className="login__image mt-1 mb-1">
           <img
             src="https://i.postimg.cc/Jz0MW07g/top-view-roses-flowers-Photoroom.png"
-            alt=""
+            alt="loginImage"
           />
         </div>
         <div className="login__form">

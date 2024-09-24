@@ -4,17 +4,16 @@ import "../../index.css";
 import Header from "../../component/header";
 import api from "../../config/axios";
 import { Link, useNavigate } from "react-router-dom";
+import Footer from "../../component/footer";
 
 const SignUp = () => {
   const navigate = useNavigate();
 
-  // vùng của javascript
   const handleSignUp = async (values) => {
     console.log(values);
 
     try {
-      // gửi request đến server
-      const response = await api.post("login", values);
+      const response = await api.post("signup", values);
       const { token } = response.data;
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(response.data));
@@ -29,10 +28,10 @@ const SignUp = () => {
     <>
       <Header />
       <div className="login">
-        <div className="login__image">
+        <div className="login__image mt-1 mb-1">
           <img
-            src="https://i.postimg.cc/90Bs6nLP/top-view-roses-flowers.jpg"
-            alt=""
+            src="https://i.postimg.cc/Jz0MW07g/top-view-roses-flowers-Photoroom.png"
+            alt="loginImage"
           />
         </div>
         <div className="login__form">
@@ -126,6 +125,7 @@ const SignUp = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </>
   );
 };

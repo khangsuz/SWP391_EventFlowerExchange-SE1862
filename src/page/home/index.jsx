@@ -25,6 +25,11 @@ const Home = () => {
   return (
     <div className="home">
       <Header />
+      <div className="collection-top-bar">
+        <div className="text-center collection-title mt-5">
+          <h1 className="text-2xl font-bold">Tất cả sản phẩm</h1>
+        </div>
+      </div>
       <div className="home__main-content">
         {/* {flowers.map((flower) => (
           <ProductCard flower={flower} />
