@@ -7,6 +7,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useGoogleLogin } from '@react-oauth/google';
 import { FaGoogle } from "react-icons/fa";
 import { jwtDecode } from "jwt-decode";
+import Footer from "../../component/footer";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ const Login = () => {
     console.log(values);
     try {
       // gửi request đến server
-      const response = await api.post("login", values);
+      const response = await api.post("Users/login", values);
       const { token } = response.data;
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(response.data));
@@ -75,19 +76,6 @@ const Login = () => {
                 ]}
               >
                 <Input type="text" placeholder="..." />
-              </Form.Item>
-
-              <Form.Item className="block text-gray-700 text-sm font-bold mb-2"
-                label="Email"
-                name="email"
-                rules={[
-                  {
-                    required: true,
-                    message: "Vui lòng nhập số điẹn thoại!",
-                  },
-                ]}
-              >
-                <Input type="text" placeholder="Your Name" />
               </Form.Item>
           
               <Form.Item
