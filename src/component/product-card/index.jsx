@@ -21,7 +21,7 @@ function ProductCard({ flower }) {
     <div className="product-card">
       <img src="https://i.postimg.cc/90Bs6nLP/top-view-roses-flowers.jpg" alt="" />
       <p className="name">Bong Hoa</p>
-      <p className="price">100000</p>
+      <p className="price">100.000₫</p>
       <center>
       <button onClick={handleAddToCart}>Thêm vào giỏ hàng</button>
       </center>

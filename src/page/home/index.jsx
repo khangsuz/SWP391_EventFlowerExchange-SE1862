@@ -3,6 +3,7 @@ import Header from "../../component/header";
 import ProductCard from "../../component/product-card";
 import "./index.scss";
 import api from "../../config/axios";
+import Footer from "../../component/footer";
 
 const Home = () => {
   const [flowers, setFlowers] = useState([]);
@@ -38,6 +39,7 @@ const Home = () => {
         <ProductCard />
         <ProductCard />
       </div>
+      <Footer />
     </div>
   );
 };

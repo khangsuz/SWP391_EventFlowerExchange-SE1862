@@ -6,7 +6,7 @@ import api from "../../config/axios";
 import { useNavigate, Link } from "react-router-dom";
 import { useGoogleLogin } from '@react-oauth/google'
 import { FaGoogle } from "react-icons/fa";
-import { jwtDecode } from "jwt-decode";
+import Footer from "../../component/footer";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -35,9 +35,9 @@ const Login = () => {
     <>
       <Header />
       <div className="login">
-        <div className="login__image mt-1">
+        <div className="login__image mt-1 mb-1">
           <img
-            src="https://i.postimg.cc/90Bs6nLP/top-view-roses-flowers.jpg"
+            src="https://i.postimg.cc/Jz0MW07g/top-view-roses-flowers-Photoroom.png"
             alt=""
           />
         </div>
@@ -101,6 +101,7 @@ const Login = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </>
   );
 };
