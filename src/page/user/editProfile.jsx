@@ -18,7 +18,7 @@ const Account = () => {
     useEffect(() => {
         fetchUserData();
     }, []);
-    
+
     return (
         <>
             <Header />
@@ -28,7 +28,7 @@ const Account = () => {
                 </h1>
             </div>
             <div className="bg-white overflow-hidden shadow rounded-lg border mtfixed flex justify-center">
-                <div className="flex flex-col sm:flex-row items-center">
+                <div className="flex flex-col sm:flex-row">
                 <div className="p-4">
                         <img
                             src="https://i.postimg.cc/pyNqGCzg/Githubjpg.png"

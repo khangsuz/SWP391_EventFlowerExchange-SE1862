@@ -10,19 +10,22 @@ import Footer from "../../component/footer";
 
 const Login = () => {
   const navigate = useNavigate();
-  // vùng của javascript
   const handleLogin = async (values) => {
     console.log(values);
     try {
-      // gửi request đến server
-      const response = await api.post("login", values);
+      const response = await api.post("Users/login", {
+        Name: values.name,
+        Password: values.password,
+        Email:values.email,
+        Usertype:values.userType
+      });
       const { token } = response.data;
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(response.data));
       navigate("/");
     } catch (err) {
-      console.log(err);
-      alert("Lỗi");
+      console.error(err);
+      alert(err.response?.data || "An error occurred during login.");
     }
   };
 
@@ -65,11 +68,37 @@ const Login = () => {
 
               <Form.Item className="block text-gray-700 text-sm font-bold mb-2"
                 label="Username"
-                name="username"
+                name="name"
+                rules={[
+                  {
+                    required: true,
+                    message: "Vui lòng nhập tài khoản!",
+                  },
+                ]}
+              >
+                <Input type="text" placeholder="..." />
+              </Form.Item>
+
+              <Form.Item className="block text-gray-700 text-sm font-bold mb-2"
+                label="Email"
+                name="email"
                 rules={[
                   {
                     required: true,
                     message: "Vui lòng nhập email!",
+                  },
+                ]}
+              >
+                <Input type="text" placeholder="you@example.com" />
+              </Form.Item>
+
+              <Form.Item className="block text-gray-700 text-sm font-bold mb-2"
+                label="UserType"
+                name="userType"
+                rules={[
+                  {
+                    required: true,
+                    message: "Vui lòng nhập type!",
                   },
                 ]}
               >
