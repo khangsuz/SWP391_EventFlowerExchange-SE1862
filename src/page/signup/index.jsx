@@ -44,22 +44,29 @@ const SignUp = () => {
               }}
               onFinish={handleSignUp}
             >
-              <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">Sign Up</h2>
-              <div className="flex justify-center space-x-4 mb-6">
-              </div>
-              <Form.Item className="block text-gray-700 text-sm font-bold mb-2"
+              <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">
+                Sign Up
+              </h2>
+              <div className="flex justify-center space-x-4 mb-6"></div>
+              <Form.Item
+                className="block text-gray-700 text-sm font-bold mb-2"
                 label="Email"
                 name="email"
                 rules={[
                   {
                     required: true,
-                    message: "Vui lòng nhập số điẹn thoại!",
+                    message: "Vui lòng nhập email!",
+                  },
+                  {
+                    type: "email",
+                    message: "Email không hợp lệ!",
                   },
                 ]}
               >
                 <Input type="text" placeholder="you@example.com" />
               </Form.Item>
-              <Form.Item className="block text-gray-700 text-sm font-bold mb-2"
+              <Form.Item
+                className="block text-gray-700 text-sm font-bold mb-2"
                 label="Password"
                 name="password"
                 rules={[
@@ -67,31 +74,53 @@ const SignUp = () => {
                     required: true,
                     message: "Vui lòng nhập mật khẩu!",
                   },
-                ]}
-              >
-                <Input type="password" placeholder="Password" />
-                
-              </Form.Item>
-              <Form.Item className="block text-gray-700 text-sm font-bold mb-2"
-                label="Confirm Password"
-                name="confirmPassword"
-                rules={[
                   {
-                    required: true,
-                    message: "Mật khẩu không khớp!",
+                    min: 6,
+                    message: "Mật khẩu phải có ít nhất 6 ký tự!",
                   },
                 ]}
               >
                 <Input type="password" placeholder="Password" />
-                
+              </Form.Item>
+              <Form.Item
+                className="block text-gray-700 text-sm font-bold mb-2"
+                label="Confirm Password"
+                name="confirmPassword"
+                dependencies={["password"]}
+                rules={[
+                  {
+                    required: true,
+                    message: "Vui lòng xác nhận mật khẩu!",
+                  },
+                  ({ getFieldValue }) => ({
+                    validator(_, value) {
+                      if (!value || getFieldValue("password") === value) {
+                        return Promise.resolve();
+                      }
+                      return Promise.reject(new Error("Mật khẩu không khớp!"));
+                    },
+                  }),
+                ]}
+              >
+                <Input type="password" placeholder="Confirm Password" />
               </Form.Item>
               <Form.Item>
-                <Button className="w-full bg-blue-500 text-white p-3 rounded-md font-semibold hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-300 ease-in-out transform hover:scale-105 mt-2" type="primary" htmlType="submit">
+                <Button
+                  className="w-full bg-blue-500 text-white p-3 rounded-md font-semibold hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-300 ease-in-out transform hover:scale-105 mt-2"
+                  type="primary"
+                  htmlType="submit"
+                >
                   Register
                 </Button>
               </Form.Item>
               <p className="mt-4 text-center text-sm text-gray-600">
-                    Already have an account? <Link to={"/login"} className="text-blue-500 hover:text-blue-600 font-semibold">Sign In</Link>
+                Already have an account?{" "}
+                <Link
+                  to={"/login"}
+                  className="text-blue-500 hover:text-blue-600 font-semibold"
+                >
+                  Sign In
+                </Link>
               </p>
             </Form>
           </div>

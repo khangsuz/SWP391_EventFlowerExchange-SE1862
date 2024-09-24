@@ -5,6 +5,7 @@ import Login from "./page/login";
 import SignUp from "./page/signup"
 import Dashboard from "./page/admin";
 import PrivateRoute from "./component/private-route";
+import Account from "./page/user/editProfile";
 
 const App = () => {
   const router = createBrowserRouter([
@@ -19,6 +20,10 @@ const App = () => {
     {
       path: "signup",
       element: <SignUp />,
+    },
+    {
+      path: "account",
+      element: <Account />,
     },
     {
       path: "admin",

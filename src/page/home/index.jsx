@@ -5,20 +5,20 @@ import "./index.scss";
 import api from "../../config/axios";
 
 const Home = () => {
-  const [koiFishs, setKoiFishs] = useState([]);
+  const [flowers, setFlowers] = useState([]);
 
-  const fetchKoiFish = async () => {
+  const fetchFlower = async () => {
     // hàm gọi API lấy dữ liệu cá koi
     try {
       const response = await api.get("product");
-      setKoiFishs(response.data);
+      setFlowers(response.data);
     } catch (err) {
       console.log(err);
     }
   };
 
   useEffect(() => {
-    fetchKoiFish(); // chạy thằng này mỗi khi mà trang load lên
+    fetchFlower(); // chạy thằng này mỗi khi mà trang load lên
   }, []);
 
   return (
@@ -27,8 +27,8 @@ const Home = () => {
 
       <div className="home__main-content">
         {/* cứ mỗi con cá => <ProductCard /> */}
-        {koiFishs.map((koiFish) => (
-          <ProductCard koiFish={koiFish} />
+        {flowers.map((flower) => (
+          <ProductCard flower={flower} />
         ))}
       </div>
     </div>
