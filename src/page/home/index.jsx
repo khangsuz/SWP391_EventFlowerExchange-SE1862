@@ -4,7 +4,7 @@ import "./index.scss";
 import api from "../../config/axios";
 import Footer from "../../component/footer";
 import ProductCard from "../../component/product-card";
-
+import { Link } from "react-router-dom";
 const Home = () => {
   const [flowers, setFlowers] = useState([]);
 
@@ -18,10 +18,6 @@ const Home = () => {
   };
 
   useEffect(() => {
-    const link = document.createElement("link");
-    link.href = "https://fonts.googleapis.com/css2?family=Great+Vibes&family=Josefin+Slab:wght@700&display=swap";
-    link.rel = "stylesheet";
-    document.head.appendChild(link);
 
     fetchFlower();
   }, []);
@@ -34,7 +30,7 @@ const Home = () => {
         <div className="landing-text mt-5">
           <h1 className="">Chào mừng đến với cửa hàng hoa của chúng tôi</h1>
           <p>Những bông hoa đẹp nhất từ các sự kiện – tái tạo vẻ đẹp trong không gian của bạn</p>
-          <button type="button" class="mt-20 text-gray-900 hover:text-white border border-gray-800 hover:bg-gray-900 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 dark:border-gray-600 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-800">Shop now</button>
+          <button type="button" className="mt-20 bg-gray-500 text-white p-2 rounded-md font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-300 ease-in-out transform hover:scale-105 mt-2"><Link to={"/products"}>Shop now</Link></button>
         </div>
       </div>
 
@@ -117,7 +113,7 @@ const Home = () => {
       </div>
 
       {/* Title */}
-        <div className="section-title text-center mb-30">
+        <div className="section-title text-center mt-10">
           <h1 className="section-title-1">The Most Trendy</h1>
           <h3 className="section-title-3">Featured Products</h3>
           <div className="ml-10 mr-10 mb-10 flex flex-wrap">
@@ -137,7 +133,7 @@ const Home = () => {
             placeholder="email..."
             className=" px-4 py-2 w-3/12"
           />
-          <button className="bg-gray-800 text-white rounded-r-lg px-3 py-2">Subscribe</button>
+          <button className="bg-gray-600 text-white rounded-r-lg px-3 py-2">Subscribe</button>
         </div>
       </div>
       <Footer />

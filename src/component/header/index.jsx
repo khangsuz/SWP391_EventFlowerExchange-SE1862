@@ -148,7 +148,6 @@ function Header(items) {
         </Tippy>
         <Tippy content="Giỏ hàng" placement="bottom">
           <Link to={"/cart"}
-            title="h_cart"
             className="relative flex items-center justify-center header-cart-link icon button circle is-outline is-small"
           >
             <svg

@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Josefin+Slab:wght@700&display=swap');
+
 .home {
   &__main-content {
     padding: 20px 130px;
@@ -20,7 +22,7 @@
     object-fit: cover;
   }
 
-  .landing-text {
+  .landing-text h1{
     position: absolute;
     top: 20%;
     left: 10%;
@@ -32,11 +34,21 @@
 
   .landing-text p{
     position: absolute;
-    top: 40%;
-    left: 1%;
+    top: 35%;
+    left: 10%;
     color: black;
     font-size: 15px;
-    
+    font-weight: bold;
+  }
+
+  .landing-text button{
+    position: absolute;
+    top: 33%;
+    left: 10%;
+    color: white;
+    font-size: 25px;
+    font-weight: bold;
+    cursor: pointer;
   }
 }
 
