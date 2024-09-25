@@ -3,10 +3,22 @@ import "./index.scss";
 import { Link, useNavigate } from "react-router-dom";
 import Tippy from "@tippyjs/react";
 import 'tippy.js/dist/tippy.css';
-function Header() {
+function Header(items) {
+
   const navigate = useNavigate();
   const [searchValue, setSearchValue] = useState('');
   const [cartItems, setCartItems] = useState(0);
+  const [filteredItems, setFilteredItems] = useState(items);
+
+  const handleSearch = (e) => {
+    const query = e.target.value.toLowerCase();
+    setSearchValue(query);
+    const filtered = items.filter((item) =>
+      item.toLowerCase().includes(query)
+    );
+    setFilteredItems(filtered);
+  };
+
   return (
     <div className="header">
       <Link to={"/"}>
@@ -87,9 +99,9 @@ function Header() {
             <input
               type="text"
               value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
+              onChange={handleSearch}
               placeholder="Search..."
-              className="border border-gray-300 rounded p-2 w-full"
+              className="px-4 py-2  border rounded-lg w-full text-black"
             />
           </div>
         }

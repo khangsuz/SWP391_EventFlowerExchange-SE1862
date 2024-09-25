@@ -2,11 +2,11 @@ import React from 'react';
 
 const Footer = () => {
     return (
-        <footer className="flex items-center bg-[rgb(250,239,226)] py-10">
-            <div className="container mx-auto px-4">
+        <footer className="flex items-center bg-[rgb(250,239,226)] py-2">
+            <div className="mx-auto px-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                     <div>
-                        <h2 className="text-center text-2xl font-bold">Về chúng tôi</h2>
+                        <h2 className="mt-5 text-center text-2xl font-bold">Về chúng tôi</h2>
                         <p className="text-center mt-2 text-gray-600">
                             Bloom là nền tảng kết nối những người có nhu cầu thanh lý hoa sau sự kiện và những ai muốn tìm kiếm hoa tươi với giá ưu đãi.
                         </p>
@@ -24,7 +24,7 @@ const Footer = () => {
                         <p className="text-center mt-2 text-gray-600">Hỗ trợ khách hàng tận tình và chu đáo.</p>
                     </div>
                     <div>
-                        <h2 className="text-center text-2xl font-bold">Liên hệ</h2>
+                        <h2 className="mt-5 text-center text-2xl font-bold">Liên hệ</h2>
                         <p className="text-center mt-2 text-gray-600">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 1 24 24" strokeWidth={1.5} stroke="currentColor" className="mr-1 inline-block h-6 w-6 size-6">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
