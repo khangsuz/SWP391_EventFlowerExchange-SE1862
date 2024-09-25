@@ -9,9 +9,8 @@ const Home = () => {
   const [flowers, setFlowers] = useState([]);
 
   const fetchFlower = async () => {
-    // hàm gọi API lấy dữ liệu cá koi
     try {
-      const response = await api.get("product");
+      const response = await api.get("Flowers");
       setFlowers(response.data);
     } catch (err) {
       console.log(err);
@@ -19,7 +18,7 @@ const Home = () => {
   };
 
   useEffect(() => {
-    fetchFlower(); // chạy thằng này mỗi khi mà trang load lên
+    fetchFlower();
   }, []);
 
   return (
@@ -31,18 +30,9 @@ const Home = () => {
         </div>
       </div>
       <div className="home__main-content">
-        {/* {flowers.map((flower) => (
-          <ProductCard flower={flower} />
-          
-        ))} */}
-        <ProductCard />
-        <ProductCard />
-        <ProductCard />
-        <ProductCard />
-        <ProductCard />
-        <ProductCard />
-        <ProductCard />
-        <ProductCard />
+        {flowers.map((flower) => (
+          <ProductCard key={flower.flowerId} flower={flower} />
+        ))}
       </div>
       <Footer />
     </div>

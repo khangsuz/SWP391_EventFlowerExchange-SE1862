@@ -1,7 +1,7 @@
 import { Button, Form, Input } from "antd";
-import React, { useState } from 'react';
-import "../../index.css";
-import Header from "../../component/header";
+import React from 'react';
+import "../../index.css"; // Make sure this path is correct for your project
+import Header from "../../component/header"; // Ensure these components are imported correctly
 import api from "../../config/axios";
 import { Link, useNavigate } from "react-router-dom";
 import Footer from "../../component/footer";
@@ -9,18 +9,30 @@ import Footer from "../../component/footer";
 const SignUp = () => {
   const navigate = useNavigate();
 
+  // Handle sign-up submission
   const handleSignUp = async (values) => {
     console.log(values);
 
     try {
-      const response = await api.post("signup", values);
+      // Make the API call to register a new user
+      const response = await api.post("Users/register", values);
       const { token } = response.data;
+
+      // Save the token and user data to localStorage
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(response.data));
+
+      // Redirect the user to the home page
       navigate("/");
     } catch (err) {
       console.log(err);
-      alert(err.response.data);
+
+      // Error handling with safe checks
+      if (err.response && err.response.data) {
+        alert(err.response.data);
+      } else {
+        alert("An error occurred. Please try again.");
+      }
     }
   };
 
@@ -28,12 +40,15 @@ const SignUp = () => {
     <>
       <Header />
       <div className="login">
+        {/* Sign-up page image */}
         <div className="login__image mt-1 mb-1">
           <img
             src="https://i.postimg.cc/Jz0MW07g/top-view-roses-flowers-Photoroom.png"
             alt="loginImage"
           />
         </div>
+
+        {/* Sign-up form */}
         <div className="login__form">
           <div className="form-wrapper">
             <Form
@@ -43,10 +58,31 @@ const SignUp = () => {
               }}
               onFinish={handleSignUp}
             >
+              {/* Sign-up title */}
               <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">
                 Sign Up
               </h2>
-              <div className="flex justify-center space-x-4 mb-6"></div>
+
+              {/* User Name Input */}
+              <Form.Item
+                className="block text-gray-700 text-sm font-bold mb-2"
+                label="Name"
+                name="name"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please enter your name!",
+                  },
+                  {
+                    min: 4,
+                    message: "Username must be at least 4 characters!",
+                  },
+                ]}
+              >
+                <Input type="text" placeholder="UserName" />
+              </Form.Item>
+
+              {/* Email Input */}
               <Form.Item
                 className="block text-gray-700 text-sm font-bold mb-2"
                 label="Email"
@@ -54,16 +90,18 @@ const SignUp = () => {
                 rules={[
                   {
                     required: true,
-                    message: "Vui lòng nhập email!",
+                    message: "Please enter your email!",
                   },
                   {
                     type: "email",
-                    message: "Email không hợp lệ!",
+                    message: "Invalid email address!",
                   },
                 ]}
               >
                 <Input type="text" placeholder="you@example.com" />
               </Form.Item>
+
+              {/* Password Input */}
               <Form.Item
                 className="block text-gray-700 text-sm font-bold mb-2"
                 label="Password"
@@ -71,16 +109,18 @@ const SignUp = () => {
                 rules={[
                   {
                     required: true,
-                    message: "Vui lòng nhập mật khẩu!",
+                    message: "Please enter your password!",
                   },
                   {
-                    min: 8,
-                    message: "Mật khẩu phải có ít nhất 8 ký tự!",
+                    min: 5,
+                    message: "Password must be at least 5 characters!",
                   },
                 ]}
               >
                 <Input type="password" placeholder="Password" />
               </Form.Item>
+
+              {/* Confirm Password Input */}
               <Form.Item
                 className="block text-gray-700 text-sm font-bold mb-2"
                 label="Confirm Password"
@@ -89,20 +129,22 @@ const SignUp = () => {
                 rules={[
                   {
                     required: true,
-                    message: "Vui lòng xác nhận mật khẩu!",
+                    message: "Please confirm your password!",
                   },
                   ({ getFieldValue }) => ({
                     validator(_, value) {
                       if (!value || getFieldValue("password") === value) {
                         return Promise.resolve();
                       }
-                      return Promise.reject(new Error("Mật khẩu không khớp!"));
+                      return Promise.reject(new Error("Passwords do not match!"));
                     },
                   }),
                 ]}
               >
                 <Input type="password" placeholder="Confirm Password" />
               </Form.Item>
+
+              {/* Register Button */}
               <Form.Item>
                 <Button
                   className="w-full bg-blue-500 text-white p-3 rounded-md font-semibold hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-300 ease-in-out transform hover:scale-105 mt-2"
@@ -112,6 +154,8 @@ const SignUp = () => {
                   Register
                 </Button>
               </Form.Item>
+
+              {/* Link to Sign In page */}
               <p className="mt-4 text-center text-sm text-gray-600">
                 Already have an account?{" "}
                 <Link

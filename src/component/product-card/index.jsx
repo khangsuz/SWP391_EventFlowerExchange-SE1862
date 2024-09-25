@@ -6,7 +6,7 @@ function ProductCard({ flower }) {
   const handleAddToCart = async () => {
     try {
       const response = await api.post("cart", {
-        productId: flower.id,
+        productId: flower.flowerId,
         quantity: 1,
       });
 
@@ -19,11 +19,11 @@ function ProductCard({ flower }) {
 
   return (
     <div className="product-card">
-      <img src="https://i.postimg.cc/90Bs6nLP/top-view-roses-flowers.jpg" alt="" />
-      <p className="name">Bong Hoa</p>
-      <p className="price">100.000₫</p>
+      <img src={flower.imageUrl || "https://i.postimg.cc/90Bs6nLP/top-view-roses-flowers.jpg"} alt={flower.flowerName} />
+      <p className="name">{flower.flowerName}</p>
+      <p className="price">{flower.price.toLocaleString()}₫</p>
       <center>
-      <button onClick={handleAddToCart}>Thêm vào giỏ hàng</button>
+        <button onClick={handleAddToCart}>Thêm vào giỏ hàng</button>
       </center>
     </div>
   );
