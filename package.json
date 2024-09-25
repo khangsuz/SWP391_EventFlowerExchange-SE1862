@@ -12,6 +12,7 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.6.0",
     "@react-oauth/google": "^0.12.1",
+    "@tippyjs/react": "^4.2.6",
     "antd": "^5.20.6",
     "axios": "^1.7.7",
     "jwt-decode": "^4.0.0",

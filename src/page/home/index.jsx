@@ -31,10 +31,10 @@ const Home = () => {
         </div>
       </div>
       <div className="home__main-content">
-        {/* {flowers.map((flower) => (
+        {flowers.map((flower) => (
           <ProductCard flower={flower} />
           
-        ))} */}
+        ))}
         <ProductCard />
         <ProductCard />
         <ProductCard />

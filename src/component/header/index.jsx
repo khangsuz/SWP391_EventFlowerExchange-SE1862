@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import "./index.scss";
 import { Link, useNavigate } from "react-router-dom";
+import Tippy from "@tippyjs/react";
+import 'tippy.js/dist/tippy.css';
 function Header() {
   const navigate = useNavigate();
   const [cartItems, setCartItems] = useState(0);
@@ -79,6 +81,7 @@ function Header() {
         </ul>
       </div>
       <div className="flex space-x-4">
+        <Tippy content="TÌm kiếm" placement="bottom">
         <Link to={"/"}
           title="h_search"
         >
@@ -97,6 +100,8 @@ function Header() {
             />
           </svg>
         </Link>
+        </Tippy>
+        <Tippy content="Tài khoản" placement="bottom">
         <Link to={"/login"}
           title="h_login"
         >
@@ -115,6 +120,8 @@ function Header() {
             />
           </svg>
         </Link>
+        </Tippy>
+        <Tippy content="Giỏ hàng" placement="bottom">
         <Link to={"/cart"}
           title="h_cart"
           className="relative flex items-center justify-center header-cart-link icon button circle is-outline is-small"
@@ -140,6 +147,7 @@ function Header() {
           )}
           <i className="icon-shopping-basket ml-2"></i>
         </Link>
+        </Tippy>
       </div>
     </div>
   );
