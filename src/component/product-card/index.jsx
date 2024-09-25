@@ -19,9 +19,12 @@ function ProductCard({ flower }) {
 
   return (
     <div className="product-card">
-      <img src={flower.imageUrl || "https://i.postimg.cc/90Bs6nLP/top-view-roses-flowers.jpg"} alt={flower.flowerName} />
-      <p className="name">{flower.flowerName}</p>
-      <p className="price">{flower.price.toLocaleString()}₫</p>
+      {/* <img src={flower.imageUrl || "https://i.postimg.cc/90Bs6nLP/top-view-roses-flowers.jpg"} alt={flower.flowerName} /> */}
+      <img src="https://i.postimg.cc/Jz0MW07g/top-view-roses-flowers-Photoroom.png" alt="" />
+      {/* <p className="name">{flower.flowerName}</p> */}
+      <p className="name">Bong hoa</p>
+      {/* <p className="price">{flower.price.toLocaleString()}₫</p> */}
+      <p className="price">1.000.000₫</p>
       <center>
         <button onClick={handleAddToCart}>Thêm vào giỏ hàng</button>
       </center>
