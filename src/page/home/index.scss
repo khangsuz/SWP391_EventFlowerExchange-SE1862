@@ -1,9 +1,44 @@
 .home {
-  min-height: 100vh;
-
   &__main-content {
     padding: 20px 130px;
-    display: flex;
-    flex-wrap: wrap;
   }
 }
+
+.landing_img {
+  position: relative;
+  width: 100%;
+  height: 70vh;
+  overflow: hidden;
+
+  img {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    min-width: 100%;
+    height: 100%;
+    transform: translate(-50%, -50%);
+    object-fit: cover;
+  }
+
+  .landing-text {
+    position: absolute;
+    top: 20%;
+    left: 10%;
+    color: black;
+    font-size: 30px;
+    font-weight: bold;
+    
+  }
+
+  .landing-text p{
+    position: absolute;
+    top: 40%;
+    left: 1%;
+    color: black;
+    font-size: 15px;
+    
+  }
+}
+
+
+

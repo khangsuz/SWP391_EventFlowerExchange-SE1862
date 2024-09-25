@@ -20,14 +20,14 @@ function Header() {
       <div className="flex justify-between items-center">
         <ul className="flex space-x-10">
           <li>
-            <Link to="/" className="text-gray-700 hover:text-gray-900">Trang Chủ</Link>
+            <Link to="/" className="text-gray-700 hover:text-gray-900"><p><b>Trang Chủ</b></p></Link>
           </li>
           <li>
-            <Link to="/about" className="text-gray-700 hover:text-gray-900">Giới Thiệu</Link>
+            <Link to="/about" className="text-gray-700 hover:text-gray-900"><p><b>Giới Thiệu</b></p></Link>
           </li>
           <li className="relative group">
             <Link to="/products" className="flex items-center text-gray-700 hover:text-gray-900">
-              Sản phẩm
+              <p><b>Sản Phẩm</b></p>
               <i className="ml-1">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -77,7 +77,7 @@ function Header() {
             </div>
           </li>
           <li>
-            <Link to="/events" className="text-gray-700 hover:text-gray-900">Hoa Sự Kiện</Link>
+            <Link to="/events" className="text-gray-700 hover:text-gray-900"><p><b>Hoa Sự Kiện</b></p></Link>
           </li>
         </ul>
       </div>
@@ -97,7 +97,8 @@ function Header() {
           placement="bottom"
           trigger="click"
         >
-          <Link to={"/"}>
+          <a href="#">
+            <i>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -112,7 +113,8 @@ function Header() {
                 d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
               />
             </svg>
-          </Link>
+            </i>
+          </a>
         </Tippy>
         <Tippy content="Tài khoản" placement="bottom">
           <Link to={"/login"}>
