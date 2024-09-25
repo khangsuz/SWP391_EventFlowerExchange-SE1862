@@ -31,8 +31,22 @@ const Home = () => {
       </div>
       <div className="home__main-content">
         {flowers.map((flower) => (
+<<<<<<< HEAD
           <ProductCard key={flower.flowerId} flower={flower} />
         ))}
+=======
+          <ProductCard flower={flower} />
+          
+        ))}
+        <ProductCard />
+        <ProductCard />
+        <ProductCard />
+        <ProductCard />
+        <ProductCard />
+        <ProductCard />
+        <ProductCard />
+        <ProductCard />
+>>>>>>> 81dd22a391d8e8b6d08ed6aba4d1d212e0e7280f
       </div>
       <Footer />
     </div>
