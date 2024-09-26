@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35222.181
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebAPI_FlowerShopSWP", "WebAPI_FlowerShopSWP\WebAPI_FlowerShopSWP.csproj", "{90A05ED0-0635-4929-9E09-FD7B81345CFA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{90A05ED0-0635-4929-9E09-FD7B81345CFA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90A05ED0-0635-4929-9E09-FD7B81345CFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90A05ED0-0635-4929-9E09-FD7B81345CFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90A05ED0-0635-4929-9E09-FD7B81345CFA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BCF261E9-D613-4CE8-9559-0D1352572BD5}
+	EndGlobalSection
+EndGlobal
