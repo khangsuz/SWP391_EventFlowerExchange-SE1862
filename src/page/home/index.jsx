@@ -7,17 +7,24 @@ import Footer from "../../component/footer";
 
 const Home = () => {
   const [flowers, setFlowers] = useState([]);
-
-  const fetchFlower = async () => {
-    try {
-      const response = await api.get("Flowers");
-      setFlowers(response.data);
-    } catch (err) {
-      console.log(err);
-    }
-  };
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
+    // Lấy thông tin người dùng từ localStorage
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user && user.userId) {
+      setCurrentUser(user);
+    }
+    // Fetch flowers
+    const fetchFlower = async () => {
+      try {
+        const response = await api.get("Flowers");
+        setFlowers(response.data);
+      } catch (err) {
+        console.error("Error fetching flowers:", err);
+      }
+    };
+
     fetchFlower();
   }, []);
 
@@ -31,22 +38,8 @@ const Home = () => {
       </div>
       <div className="home__main-content">
         {flowers.map((flower) => (
-<<<<<<< HEAD
-          <ProductCard key={flower.flowerId} flower={flower} />
+          <ProductCard key={flower.flowerId} flower={flower} buyerId={currentUser ? currentUser.userId : null} />
         ))}
-=======
-          <ProductCard flower={flower} />
-          
-        ))}
-        <ProductCard />
-        <ProductCard />
-        <ProductCard />
-        <ProductCard />
-        <ProductCard />
-        <ProductCard />
-        <ProductCard />
-        <ProductCard />
->>>>>>> 81dd22a391d8e8b6d08ed6aba4d1d212e0e7280f
       </div>
       <Footer />
     </div>
