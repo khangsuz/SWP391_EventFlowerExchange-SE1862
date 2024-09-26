@@ -4,7 +4,6 @@ import Home from "./page/home";
 import Login from "./page/login";
 import SignUp from "./page/signup"
 import Dashboard from "./page/admin";
-import ProductDetail from "./page/detail/producDetail";
 import PrivateRoute from "./component/private-route";
 import Account from "./page/user/editProfile";
 
@@ -21,6 +20,10 @@ const App = () => {
     {
       path: "signup",
       element: <SignUp />,
+    },
+    {
+      path: "products",
+      element: <Products />
     },
     {
       path: "account",

@@ -1,9 +1,77 @@
-.home {
-  min-height: 100vh;
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Josefin+Slab:wght@700&display=swap');
 
+.home {
   &__main-content {
     padding: 20px 130px;
-    display: flex;
-    flex-wrap: wrap;
   }
 }
+
+.landing_img {
+  position: relative;
+  width: 100%;
+  height: 70vh;
+  overflow: hidden;
+
+  img {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    min-width: 100%;
+    height: 100%;
+    transform: translate(-50%, -50%);
+    object-fit: cover;
+  }
+
+  .landing-text h1{
+    position: absolute;
+    top: 20%;
+    left: 10%;
+    color: black;
+    font-size: 30px;
+    font-weight: bold;
+    
+  }
+
+  .landing-text p{
+    position: absolute;
+    top: 35%;
+    left: 10%;
+    color: black;
+    font-size: 15px;
+    font-weight: bold;
+  }
+
+  .landing-text button{
+    position: absolute;
+    top: 33%;
+    left: 10%;
+    color: white;
+    font-size: 25px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+}
+
+.section-title .section-title-1 {
+  color: #E72463;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 34px;
+  display: inline-block;
+  letter-spacing: 3px;
+  margin: 0 0 15px 0;
+  position: relative;
+  font-family: "Great Vibes", cursive;
+}
+
+.section-title .section-title-3 {
+  font-size: 36px;
+    font-family: "Josefin Slab", serif;
+    font-weight: 700;
+    margin-bottom: 0px;
+    padding-bottom: 25px;
+    text-transform: uppercase;
+}
+
+
+
