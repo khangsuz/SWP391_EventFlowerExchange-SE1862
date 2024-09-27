@@ -3,11 +3,14 @@ import Header from "../../component/header";
 import "./index.scss";
 import api from "../../config/axios";
 import Footer from "../../component/footer";
+import { jwt_decode } from 'jwt-decode';
 import ProductCard from "../../component/product-card";
 import { Link } from "react-router-dom";
+
 const Home = () => {
   const [flowers, setFlowers] = useState([]);
-
+  const token = "your_jwt_token";
+  const decoded = jwt_decode(token);
   const fetchFlower = async () => {
     try {
       const response = await api.get("Flowers");
