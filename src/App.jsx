@@ -3,8 +3,9 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import Home from "./page/home";
 import Login from "./page/login";
 import SignUp from "./page/signup"
+import Products from "./page/products";
+import ProductDetail from "./page/detail/producDetail";
 import Dashboard from "./page/admin";
-import Products from "./page/products";;
 import PrivateRoute from "./component/private-route";
 import Account from "./page/user/editProfile";
 
@@ -29,6 +30,10 @@ const App = () => {
     {
       path: "account",
       element: <Account />,
+    },
+    {
+      path: "product/:id",
+      element: <ProductDetail />,
     },
     {
       path: "admin",
