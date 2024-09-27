@@ -10,29 +10,34 @@ import Footer from "../../component/footer";
 
 const Login = () => {
   const navigate = useNavigate();
-  // vùng của javascript
   const handleLogin = async (values) => {
     console.log(values);
     try {
-      // gửi request đến server
       const response = await api.post("Users/login", values);
       const { token } = response.data;
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(response.data));
       navigate("/");
-    } catch (err) {
-      console.error(err);
-      alert(err.response?.data || "An error occurred during login.");
+    } catch (error) {
+      alert("Sai tên đăng nhập hoặc mật khẩu");
     }
   };
 
 
   const loginGoogle = useGoogleLogin({
-    onSuccess: (codeResponse) => {
-      console.log(codeResponse);
-      // Handle Google login response here
+    onSuccess: async (response) => {
+      console.log("Google login response:", response);
+      const token = response.credential;
+      try {
+        const token = response.credential;
+        const result = await api.post("/Users/google-login", {
+          token: token,
+        });
+        console.log(result.data);
+      } catch (error) {
+        console.error("Đăng nhập thất bại:", error.response.data);
+      }
     },
-    flow: 'auth-code',
   });
 
   return (
@@ -56,7 +61,7 @@ const Login = () => {
               <div className="flex justify-center space-x-4 mb-6">
                 <button 
                   className="p-2 rounded-full bg-red-500 text-white hover:bg-red-600 transition duration-300 ease-in-out transform hover:scale-110"
-                  onClick={loginGoogle}
+                  onClick={() => loginGoogle()} 
                 >
                   <FaGoogle className="text-xl" />
                 </button>

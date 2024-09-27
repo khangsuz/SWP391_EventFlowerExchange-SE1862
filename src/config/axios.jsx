@@ -1,6 +1,5 @@
 import axios from "axios";
 const baseUrl = "https://localhost:7288/api/";
-// const baseUrl = "http://localhost:8080/api/";
 
 const config = {
   baseURL: baseUrl, // Use baseURL instead of baseUrl
@@ -10,12 +9,8 @@ const api = axios.create(config);
 
 api.defaults.baseURL = baseUrl;
 
-// handle before call API
 const handleBefore = (config) => {
-  // handle hành động trước khi call API
-
-  // Get the token and attach it to the request
-  const token = localStorage.getItem("token")?.replaceAll('"', "");
+  const token = localStorage.getItem("token")?.replace(/"/g, "");
   if (token) {
     config.headers["Authorization"] = `Bearer ${token}`;
   }
@@ -23,5 +18,18 @@ const handleBefore = (config) => {
 };
 
 api.interceptors.request.use(handleBefore, null);
+
+api.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    if (error.response.status === 401) {
+      localStorage.removeItem("token");
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default api;

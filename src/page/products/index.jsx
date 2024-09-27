@@ -29,16 +29,9 @@ const Products = () => {
         </div>
       </div>
       <div className="home__main-content">
-        {/* {flowers.map((flower) => (
+        {flowers.map((flower) => (
           <ProductCard key={flower.flowerId} flower={flower} />
-        ))} */}
-        <ProductCard />
-        <ProductCard />
-        <ProductCard />
-        <ProductCard />
-        <ProductCard />
-        <ProductCard />
-        
+        ))}
       </div>
       <Footer />
     </div>

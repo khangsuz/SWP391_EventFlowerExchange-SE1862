@@ -18,7 +18,6 @@ const Home = () => {
   };
 
   useEffect(() => {
-
     fetchFlower();
   }, []);
 
@@ -117,9 +116,9 @@ const Home = () => {
           <h1 className="section-title-1">The Most Trendy</h1>
           <h3 className="section-title-3">Featured Products</h3>
           <div className="ml-10 mr-10 mb-10 flex flex-wrap">
-          <ProductCard />
-          <ProductCard />
-          <ProductCard />
+          {flowers.map((flower) => (
+          <ProductCard key={flower.flowerId} flower={flower} />
+          ))}
           </div>
         </div>
 
