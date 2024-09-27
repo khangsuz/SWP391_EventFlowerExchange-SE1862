@@ -1,6 +1,6 @@
+// SWP391_EventFlowerExchange-SE1862/src/component/product-card/index.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import jwt_decode from "jwt-decode";
 import "./index.scss";
 import api from "../../config/axios";
 
@@ -22,16 +22,29 @@ function ProductCard({ flower }) {
     if (!token) {
       navigate('/login'); // Redirect to login if no token
     } else {
-      const decodedToken = jwt_decode(token);
-      const isExpired = decodedToken.exp * 1000 < Date.now(); // Check expiration
+      try {
+        const decodedToken = decodeJwt(token);
+        const isExpired = decodedToken.exp * 1000 < Date.now(); // Check expiration
 
-      if (isExpired) {
+        if (isExpired) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          navigate('/login'); // Redirect to login if token is expired
+        }
+      } catch (error) {
+        console.error("Token decoding failed:", error);
         localStorage.removeItem("token");
         localStorage.removeItem("user");
-        navigate('/login'); // Redirect to login if token is expired
+        navigate('/login'); // Redirect to login if token is invalid
       }
     }
-  }, []);
+  }, [navigate]); // Added navigate to dependency array
+
+  const decodeJwt = (token) => {
+    const payload = token.split('.')[1]; // Get the payload part of the JWT
+    const decodedPayload = JSON.parse(atob(payload)); // Decode the Base64 URL encoded payload
+    return decodedPayload;
+  };
 
   const handleAddToCart = async (e) => {
     e.stopPropagation();
@@ -77,7 +90,7 @@ function ProductCard({ flower }) {
     localStorage.removeItem("user"); // Remove user info
     navigate('/login'); // Redirect to login
   };
-
+  
   return (
     <div className="product-card" onClick={handleViewDetails}>
       <img src={flower.imageUrl || "https://i.postimg.cc/Jz0MW07g/top-view-roses-flowers-Photoroom.png"} alt={flower.flowerName} />
@@ -87,7 +100,7 @@ function ProductCard({ flower }) {
         <button onClick={handleAddToCart} disabled={loading}>
           {loading ? "Đang thêm..." : "Thêm vào giỏ hàng"}
         </button>
-        <button onClick={handleLogout}>Đăng xuất</button>
+          
       </center>
     </div>
   );
