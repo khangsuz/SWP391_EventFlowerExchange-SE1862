@@ -1,3 +1,4 @@
+// src/component/header/index.jsx
 import React, { useState } from "react";
 import "./index.scss";
 import { Link, useNavigate } from "react-router-dom";
@@ -5,7 +6,7 @@ import Tippy from "@tippyjs/react";
 import 'tippy.js/dist/tippy.css';
 import api from "../../config/axios"; // Import axios instance
 
-function Header({ setFilteredFlowers }) { // Add prop to receive setFilteredFlowers from parent
+function Header({ setFilteredFlowers }) {
   const navigate = useNavigate();
   const [searchValue, setSearchValue] = useState('');
   const [cartItems, setCartItems] = useState(0);
@@ -14,23 +15,66 @@ function Header({ setFilteredFlowers }) { // Add prop to receive setFilteredFlow
   const handleSearch = async (e) => {
     const query = e.target.value.toLowerCase();
     setSearchValue(query);
-
-    if (query) {
+    
+    // Normalize the search input to remove accents
+    const normalizedQuery = query.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  
+    if (query.length === 0) {
+      // If the search box is empty, reset to show all products
       try {
-        console.log(`Searching for: ${query}`); // Log the search query
-        const response = await api.get(`/Flowers/searchbyname?name=${query}`);
-        console.log(response.data); // Log the response data to ensure it's correct
+        const response = await api.get(`/Flowers`); // Fetch all flowers again if needed
+        setFilteredFlowers(response.data); // Show all products
+      } catch (error) {
+        console.error("Error fetching all flowers:", error);
+        setFilteredFlowers([]); // Clear results on error
+      }
+    } else if (query.length >= 1) {
+      try {
+        console.log(`Searching for: ${query}`);
+        const response = await api.get(`/Flowers`); // Fetch all flowers to filter them locally
+        console.log("API Response:", response.data);
+  
         if (response.data && response.data.length > 0) {
-          setFilteredFlowers(response.data); // Set the filtered data
+          // Normalize the flower names and filter based on the normalized query
+          const filtered = response.data.filter(flower => 
+            flower.flowerName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(normalizedQuery)
+          );
+          
+          setFilteredFlowers(filtered); // Set the filtered flowers
         } else {
-          setFilteredFlowers([]); // Clear results if no matches found
+          setFilteredFlowers([]); // Clear if no results
         }
       } catch (error) {
         console.error("Search error:", error);
         setFilteredFlowers([]); // Clear results on error
       }
-    } else {
-      setFilteredFlowers([]); // Clear search results if input is empty
+    }
+  };
+
+  const handleFilterByCategory = async (categoryId) => {
+    try {
+      // Fetch the category details
+      const categoryResponse = await api.get(`/Categories/${categoryId}`);
+      console.log("Category details:", categoryResponse.data);
+  
+      // Fetch all flowers
+      const allFlowersResponse = await api.get('/Flowers');
+      
+      // Filter flowers by category on the client side
+      const filteredFlowers = allFlowersResponse.data.filter(
+        flower => flower.categoryId === categoryId
+      );
+  
+      console.log("Filtered Flowers:", filteredFlowers);
+  
+      // Update the filtered flowers state
+      setFilteredFlowers(filteredFlowers);
+  
+      // Navigate to the products page
+      navigate('/products');
+    } catch (error) {
+      console.error("Error fetching and filtering flowers:", error);
+      setFilteredFlowers([]);
     }
   };
 
@@ -78,16 +122,19 @@ function Header({ setFilteredFlowers }) { // Add prop to receive setFilteredFlow
             >
               <ul className="py-2 text-sm text-gray-700">
                 <li>
-                  <Link to="/dashboard" className="block px-4 py-2 hover:bg-gray-100">Product1</Link>
+                  <Link to="#" onClick={() => handleFilterByCategory(1)} className="block px-4 py-2 hover:bg-gray-100">Hoa sinh nhật</Link>
                 </li>
                 <li>
-                  <Link to="/settings" className="block px-4 py-2 hover:bg-gray-100">Product2</Link>
+                  <Link to="#" onClick={() => handleFilterByCategory(5)} className="block px-4 py-2 hover:bg-gray-100">Hoa thiên nhiên</Link>
                 </li>
                 <li>
-                  <Link to="/earnings" className="block px-4 py-2 hover:bg-gray-100">Product3</Link>
+                  <Link to="#" onClick={() => handleFilterByCategory(4)} className="block px-4 py-2 hover:bg-gray-100">Hoa đám cưới</Link>
                 </li>
                 <li>
-                  <Link to="/logout" className="block px-4 py-2 hover:bg-gray-100">Product4</Link>
+                  <Link to="#" onClick={() => handleFilterByCategory(3)} className="block px-4 py-2 hover:bg-gray-100">Hoa văn phòng</Link>
+                </li>
+                <li>
+                  <Link to="#" onClick={() => handleFilterByCategory(2)} className="block px-4 py-2 hover:bg-gray-100">Hoa tang lễ</Link>
                 </li>
               </ul>
             </div>
@@ -104,7 +151,7 @@ function Header({ setFilteredFlowers }) { // Add prop to receive setFilteredFlow
               <input
                 type="text"
                 value={searchValue}
-                onChange={handleSearch}
+                onChange={handleSearch} // Update search on input change
                 placeholder="Search..."
                 className="px-4 py-2 border rounded-lg w-full text-black"
               />

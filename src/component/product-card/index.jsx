@@ -11,7 +11,6 @@ function ProductCard({ flower }) {
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
-    console.log("Current User:", user);
     if (user && user.userId) {
       setCurrentUser(user);
     }
