@@ -27,13 +27,15 @@ const Login = () => {
   const loginGoogle = useGoogleLogin({
     onSuccess: async (response) => {
       console.log("Google login response:", response);
-      const token = response.credential;
+      const token = response.access_token;
       try {
-        const token = response.credential;
         const result = await api.post("/Users/google-login", {
           token: token,
         });
         console.log(result.data);
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(result.data));
+        navigate("/");
       } catch (error) {
         console.error("Đăng nhập thất bại:", error.response.data);
       }
