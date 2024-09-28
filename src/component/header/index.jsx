@@ -1,81 +1,94 @@
 // src/component/header/index.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./index.scss";
 import { Link, useNavigate } from "react-router-dom";
 import Tippy from "@tippyjs/react";
 import 'tippy.js/dist/tippy.css';
-import api from "../../config/axios"; // Import axios instance
+import api from "../../config/axios";
 
 function Header({ setFilteredFlowers }) {
   const navigate = useNavigate();
   const [searchValue, setSearchValue] = useState('');
   const [cartItems, setCartItems] = useState(0);
-  const currentUser = false; // Placeholder for actual user state
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const accountMenuRef = useRef(null);
+
+  useEffect(() => {
+  console.log("Header useEffect running");
+  const token = localStorage.getItem('token');
+  const user = localStorage.getItem('user');
+  console.log("Token:", token);
+  console.log("User:", user);
+  if (token && user) {
+    setCurrentUser(JSON.parse(user));
+  }
+
+    const handleClickOutside = (event) => {
+      if (accountMenuRef.current && !accountMenuRef.current.contains(event.target)) {
+        setIsAccountMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handleSearch = async (e) => {
     const query = e.target.value.toLowerCase();
     setSearchValue(query);
     
-    // Normalize the search input to remove accents
     const normalizedQuery = query.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   
-    if (query.length === 0) {
-      // If the search box is empty, reset to show all products
-      try {
-        const response = await api.get(`/Flowers`); // Fetch all flowers again if needed
-        setFilteredFlowers(response.data); // Show all products
-      } catch (error) {
-        console.error("Error fetching all flowers:", error);
-        setFilteredFlowers([]); // Clear results on error
+    try {
+      const response = await api.get(`/Flowers`);
+      const flowers = response.data;
+      
+      if (query.length === 0) {
+        setFilteredFlowers(flowers);
+      } else {
+        const filtered = flowers.filter(flower => 
+          flower.flowerName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(normalizedQuery)
+        );
+        setFilteredFlowers(filtered);
       }
-    } else if (query.length >= 1) {
-      try {
-        console.log(`Searching for: ${query}`);
-        const response = await api.get(`/Flowers`); // Fetch all flowers to filter them locally
-        console.log("API Response:", response.data);
-  
-        if (response.data && response.data.length > 0) {
-          // Normalize the flower names and filter based on the normalized query
-          const filtered = response.data.filter(flower => 
-            flower.flowerName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(normalizedQuery)
-          );
-          
-          setFilteredFlowers(filtered); // Set the filtered flowers
-        } else {
-          setFilteredFlowers([]); // Clear if no results
-        }
-      } catch (error) {
-        console.error("Search error:", error);
-        setFilteredFlowers([]); // Clear results on error
-      }
+    } catch (error) {
+      console.error("Search error:", error);
+      setFilteredFlowers([]);
     }
   };
 
   const handleFilterByCategory = async (categoryId) => {
     try {
-      // Fetch the category details
-      const categoryResponse = await api.get(`/Categories/${categoryId}`);
-      console.log("Category details:", categoryResponse.data);
-  
-      // Fetch all flowers
-      const allFlowersResponse = await api.get('/Flowers');
+      const [categoryResponse, allFlowersResponse] = await Promise.all([
+        api.get(`/Categories/${categoryId}`),
+        api.get('/Flowers')
+      ]);
       
-      // Filter flowers by category on the client side
       const filteredFlowers = allFlowersResponse.data.filter(
         flower => flower.categoryId === categoryId
       );
   
-      console.log("Filtered Flowers:", filteredFlowers);
-  
-      // Update the filtered flowers state
       setFilteredFlowers(filteredFlowers);
-  
-      // Navigate to the products page
       navigate('/products');
     } catch (error) {
       console.error("Error fetching and filtering flowers:", error);
       setFilteredFlowers([]);
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setCurrentUser(null);
+    setIsAccountMenuOpen(false);
+    navigate('/login');
+  };
+
+  const toggleAccountMenu = () => {
+    setIsAccountMenuOpen(!isAccountMenuOpen);
   };
 
   return (
@@ -115,7 +128,6 @@ function Header({ setFilteredFlowers }) {
                 </svg>
               </i>
             </Link>
-            {/* Dropdown Menu */}
             <div
               id="dropdownHover"
               className="absolute left-0 hidden group-hover:block bg-white divide-y divide-gray-100 rounded-lg shadow w-44"
@@ -151,75 +163,87 @@ function Header({ setFilteredFlowers }) {
               <input
                 type="text"
                 value={searchValue}
-                onChange={handleSearch} // Update search on input change
+                onChange={handleSearch}
                 placeholder="Search..."
                 className="px-4 py-2 border rounded-lg w-full text-black"
+                autoFocus
               />
             </div>
           }
           interactive={true}
           placement="bottom"
           trigger="click"
+          onShow={(instance) => {
+            setTimeout(() => {
+              instance.popper.querySelector('input').focus();
+            }, 0);
+          }}
         >
-          <a href="#">
-            <i>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="size-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
-                />
-              </svg>
-            </i>
-          </a>
+          <button className="flex items-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="size-6"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+              />
+            </svg>
+          </button>
         </Tippy>
 
-        {currentUser ? (
-          <Tippy content="Hello, Username" placement="bottom">
-            <Link to={"/account"}>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="size-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-                />
-              </svg>
-            </Link>
-          </Tippy>
-        ) : (
-          <Tippy content="Tài khoản" placement="bottom">
-            <Link to={"/login"}>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="size-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-                />
-              </svg>
-            </Link>
-          </Tippy>
-        )}
+        <div className="relative" ref={accountMenuRef}>
+          <button className="flex items-center" onClick={toggleAccountMenu}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="size-6"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+              />
+            </svg>
+          </button>
+          {isAccountMenuOpen && (
+            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
+              {currentUser ? (
+                <>
+                  <Link
+                    to="/edit-profile"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Chỉnh sửa hồ sơ
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Đăng xuất
+                    
+                  </button>
+                </>
+              ) : (
+                <Link
+                  to="/login"
+                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >
+                  Đăng nhập
+                </Link>
+              )}
+            </div>
+          )}
+        </div>
 
         <Tippy content="Giỏ hàng" placement="bottom">
           <Link to={"/cart"} className="relative flex items-center justify-center header-cart-link">

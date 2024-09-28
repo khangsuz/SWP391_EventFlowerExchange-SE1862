@@ -8,6 +8,7 @@ function ProductCard({ flower }) {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(false);
+  if (!flower) return null;
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));

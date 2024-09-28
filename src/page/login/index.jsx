@@ -1,17 +1,31 @@
 import { Button, Form, Input } from "antd";
-import React from 'react';
+import React, { useEffect } from 'react';
 import "../../index.css";
 import Header from "../../component/header";
 import api from "../../config/axios";
-import { useNavigate, Link } from "react-router-dom";
-import { useGoogleLogin } from '@react-oauth/google';
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { FaGoogle } from "react-icons/fa";
 import Footer from "../../component/footer";
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const token = params.get('token');
+    const error = params.get('error');
+
+    if (token) {
+      localStorage.setItem("token", token);
+      navigate("/");
+    } else if (error) {
+      console.error("Đăng nhập Google thất bại:", error);
+      alert("Đăng nhập Google thất bại. Vui lòng thử lại.");
+    }
+  }, [location, navigate]);
+
   const handleLogin = async (values) => {
-    console.log(values);
     try {
       const response = await api.post("Users/login", values);
       const { token } = response.data;
@@ -22,24 +36,14 @@ const Login = () => {
       alert("Sai tên đăng nhập hoặc mật khẩu");
     }
   };
-
-
-  const loginGoogle = useGoogleLogin({
-    onSuccess: async (response) => {
-      console.log("Google login response:", response);
-      const token = response.credential;
-      try {
-        const token = response.credential;
-        const result = await api.post("/Users/google-login", {
-          token: token,
-        });
-        console.log(result.data);
-      } catch (error) {
-        console.error("Đăng nhập thất bại:", error.response.data);
-      }
-    },
-  });
-
+  const loginGoogle = async () => {
+    try {
+      window.open('https://localhost:7288/api/LoginGoogle/login-google', '_self');
+    } catch (error) {
+      console.error("Error initiating Google login:", error);
+    }
+  };
+  
   return (
     <>
       <Header />
@@ -61,7 +65,8 @@ const Login = () => {
               <div className="flex justify-center space-x-4 mb-6">
                 <button 
                   className="p-2 rounded-full bg-red-500 text-white hover:bg-red-600 transition duration-300 ease-in-out transform hover:scale-110"
-                  onClick={() => loginGoogle()} 
+                  onClick={loginGoogle}
+                  type="button"
                 >
                   <FaGoogle className="text-xl" />
                 </button>

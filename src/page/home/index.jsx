@@ -21,6 +21,19 @@ const Home = () => {
   };
 
   useEffect(() => {
+    const fetchFlower = async () => {
+      try {
+        const response = await api.get("Flowers");
+        setFlowers(response.data);
+        setFilteredFlowers(response.data);
+      } catch (err) {
+        console.log(err);
+        // Set empty arrays if the API call fails
+        setFlowers([]);
+        setFilteredFlowers([]);
+      }
+    };
+  
     fetchFlower();
   }, []);
 
