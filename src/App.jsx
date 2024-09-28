@@ -36,6 +36,10 @@ const App = () => {
       element: <Account />,
     },
     {
+      path: "product/:id",
+      element: <ProductDetail />,
+    },
+    {
       path: "admin",
       element: <PrivateRoute />,
       children: [
