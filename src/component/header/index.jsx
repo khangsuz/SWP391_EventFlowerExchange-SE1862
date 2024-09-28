@@ -1,16 +1,30 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./index.scss";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import Tippy from "@tippyjs/react";
 import 'tippy.js/dist/tippy.css';
-function Header(items) {
 
-  const navigate = useNavigate();
+function Header(items) {
+  const { name } = useParams();
   const [searchValue, setSearchValue] = useState('');
   const [cartItems, setCartItems] = useState(0);
   const [filteredItems, setFilteredItems] = useState(items);
+  const [currentUser, setCurrentUser] = useState(null);
 
-  const currentUser = false
+  // const Login = () => {
+  //   const navigate = useNavigate();
+  //   const handleLogin = async (values) => {
+  //     console.log(values);
+  //     try {
+  //       const response = await api.post("Users/login", values);
+  //       const { token } = response.data;
+  //       localStorage.setItem("token", token);
+  //       localStorage.setItem("user", JSON.stringify(response.data));
+  //       navigate("/");
+  //     } catch (error) {
+  //       alert("Sai tên đăng nhập hoặc mật khẩu");
+  //     }
+  //   };
 
   const handleSearch = (e) => {
     const query = e.target.value.toLowerCase();
@@ -20,8 +34,6 @@ function Header(items) {
     );
     setFilteredItems(filtered);
   };
-
-
 
   return (
     <div className="header">
@@ -105,7 +117,7 @@ function Header(items) {
               value={searchValue}
               onChange={handleSearch}
               placeholder="Search..."
-              className="px-4 py-2  border rounded-lg w-full text-black"
+              className="px-4 py-2 border rounded-lg w-full text-black"
             />
           </div>
         }
@@ -115,63 +127,62 @@ function Header(items) {
         >
           <a href="#">
             <i>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="size-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
-              />
-            </svg>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="size-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+                />
+              </svg>
             </i>
           </a>
         </Tippy>
 
         {currentUser ? (
-          // <Tippy content={`Hi, ${userName}`} placement="bottom">
-          <Tippy content="Hello, Username" placement="bottom">
-          <Link to={"/account"}>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="size-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-              />
-            </svg>
-          </Link>
-        </Tippy>
+          <Tippy content={`Hi, ${currentUser.name}`} placement="bottom">
+            <Link to={"/account"}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="size-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                />
+              </svg>
+            </Link>
+          </Tippy>
         ) : (
-        <Tippy content="Tài khoản" placement="bottom">
-          <Link to={"/login"}>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="size-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-              />
-            </svg>
-          </Link>
-        </Tippy>
+          <Tippy content="Tài khoản" placement="bottom">
+            <Link to={"/login"}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="size-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                />
+              </svg>
+            </Link>
+          </Tippy>
         )}
 
 
