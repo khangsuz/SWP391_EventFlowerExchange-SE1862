@@ -87,8 +87,7 @@ const ProductDetail = () => {
                   <button className="px-4 text-lg border-2 py-2  text-gray-800 font-bold rounded hover:bg-gray-300 transition duration-300 ease-in-out" onClick={() => setQuantity(quantity + 1)}>+</button>
                   <button className="flex ml-2 text-lg border-2 border-0 py-2 px-6 focus:outline-none hover:bg-gray-300 rounded" 
                   onClick={handleAddToCart} 
-                  disabled={loading}>
-                  {loading ? "Đang thêm..." : "Thêm vào giỏ hàng"}
+                  >Thêm vào giỏ
                 </button>
               </div>
             </div>
