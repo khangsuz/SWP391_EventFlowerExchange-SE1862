@@ -17,7 +17,6 @@ function Header({ setFilteredFlowers }) {
     setSearchValue(query);
     
     const normalizedQuery = query.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  
     if (query.length === 0) {
       try {
         const response = await api.get(`/Flowers`);
@@ -47,6 +46,8 @@ function Header({ setFilteredFlowers }) {
       }
     }
   };
+
+  
 
   const handleFilterByCategory = async (categoryId) => {
     try {
