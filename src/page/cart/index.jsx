@@ -71,7 +71,7 @@ const Cart = () => {
             <Header />
             <div className="py-24 relative">
                 <div className="w-full max-w-7xl px-4 md:px-5 lg-6 mx-auto">
-                    <h2 className="title font-manrope font-bold text-4xl leading-10 mb-8 text-center text-black">Shopping Cart</h2>
+                    <h2 className="title font-manrope font-bold text-4xl leading-10 mb-8 text-center text-black">Giỏ hàng</h2>
                     {cartItems.map((item) => (
                         <div key={item.flowerId} className="rounded-3xl border-2 border-gray-200 p-4 lg:p-8 grid grid-cols-12 mb-8 max-lg:max-w-lg max-lg:mx-auto gap-y-4">
                             <div className="col-span-12 lg:col-span-2 img box">
@@ -125,7 +125,7 @@ const Cart = () => {
                         </div>
                     </div>
                     <div className="max-lg:max-w-lg max-lg:mx-auto">
-                        <p className="font-normal text-base leading-7 text-gray-500 text-center mb-5 mt-6">Shipping taxes, and discounts calculated at checkout</p>
+                        <p className="font-normal text-base leading-7 text-gray-500 text-center mb-5 mt-6">Phí vận chuyển đã bao gồm trong thanh toán</p>
                         <button 
                             onClick={handleCheckout}
                             disabled={isCheckingOut || cartItems.length === 0}

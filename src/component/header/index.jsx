@@ -15,19 +15,6 @@ function Header({ setFilteredFlowers }) {
   const [userData, setUserData] = useState(null);
   const accountMenuRef = useRef(null);
 
-  const fetchUserData = async () => {
-    try {
-      const response = await api.get('/Users/profile');
-      setUserData(response.data);
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchUserData();
-  }, []);
-
   useEffect(() => {
     console.log("Header useEffect running");
     const token = localStorage.getItem('token');
@@ -56,12 +43,6 @@ function Header({ setFilteredFlowers }) {
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
     setCartItems(totalItems);
   };
-
-  
-
-  useEffect(() => {
-    updateCartItemCount();
-  });
 
   const handleSearch = async (e) => {
     const query = e.target.value.toLowerCase();
@@ -103,9 +84,19 @@ function Header({ setFilteredFlowers }) {
     }
   };
 
-  const toggleAccountMenu = () => {
-    setIsAccountMenuOpen(!isAccountMenuOpen);
-  };
+  const fetchUserData = async () => {
+      try {
+        const response = await api.get('/Users/profile');
+        setUserData(response.data);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+  
+    useEffect(() => {
+      fetchUserData();
+      updateCartItemCount();
+    });
 
   return (
     <div className="header">
