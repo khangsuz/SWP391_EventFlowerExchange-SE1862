@@ -25,13 +25,6 @@ const Profile = () => {
         fetchUserData();
     }, []);
 
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        setUserData(null);
-        navigate('/login');
-      };
-
     const handleEdit = () => {
         setIsEditing(true);
         setError(null);
@@ -56,7 +49,7 @@ const Profile = () => {
             setIsEditing(false);
             setSuccess("Profile updated successfully!");
             setError(null);
-            setTimeout(() => setSuccess(null), 3000);
+            setTimeout(() => setSuccess(null), 3000); // Clear success message after 3 seconds
         } catch (error) {
             console.error("Error updating user data:", error);
             setError("Failed to update user data. Please try again.");

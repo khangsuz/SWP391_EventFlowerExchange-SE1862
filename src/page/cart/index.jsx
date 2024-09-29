@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; 
 import "../../index.css";
 import Header from "../../component/header";
 import Footer from "../../component/footer";
@@ -6,6 +7,8 @@ import api from "../../config/axios";
 
 const Cart = () => {
     const [cartItems, setCartItems] = useState([]);
+    const [isCheckingOut, setIsCheckingOut] = useState(false); 
+    const navigate = useNavigate(); 
 
     useEffect(() => {
         const storedCart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -30,6 +33,38 @@ const Cart = () => {
     const calculateSubtotal = () => {
         return cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
     };
+
+    const handleCheckout = async () => {
+        // Retrieve the token from localStorage
+        const token = localStorage.getItem('token');
+        
+        if (!token) {
+          console.error('User is not logged in');
+          alert('Please log in before checking out');
+          return;
+        }
+      
+        try {
+          const response = await api.post(
+            'Orders/checkout', 
+            {},  // Empty body or additional data if needed
+            {
+              headers: {
+                Authorization: `Bearer ${token}`  // Attach the token to the request
+              }
+            }
+          );
+      
+          console.log('Checkout successful:', response.data);
+          alert('Checkout successful!');
+        } catch (error) {
+          console.error('Checkout error:', error);
+          alert('An error occurred during checkout. Please try again.');
+        }
+      };
+      
+      
+    
 
     return (
         <>
@@ -90,8 +125,14 @@ const Cart = () => {
                         </div>
                     </div>
                     <div className="max-lg:max-w-lg max-lg:mx-auto">
-                        <p className="font-normal text-base leading-7 text-gray-500 text-center mb-5 mt-6">Phí vận chuyển đã được tính toán gồm trong phần thanh toán</p>
-                        <button className="rounded-full py-4 px-6 bg-gray-600 text-white font-semibold text-lg w-full text-center transition-all duration-500 hover:bg-gray-700">Thanh toán</button>
+                        <p className="font-normal text-base leading-7 text-gray-500 text-center mb-5 mt-6">Shipping taxes, and discounts calculated at checkout</p>
+                        <button 
+                            onClick={handleCheckout}
+                            disabled={isCheckingOut || cartItems.length === 0}
+                            className="rounded-full py-4 px-6 bg-indigo-600 text-white font-semibold text-lg w-full text-center transition-all duration-500 hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        >
+                            {isCheckingOut ? "Đang xử lý..." : "Thanh toán"}
+                        </button>
                     </div>
                 </div>
             </div>
