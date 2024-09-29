@@ -60,6 +60,8 @@ function Header({ setFilteredFlowers }) {
     }
   };
 
+  
+
   const handleFilterByCategory = async (categoryId) => {
     try {
       const [categoryResponse, allFlowersResponse] = await Promise.all([
@@ -247,7 +249,7 @@ function Header({ setFilteredFlowers }) {
 
         <Tippy content="Giỏ hàng" placement="bottom">
           <Link to={"/cart"} className="relative flex items-center justify-center header-cart-link">
-            <svg
+          <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
@@ -258,7 +260,7 @@ function Header({ setFilteredFlowers }) {
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d="M2.25 3h1.72a.75.75 0 0 1 .723.569L5.3 6m0 0 1.09 4.8m14.64-4.8h-3.514a.75.75 0 0 0-.723.569L14.7 6m5.4 0 1.182 5.2m-16.968 0h12.673a.75.75 0 0 0 .723-.569L19.1 6M6.391 11.2l-1.09-4.8m1.09 4.8-.723 3.2M8.1 16.75a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm10.5 0a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"
+                d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
               />
             </svg>
             {cartItems > 0 && (

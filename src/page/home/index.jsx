@@ -8,13 +8,13 @@ import { Link } from "react-router-dom";
 
 const Home = () => {
   const [flowers, setFlowers] = useState([]);
-  const [filteredFlowers, setFilteredFlowers] = useState([]); // State for filtered flowers
+  const [filteredFlowers, setFilteredFlowers] = useState([]);
 
   const fetchFlower = async () => {
     try {
       const response = await api.get("Flowers");
       setFlowers(response.data);
-      setFilteredFlowers(response.data); // Initialize filtered flowers
+      setFilteredFlowers(response.data);
     } catch (err) {
       console.log(err);
     }
@@ -39,7 +39,7 @@ const Home = () => {
 
   return (
     <div className="home">
-      <Header setFilteredFlowers={setFilteredFlowers} /> {/* Pass function to Header */}
+      <Header setFilteredFlowers={setFilteredFlowers} />
       <div className="landing_img">
         <img src="https://i.postimg.cc/zBvDDdsB/top-view-white-daisies.jpg" alt="" />
         <div className="landing-text mt-5">
