@@ -7,41 +7,8 @@ function ProductCard({ flower }) {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [cartItems, setCartItems] = useState(0);
 
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (user && user.userId) {
-      setCurrentUser(user);
-    }
-  }, []);
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate('/login');
-    } else {
-      try {
-        const decodedToken = decodeJwt(token);
-        const isExpired = decodedToken.exp * 1000 < Date.now();
-        if (isExpired) {
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
-          navigate('/login');
-        }
-      } catch (error) {
-        console.error("Token decoding failed:", error);
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        navigate('/login');
-      }
-    }
-  }, [navigate]);
-
-  const decodeJwt = (token) => {
-    const payload = token.split('.')[1];
-    const decodedPayload = JSON.parse(atob(payload));
-    return decodedPayload;
-  };
 
   const addToCart = (item) => {
     const storedCart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -60,43 +27,29 @@ function ProductCard({ flower }) {
     }
   };
 
-  const handleAddToCart = async () => {
+  const handleAddToCart = (e) => {
     e.stopPropagation();
-    setLoading(true);
-    const token = localStorage.getItem("token");
-    console.log("Token:", token);
-    if (!token) {
-      alert("Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng!");
-      navigate('/login');
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const response = await api.post("Orders/addtocart", null, {
-        params: {
-          flowerId: flower.flowerId,
-          quantity: 1,
-        },
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      console.log(response);
-      addToCart(flower);
-      alert("Thêm vào giỏ hàng thành công!");
-    } catch (err) {
-      console.log(err);
-      const errorMessage = err.response?.data?.message || "Thêm vào giỏ hàng thất bại!";
-      alert(errorMessage);
-    } finally {
-      setLoading(false);
-    }
+    addToCart(flower);
+    alert("Sản phẩm đã được thêm vào giỏ hàng!");
   };
 
   const handleViewDetails = () => {
     navigate(`/product/${flower.flowerId}`);
   };
+
+  const updateCartItemCount = () => {
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    setCartItems(totalItems);
+  };
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user && user.userId) {
+      setCurrentUser(user);
+    }
+    updateCartItemCount();
+  }, []);
 
   if (!flower) return null;
 
@@ -109,9 +62,9 @@ function ProductCard({ flower }) {
       <p className="name">{flower.flowerName}</p>
       <p className="price">{flower.price.toLocaleString()}₫</p>
       <center>
-        {/* <button onClick={handleAddToCart} disabled={loading}>
-          {loading ? "Đang thêm..." : "Thêm vào giỏ hàng"}
-        </button> */}
+        <button onClick={handleAddToCart} disabled={loading}>
+        Thêm vào giỏ hàng
+        </button>
       </center>
     </div>
   );
