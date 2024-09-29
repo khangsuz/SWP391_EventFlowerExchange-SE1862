@@ -129,7 +129,7 @@ const Cart = () => {
                         <button 
                             onClick={handleCheckout}
                             disabled={isCheckingOut || cartItems.length === 0}
-                            className="rounded-full py-4 px-6 bg-indigo-600 text-white font-semibold text-lg w-full text-center transition-all duration-500 hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                            className="rounded-full py-4 px-6 bg-gray-600 text-white font-semibold text-lg w-full text-center transition-all duration-500 hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
                         >
                             {isCheckingOut ? "Đang xử lý..." : "Thanh toán"}
                         </button>

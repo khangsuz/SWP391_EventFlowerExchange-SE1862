@@ -8,7 +8,7 @@ import Cart from "./page/cart";
 import Products from "./page/products";
 import ProductDetail from "./page/productDetail";
 import PrivateRoute from "./component/private-route";
-import Account from "./page/user/editProfile";
+import About from "./page/about";
 import Profile from "./page/user/editProfile";
 
 const App = () => {
@@ -32,6 +32,10 @@ const App = () => {
     {
       path: "cart",
       element: <Cart />
+    },
+    {
+      path: "about",
+      element: <About />
     },
     {
       path: "product/:id",
