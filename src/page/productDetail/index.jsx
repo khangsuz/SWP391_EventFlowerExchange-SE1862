@@ -68,7 +68,7 @@ const ProductDetail = () => {
         },
       });
       console.log(response);
-      addToCart(flower); // Add to local storage cart
+      addToCart(flower);
       alert("Thêm vào giỏ hàng thành công!");
     } catch (err) {
       console.log(err);

@@ -6,51 +6,41 @@ import Tippy from "@tippyjs/react";
 import 'tippy.js/dist/tippy.css';
 import api from "../../config/axios";
 
-
 function Header({ setFilteredFlowers }) {
   const navigate = useNavigate();
   const [searchValue, setSearchValue] = useState('');
   const [cartItems, setCartItems] = useState(0);
-  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
-  const accountMenuRef = useRef(null);
+  const [userData, setUserData] = useState(null);
 
-  useEffect(() => {
-  console.log("Header useEffect running");
-  const token = localStorage.getItem('token');
-  const user = localStorage.getItem('user');
-  console.log("Token:", token);
-  console.log("User:", user);
-  if (token && user) {
-    setCurrentUser(JSON.parse(user));
-  }
+  const fetchUserData = async () => {
+    try {
+      const response = await api.get('/Users/profile');
+      setUserData(response.data);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
 
-    const handleClickOutside = (event) => {
-      if (accountMenuRef.current && !accountMenuRef.current.contains(event.target)) {
-        setIsAccountMenuOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+  const updateCartItemCount = () => {
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    setCartItems(totalItems);
+  };
 
   const handleSearch = async (e) => {
     const query = e.target.value.toLowerCase();
     setSearchValue(query);
-    
     const normalizedQuery = query.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  
+
     try {
       const response = await api.get(`/Flowers`);
       const flowers = response.data;
-      
+
       if (query.length === 0) {
         setFilteredFlowers(flowers);
       } else {
-        const filtered = flowers.filter(flower => 
+        const filtered = flowers.filter(flower =>
           flower.flowerName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(normalizedQuery)
         );
         setFilteredFlowers(filtered);
@@ -61,19 +51,15 @@ function Header({ setFilteredFlowers }) {
     }
   };
 
-  
-
   const handleFilterByCategory = async (categoryId) => {
     try {
       const [categoryResponse, allFlowersResponse] = await Promise.all([
         api.get(`/Categories/${categoryId}`),
         api.get('/Flowers')
       ]);
-      
       const filteredFlowers = allFlowersResponse.data.filter(
         flower => flower.categoryId === categoryId
       );
-  
       setFilteredFlowers(filteredFlowers);
       navigate('/products');
     } catch (error) {
@@ -82,17 +68,24 @@ function Header({ setFilteredFlowers }) {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setCurrentUser(null);
-    setIsAccountMenuOpen(false);
-    navigate('/login');
-  };
+  useEffect(() => {
+    console.log("Header useEffect running");
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    
+    console.log("Token:", token);
+    console.log("User:", user);
 
-  const toggleAccountMenu = () => {
-    setIsAccountMenuOpen(!isAccountMenuOpen);
-  };
+    if (token && user) {
+      setCurrentUser(JSON.parse(user));
+    }
+
+    fetchUserData();
+    updateCartItemCount();
+
+    return () => {
+    };
+  }, []);
 
   return (
     <div className="header">
@@ -169,13 +162,13 @@ function Header({ setFilteredFlowers }) {
                 onChange={handleSearch}
                 placeholder="Search..."
                 className="px-4 py-2 border rounded-lg w-full text-black"
-                autoFocus
+                
               />
             </div>
           }
           interactive={true}
           placement="bottom"
-          trigger="click"
+          trigger="mouseenter"
           onShow={(instance) => {
             setTimeout(() => {
               instance.popper.querySelector('input').focus();
@@ -199,63 +192,49 @@ function Header({ setFilteredFlowers }) {
             </svg>
           </button>
         </Tippy>
-
-        <div className="relative" ref={accountMenuRef}>
-          <button className="flex items-center" onClick={toggleAccountMenu}>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="size-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-              />
-            </svg>
-          </button>
-          {isAccountMenuOpen && (
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
-              {currentUser ? (
-                <>
-                  <Link
-                      to="/editProfile"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        console.log("Link clicked");
-                        navigate('/editProfile');
-                      }}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      Chỉnh sửa hồ sơ
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    Đăng xuất
-                    
-                  </button>
-                </>
-              ) : (
-                <Link
-                  to="/login"
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  Đăng nhập
-                </Link>
-              )}
-            </div>
-          )}
-        </div>
+        {currentUser ? (
+          <Tippy content={`Hi, ${userData ? userData.name : 'User'}`} placement="bottom">
+            <Link to={"/profile"}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="size-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                />
+              </svg>
+            </Link>
+          </Tippy>
+        ) : (
+          <Tippy content="Tài khoản" placement="bottom">
+            <Link to={"/login"}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="size-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                />
+              </svg>
+            </Link>
+          </Tippy>
+        )}
 
         <Tippy content="Giỏ hàng" placement="bottom">
           <Link to={"/cart"} className="relative flex items-center justify-center header-cart-link">
-          <svg
+            <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
@@ -270,7 +249,7 @@ function Header({ setFilteredFlowers }) {
               />
             </svg>
             {cartItems > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-sm rounded-full px-1.5 py-0.5">
+              <span className="absolute -top-2 -right-3 bg-gray-500 text-white text-sm rounded-full px-1.5 py">
                 {cartItems}
               </span>
             )}

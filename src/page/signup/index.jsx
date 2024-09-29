@@ -9,25 +9,20 @@ import Footer from "../../component/footer";
 const SignUp = () => {
   const navigate = useNavigate();
 
-  // Handle sign-up submission
   const handleSignUp = async (values) => {
     console.log(values);
 
     try {
-      // Make the API call to register a new user
       const response = await api.post("Users/register", values);
       const { token } = response.data;
 
-      // Save the token and user data to localStorage
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(response.data));
 
-      // Redirect the user to the home page
       navigate("/");
     } catch (err) {
       console.log(err);
 
-      // Error handling with safe checks
       if (err.response && err.response.data) {
         alert(err.response.data);
       } else {

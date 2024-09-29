@@ -3,47 +3,44 @@ import React, { useEffect } from 'react';
 import "../../index.css";
 import Header from "../../component/header";
 import api from "../../config/axios";
-import { useNavigate, Link, useLocation } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { FaGoogle } from "react-icons/fa";
+import { useGoogleLogin } from "@react-oauth/google";
 import Footer from "../../component/footer";
 
 const Login = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const token = params.get('token');
-    const error = params.get('error');
-
-    if (token) {
-      localStorage.setItem("token", token);
-      navigate("/");
-    } else if (error) {
-      console.error("Đăng nhập Google thất bại:", error);
-      alert("Đăng nhập Google thất bại. Vui lòng thử lại.");
-    }
-  }, [location, navigate]);
-
   const handleLogin = async (values) => {
+    console.log(values);
     try {
       const response = await api.post("Users/login", values);
       const { token } = response.data;
       localStorage.setItem("token", token);
-      // localStorage.setItem("userId", userId.toString()); // Store userId separately
       localStorage.setItem("user", JSON.stringify(response.data));
       navigate("/");
     } catch (error) {
       alert("Sai tên đăng nhập hoặc mật khẩu");
     }
   };
-  const loginGoogle = async () => {
-    try {
-      window.open('https://localhost:7288/api/LoginGoogle/login-google', '_self');
-    } catch (error) {
-      console.error("Error initiating Google login:", error);
-    }
-  };
+
+  const loginGoogle = useGoogleLogin({
+    onSuccess: async (response) => {
+      console.log("Google login response:", response);
+      const token = response.access_token;
+      try {
+        const result = await api.post("/Users/google-login", {
+          token: token,
+        });
+        console.log(result.data);
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(result.data));
+        navigate("/");
+      } catch (error) {
+        console.error("Đăng nhập thất bại:", error.response.data);
+      }
+    },
+  });
+
   
   return (
     <>

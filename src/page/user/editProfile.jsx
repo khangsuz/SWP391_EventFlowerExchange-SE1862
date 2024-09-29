@@ -2,8 +2,11 @@ import { useEffect, useState } from "react";
 import Header from "../../component/header";
 import "../../index.css";
 import api from "../../config/axios";
+import Footer from "../../component/footer";
+import { Link } from "react-router-dom";
 
-const Account = () => {
+
+const Profile = () => {
     const [userData, setUserData] = useState(null);
     const [error, setError] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
@@ -64,7 +67,7 @@ const Account = () => {
     return (
         <>
             <Header />
-            <div>
+            {/* <div>
                 <h1 className="font-meri text-center text-3xl mt-10 mb-5">
                     Thông tin tài khoản
                 </h1>
@@ -188,9 +191,46 @@ const Account = () => {
                 ) : (
                     <button onClick={handleEdit} className="bg-green-500 text-white px-4 py-2 rounded">Chỉnh sửa hồ sơ</button>
                 )}
+            </div> */}
+            <div className="bg-slate-100 p-20">
+                <div className="flex max-w-6xl mx-auto">
+                    <div className="w-1/4 bg-white shadow-md rounded-lg p-5">
+                        <div className="text-center mb-5">
+                            <h2 className="text-xl font-semibold mt-2">{userData.name}</h2>
+                            <p className="text-gray-600">{userData.email}</p>
+                        </div>
+                        <nav class="space-y-2">
+                            <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded">Thông tin</Link>
+                            <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded">Danh sách đơn hàng</Link>
+                            <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded">Địa chỉ</Link>
+                            <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded">Sản phẩm yêu thích</Link>
+                            <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded">Đăng xuất</Link>
+                        </nav>
+                    </div>
+                    <div className="flex-1 bg-white shadow-md rounded-lg p-5 ml-5">
+                        <h1 className="text-center text-2xl font-bold mb-5">Thông tin tài khoản</h1>
+                        <div className="flex mb-3 gap-4">
+                            <h2 className="text-2xl">Họ tên:</h2>
+                            <p className="text-lg">{userData.name}</p>
+                        </div>
+                        <div className="flex mb-3 gap-4">
+                            <h2 className="text-2xl">Email:</h2>
+                            <p className="text-lg">{userData.email}</p>
+                        </div>
+                        <div className="flex mb-3 gap-4">
+                            <h2 className="text-2xl">Số điện thoại:</h2>
+                            <p className="text-lg">{userData.phone}</p>
+                        </div>
+                        <div className="flex mb-3 gap-4">
+                            <h2 className="text-2xl">Địa chỉ:</h2>
+                            <p className="text-lg">{userData.address}</p>
+                        </div>
+                    </div>
+                </div>
             </div>
+            <Footer />
         </>
     );
 };
 
-export default Account;
+export default Profile;
