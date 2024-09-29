@@ -10,33 +10,17 @@ function Header({ setFilteredFlowers }) {
   const navigate = useNavigate();
   const [searchValue, setSearchValue] = useState('');
   const [cartItems, setCartItems] = useState(0);
-  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [userData, setUserData] = useState(null);
-  const accountMenuRef = useRef(null);
 
-  useEffect(() => {
-    console.log("Header useEffect running");
-    const token = localStorage.getItem('token');
-    const user = localStorage.getItem('user');
-    console.log("Token:", token);
-    console.log("User:", user);
-    if (token && user) {
-      setCurrentUser(JSON.parse(user));
+  const fetchUserData = async () => {
+    try {
+      const response = await api.get('/Users/profile');
+      setUserData(response.data);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
     }
-
-    const handleClickOutside = (event) => {
-      if (accountMenuRef.current && !accountMenuRef.current.contains(event.target)) {
-        setIsAccountMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    window.addEventListener('cartUpdated', updateCartItemCount);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      window.addEventListener('cartUpdated', updateCartItemCount);
-    };
-  }, []);
+  };
 
   const updateCartItemCount = () => {
     const cart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -84,19 +68,24 @@ function Header({ setFilteredFlowers }) {
     }
   };
 
-  const fetchUserData = async () => {
-      try {
-        const response = await api.get('/Users/profile');
-        setUserData(response.data);
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      }
+  useEffect(() => {
+    console.log("Header useEffect running");
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    
+    console.log("Token:", token);
+    console.log("User:", user);
+
+    if (token && user) {
+      setCurrentUser(JSON.parse(user));
+    }
+
+    fetchUserData();
+    updateCartItemCount();
+
+    return () => {
     };
-  
-    useEffect(() => {
-      fetchUserData();
-      updateCartItemCount();
-    });
+  }, []);
 
   return (
     <div className="header">
@@ -173,13 +162,13 @@ function Header({ setFilteredFlowers }) {
                 onChange={handleSearch}
                 placeholder="Search..."
                 className="px-4 py-2 border rounded-lg w-full text-black"
-                autoFocus
+                
               />
             </div>
           }
           interactive={true}
           placement="bottom"
-          trigger="click"
+          trigger="mouseenter"
           onShow={(instance) => {
             setTimeout(() => {
               instance.popper.querySelector('input').focus();

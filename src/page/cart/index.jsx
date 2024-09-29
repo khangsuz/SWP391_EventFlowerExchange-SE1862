@@ -8,7 +8,6 @@ import api from "../../config/axios";
 const Cart = () => {
     const [cartItems, setCartItems] = useState([]);
     const [isCheckingOut, setIsCheckingOut] = useState(false); 
-    const navigate = useNavigate(); 
 
     useEffect(() => {
         const storedCart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -79,7 +78,7 @@ const Cart = () => {
                             </div>
                             <div className="col-span-12 lg:col-span-10 detail w-full lg:pl-3">
                                 <div className="flex items-center justify-between w-full mb-4">
-                                    <h5 className="font-manrope font-bold text-2xl leading-9 text-gray-900">{item.flowerName}</h5>
+                                    <h5 className="font-medium text-3xl leading-9 text-gray-900">{item.flowerName}</h5>
                                     <button onClick={() => removeFromCart(item.flowerId)} className="rounded-full group flex items-center justify-center focus-within:outline-red-500 ">
                                         <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <circle className="fill-red-50 transition-all duration-500 group-hover:fill-red-400" cx="17" cy="17" r="17" fill="" />

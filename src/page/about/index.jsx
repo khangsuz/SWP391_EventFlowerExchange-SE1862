@@ -9,7 +9,7 @@ const About = () => {
     <div className="bg-white text-gray-800 p-20">
       {/* Header */}
       <header className="text-center mb-12 ">
-        <h1 className="text-3xl font-bold ">Chào mừng bạn đến với Bloom</h1>
+        <h1 className="text-3xl font-bold">Chào mừng bạn đến với Bloom</h1>
         <p className="text-base mt-4">
           Tại Bloom, chúng tôi tin rằng vẻ đẹp của hoa không chỉ dừng lại ở một sự kiện. Chúng tôi là điểm đến
           độc đáo cho những người yêu hoa, mang đến cơ hội sở hữu những bông hoa tuyệt đẹp với giá cả phải chăng sau các sự kiện lớn.
