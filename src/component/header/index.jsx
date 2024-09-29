@@ -13,79 +13,78 @@ function Header({ setFilteredFlowers }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [userData, setUserData] = useState(null);
 
-  const fetchUserData = async () => {
-    try {
-      const response = await api.get('/Users/profile');
-      setUserData(response.data);
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-    }
-  };
-
-  const updateCartItemCount = () => {
-    const cart = JSON.parse(localStorage.getItem('cart')) || [];
-    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-    setCartItems(totalItems);
-  };
-
-  const handleSearch = async (e) => {
-    const query = e.target.value.toLowerCase();
-    setSearchValue(query);
-    const normalizedQuery = query.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-
-    try {
-      const response = await api.get(`/Flowers`);
-      const flowers = response.data;
-
-      if (query.length === 0) {
-        setFilteredFlowers(flowers);
-      } else {
-        const filtered = flowers.filter(flower =>
-          flower.flowerName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(normalizedQuery)
-        );
-        setFilteredFlowers(filtered);
-      }
-    } catch (error) {
-      console.error("Search error:", error);
-      setFilteredFlowers([]);
-    }
-  };
-
-  const handleFilterByCategory = async (categoryId) => {
-    try {
-      const [categoryResponse, allFlowersResponse] = await Promise.all([
-        api.get(`/Categories/${categoryId}`),
-        api.get('/Flowers')
-      ]);
-      const filteredFlowers = allFlowersResponse.data.filter(
-        flower => flower.categoryId === categoryId
-      );
-      setFilteredFlowers(filteredFlowers);
-      navigate('/products');
-    } catch (error) {
-      console.error("Error fetching and filtering flowers:", error);
-      setFilteredFlowers([]);
-    }
-  };
-
   useEffect(() => {
     console.log("Header useEffect running");
     const token = localStorage.getItem('token');
     const user = localStorage.getItem('user');
-    
     console.log("Token:", token);
     console.log("User:", user);
-
     if (token && user) {
       setCurrentUser(JSON.parse(user));
+      fetchUserData();
     }
-
-    fetchUserData();
-    updateCartItemCount();
-
-    return () => {
+      return () => {
+      };
+    }, []);
+  
+    const updateCartItemCount = () => {
+      const cart = JSON.parse(localStorage.getItem('cart')) || [];
+      const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+      setCartItems(totalItems);
     };
-  }, []);
+  
+    useEffect(() => {
+      updateCartItemCount();
+    });
+
+    const fetchUserData = async () => {
+      try {
+        const response = await api.get(`Users/profile`);
+        setUserData(response.data);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    const handleSearch = async (e) => {
+      const query = e.target.value.toLowerCase();
+      setSearchValue(query);
+      const normalizedQuery = query.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    
+      try {
+        const response = await api.get(`/Flowers`);
+        const flowers = response.data;
+        
+        if (query.length === 0) {
+          setFilteredFlowers(flowers);
+        } else {
+          const filtered = flowers.filter(flower => 
+            flower.flowerName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(normalizedQuery)
+          );
+          setFilteredFlowers(filtered);
+        }
+      } catch (error) {
+        console.error("Search error:", error);
+        setFilteredFlowers([]);
+      }
+    };
+  
+    const handleFilterByCategory = async (categoryId) => {
+      try {
+        const [categoryResponse, allFlowersResponse] = await Promise.all([
+          api.get(`/Categories/${categoryId}`),
+          api.get('/Flowers')
+        ]);
+        const filteredFlowers = allFlowersResponse.data.filter(
+          flower => flower.categoryId === categoryId
+        );
+        setFilteredFlowers(filteredFlowers);
+        navigate('/products');
+      } catch (error) {
+        console.error("Error fetching and filtering flowers:", error);
+        setFilteredFlowers([]);
+      }
+    };
 
   return (
     <div className="header">
