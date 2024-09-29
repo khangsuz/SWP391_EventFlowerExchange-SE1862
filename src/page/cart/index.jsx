@@ -34,36 +34,62 @@ const Cart = () => {
         return cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
     };
 
+
+
+
     const handleCheckout = async () => {
-        // Retrieve the token from localStorage
-        const token = localStorage.getItem('token');
-        
-        if (!token) {
-          console.error('User is not logged in');
-          alert('Please log in before checking out');
-          return;
-        }
-      
-        try {
-          const response = await api.post(
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+        alert('Please log in before checking out');
+        navigate('/login');
+        return;
+    }
+
+    const subtotal = calculateSubtotal();
+    console.log('Subtotal:', subtotal);
+
+    if (subtotal > 99999999999999.99) {
+        alert('Tổng giá trị đơn hàng vượt quá giới hạn cho phép. Vui lòng giảm số lượng sản phẩm.');
+        return;
+    }
+  
+    setIsCheckingOut(true);
+    try {
+        const response = await api.post(
             'Orders/checkout', 
-            {},  // Empty body or additional data if needed
+            { totalAmount: subtotal.toFixed(2) },
             {
-              headers: {
-                Authorization: `Bearer ${token}`  // Attach the token to the request
-              }
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
             }
-          );
-      
-          console.log('Checkout successful:', response.data);
-          alert('Checkout successful!');
-        } catch (error) {
-          console.error('Checkout error:', error);
-          alert('An error occurred during checkout. Please try again.');
+        );
+  
+        console.log('Checkout successful:', response.data);
+        alert(`Checkout successful! Order ID: ${response.data.orderId}`);
+        localStorage.removeItem('cart');
+        setCartItems([]);
+        navigate('/order-confirmation', { state: { orderId: response.data.orderId } });
+    } catch (error) {
+        console.error('Checkout error:', error);
+        if (error.response) {
+            console.error('Error data:', error.response.data);
+            console.error('Error status:', error.response.status);
+            alert(`Checkout failed: ${error.response.data}`);
+        } else if (error.request) {
+            console.error('Error request:', error.request);
+            alert('No response received from server. Please check your internet connection and try again.');
+        } else {
+            console.error('Error message:', error.message);
+            alert(`An unexpected error occurred during checkout: ${error.message}`);
         }
-      };
-      
-      
+    } finally {
+        setIsCheckingOut(false);
+    }
+};
+
     
 
     return (
