@@ -18,29 +18,28 @@ function ProductCard({ flower }) {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
-      navigate('/login'); // Redirect to login if no token
+      navigate('/login');
     } else {
       try {
         const decodedToken = decodeJwt(token);
-        const isExpired = decodedToken.exp * 1000 < Date.now(); // Check expiration
-
+        const isExpired = decodedToken.exp * 1000 < Date.now();
         if (isExpired) {
           localStorage.removeItem("token");
           localStorage.removeItem("user");
-          navigate('/login'); // Redirect to login if token is expired
+          navigate('/login');
         }
       } catch (error) {
         console.error("Token decoding failed:", error);
         localStorage.removeItem("token");
         localStorage.removeItem("user");
-        navigate('/login'); // Redirect to login if token is invalid
+        navigate('/login');
       }
     }
   }, [navigate]);
 
   const decodeJwt = (token) => {
-    const payload = token.split('.')[1]; // Get the payload part of the JWT
-    const decodedPayload = JSON.parse(atob(payload)); // Decode the Base64 URL encoded payload
+    const payload = token.split('.')[1];
+    const decodedPayload = JSON.parse(atob(payload));
     return decodedPayload;
   };
 
@@ -61,13 +60,11 @@ function ProductCard({ flower }) {
     }
   };
 
-  const handleAddToCart = async (e) => {
+  const handleAddToCart = async () => {
     e.stopPropagation();
     setLoading(true);
-
     const token = localStorage.getItem("token");
     console.log("Token:", token);
-
     if (!token) {
       alert("Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng!");
       navigate('/login');
@@ -86,7 +83,7 @@ function ProductCard({ flower }) {
         },
       });
       console.log(response);
-      addToCart(flower); // Add to local storage cart
+      addToCart(flower);
       alert("Thêm vào giỏ hàng thành công!");
     } catch (err) {
       console.log(err);
@@ -101,12 +98,6 @@ function ProductCard({ flower }) {
     navigate(`/product/${flower.flowerId}`);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate('/login');
-  };
-
   if (!flower) return null;
 
   return (
@@ -118,9 +109,9 @@ function ProductCard({ flower }) {
       <p className="name">{flower.flowerName}</p>
       <p className="price">{flower.price.toLocaleString()}₫</p>
       <center>
-        <button onClick={handleAddToCart} disabled={loading}>
+        {/* <button onClick={handleAddToCart} disabled={loading}>
           {loading ? "Đang thêm..." : "Thêm vào giỏ hàng"}
-        </button>
+        </button> */}
       </center>
     </div>
   );

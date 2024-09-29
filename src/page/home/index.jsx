@@ -28,7 +28,6 @@ const Home = () => {
         setFilteredFlowers(response.data);
       } catch (err) {
         console.log(err);
-        // Set empty arrays if the API call fails
         setFlowers([]);
         setFilteredFlowers([]);
       }

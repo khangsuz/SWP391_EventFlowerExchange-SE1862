@@ -9,6 +9,7 @@ import Products from "./page/products";
 import ProductDetail from "./page/productDetail";
 import PrivateRoute from "./component/private-route";
 import Account from "./page/user/editProfile";
+import Profile from "./page/user/editProfile";
 
 const App = () => {
   const router = createBrowserRouter([
@@ -25,8 +26,8 @@ const App = () => {
       element: <SignUp />,
     },
     {
-      path: "editProfile",
-      element: <Account />
+      path: "profile",
+      element: <Profile />,
     },
     {
       path: "cart",
@@ -39,14 +40,6 @@ const App = () => {
     {
       path: "products",
       element: <Products />
-    },
-    {
-      path: "account",
-      element: <Account />,
-    },
-    {
-      path: "product/:id",
-      element: <ProductDetail />,
     },
     {
       path: "admin",
