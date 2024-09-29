@@ -1,30 +1,25 @@
 import axios from "axios";
+
 const baseUrl = "https://localhost:7288/api/";
 
-const config = {
+const api = axios.create({
   baseURL: baseUrl,
-};
-
-const api = axios.create(config);
-
-api.defaults.baseURL = baseUrl;
+});
 
 const handleBefore = (config) => {
-  const token = localStorage.getItem("token")?.replace(/"/g, "");
+  const token = localStorage.getItem("token");
   if (token) {
-    config.headers["Authorization"] = `Bearer ${token}`;
+    config.headers["Authorization"] = `Bearer ${token.replace(/"/g, "")}`;
   }
   return config;
 };
 
-api.interceptors.request.use(handleBefore, null);
+api.interceptors.request.use(handleBefore, (error) => Promise.reject(error));
 
 api.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   (error) => {
-    if (error.response.status === 401) {
+    if (error.response && error.response.status === 401) {
       localStorage.removeItem("token");
       window.location.href = "/login";
     }

@@ -6,6 +6,7 @@ import Tippy from "@tippyjs/react";
 import 'tippy.js/dist/tippy.css';
 import api from "../../config/axios";
 
+
 function Header({ setFilteredFlowers }) {
   const navigate = useNavigate();
   const [searchValue, setSearchValue] = useState('');
@@ -221,10 +222,15 @@ function Header({ setFilteredFlowers }) {
               {currentUser ? (
                 <>
                   <Link
-                    to="/edit-profile"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    Chỉnh sửa hồ sơ
+                      to="/editProfile"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        console.log("Link clicked");
+                        navigate('/editProfile');
+                      }}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      Chỉnh sửa hồ sơ
                   </Link>
                   <button
                     onClick={handleLogout}

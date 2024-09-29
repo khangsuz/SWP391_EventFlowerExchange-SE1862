@@ -25,6 +25,10 @@ const App = () => {
       element: <SignUp />,
     },
     {
+      path: "editProfile",
+      element: <Account />
+    },
+    {
       path: "cart",
       element: <Cart />
     },

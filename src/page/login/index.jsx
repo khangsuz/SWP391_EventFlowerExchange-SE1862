@@ -30,6 +30,7 @@ const Login = () => {
       const response = await api.post("Users/login", values);
       const { token } = response.data;
       localStorage.setItem("token", token);
+      // localStorage.setItem("userId", userId.toString()); // Store userId separately
       localStorage.setItem("user", JSON.stringify(response.data));
       navigate("/");
     } catch (error) {
