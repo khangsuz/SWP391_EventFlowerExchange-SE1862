@@ -47,7 +47,7 @@ const App = () => {
     },
     {
       path: "admin",
-      element: <PrivateRoute />,
+      element: <PrivateRoute requiredRole="Admin" />,
       children: [
         {
           path: "dashboard",
