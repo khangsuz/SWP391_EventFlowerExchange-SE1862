@@ -61,7 +61,7 @@ function ProductCard({ flower }) {
         src={flower.imageUrl || "https://i.postimg.cc/Jz0MW07g/top-view-roses-flowers-Photoroom.png"} 
         alt={flower.flowerName} 
       />
-      <p className="name">{flower.flowerName}</p>
+      <p className="name">{flower.flowerName}({flower.quantity})</p>
       <p className="price">{Number(flower.price).toLocaleString()}₫</p>
       <center>
         <button onClick={handleAddToCart}>
