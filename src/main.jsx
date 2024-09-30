@@ -8,5 +8,3 @@ createRoot(document.getElementById("root")).render(
         <App />
     </GoogleOAuthProvider>
 );
-
-// khi chạy chương trình 

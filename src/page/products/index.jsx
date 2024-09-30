@@ -8,13 +8,13 @@ import Footer from "../../component/footer";
 
 const Products = () => {
   const [flowers, setFlowers] = useState([]);
-  const [filteredFlowers, setFilteredFlowers] = useState([]); // State for filtered flowers
-
+  const [filteredFlowers, setFilteredFlowers] = useState([]);
+  
   const fetchFlower = async () => {
     try {
       const response = await api.get("Flowers");
       setFlowers(response.data);
-      setFilteredFlowers(response.data); // Initialize filtered flowers
+      setFilteredFlowers(response.data);
     } catch (err) {
       console.log(err);
     }
@@ -26,7 +26,7 @@ const Products = () => {
 
   return (
     <div className="products__main">
-      <Header setFilteredFlowers={setFilteredFlowers} /> {/* Pass the setter function */}
+      <Header setFilteredFlowers={setFilteredFlowers} />
       <div className="collection-top-bar">
         <div className="text-center collection-title mt-7">
           <h1 className="text-2xl font-bold">Tất cả sản phẩm</h1>

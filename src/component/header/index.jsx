@@ -5,11 +5,13 @@ import { Link, useNavigate } from "react-router-dom";
 import Tippy from "@tippyjs/react";
 import 'tippy.js/dist/tippy.css';
 import api from "../../config/axios";
+import { useCart } from "../../contexts/CartContext";
 
 function Header({ setFilteredFlowers }) {
   const navigate = useNavigate();
+  const { cartItems } = useCart();
+
   const [searchValue, setSearchValue] = useState('');
-  const [cartItems, setCartItems] = useState(0);
   const [currentUser, setCurrentUser] = useState(null);
   const [userData, setUserData] = useState(null);
 
@@ -27,15 +29,6 @@ function Header({ setFilteredFlowers }) {
       };
     }, []);
   
-    const updateCartItemCount = () => {
-      const cart = JSON.parse(localStorage.getItem('cart')) || [];
-      const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-      setCartItems(totalItems);
-    };
-  
-    useEffect(() => {
-      updateCartItemCount();
-    });
 
     const fetchUserData = async () => {
       try {
