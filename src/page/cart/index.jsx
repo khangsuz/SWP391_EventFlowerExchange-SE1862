@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useCart } from "../../contexts/CartContext";
 import "../../index.css";
 import Header from "../../component/header";
 import Footer from "../../component/footer";
@@ -8,6 +9,7 @@ import api from "../../config/axios";
 const Cart = () => {
     const [cartItems, setCartItems] = useState([]);
     const [isCheckingOut, setIsCheckingOut] = useState(false);
+    const { updateCartItemCount } = useCart();
 
     useEffect(() => {
         const storedCart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -27,6 +29,16 @@ const Cart = () => {
         const updatedCart = cartItems.filter(item => item.flowerId !== flowerId);
         setCartItems(updatedCart);
         localStorage.setItem('cart', JSON.stringify(updatedCart));
+
+        if (updatedCart.length === 0) {
+            updateCartItemCount();
+        }
+    };
+
+    const clearCart = () => {
+        setCartItems([]);
+        localStorage.setItem('cart', JSON.stringify([]));
+        updateCartItemCount();
     };
 
     const calculateSubtotal = () => {
@@ -43,6 +55,7 @@ const Cart = () => {
         }
 
         try {
+            setIsCheckingOut(true);
             const response = await api.post(
                 'Orders/checkout',
                 {},
@@ -55,9 +68,12 @@ const Cart = () => {
 
             console.log('Checkout successful:', response.data);
             alert('Checkout successful!');
+            clearCart();
         } catch (error) {
             console.error('Checkout error:', error);
             alert('An error occurred during checkout. Please try again.');
+        } finally {
+            setIsCheckingOut(false);
         }
     };
     return (

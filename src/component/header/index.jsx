@@ -1,4 +1,3 @@
-// src/component/header/index.jsx
 import React, { useState, useEffect, useRef } from "react";
 import "./index.scss";
 import { Link, useNavigate } from "react-router-dom";
