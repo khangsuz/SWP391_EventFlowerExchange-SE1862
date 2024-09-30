@@ -50,13 +50,6 @@ const ProductDetail = () => {
     const token = localStorage.getItem("token");
     console.log("Token:", token);
 
-    if (!token) {
-      alert("Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng!");
-      navigate('/login');
-      setLoading(false);
-      return;
-    }
-
     try {
       const response = await api.post("Orders/addtocart", null, {
         params: {
