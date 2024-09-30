@@ -1,55 +1,57 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import "./index.scss";
 import api from "../../config/axios";
 
 function ProductCard({ flower }) {
   const navigate = useNavigate();
-  const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [cartItems, setCartItems] = useState(0);
 
-
-  const addToCart = (item) => {
-    const storedCart = JSON.parse(localStorage.getItem('cart')) || [];
-    const existingItem = storedCart.find((cartItem) => cartItem.flowerId === item.flowerId);
-    
-    if (existingItem) {
-      const updatedCart = storedCart.map((cartItem) =>
-        cartItem.flowerId === item.flowerId
-          ? { ...cartItem, quantity: cartItem.quantity + 1 }
-          : cartItem
-      );
-      localStorage.setItem('cart', JSON.stringify(updatedCart));
-    } else {
-      const updatedCart = [...storedCart, { ...item, quantity: 1 }];
-      localStorage.setItem('cart', JSON.stringify(updatedCart));
-    }
-  };
-
-  const handleAddToCart = (e) => {
+  const handleAddToCart = async (e) => {
     e.stopPropagation();
-    addToCart(flower);
-    alert("Sản phẩm đã được thêm vào giỏ hàng!");
+    if (!flower || !flower.flowerId) {
+      console.error('Invalid flower object:', flower);
+      return;
+    }
+  
+    try {
+      const response = await api.post('Orders/addtocart', null, {
+        params: {
+          flowerId: flower.flowerId,
+          quantity: 1
+        },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      if (response.data && response.data.message) {
+        alert(response.data.message);
+        // Update local storage with the new item
+        const currentCart = JSON.parse(localStorage.getItem('cart')) || [];
+        const existingItemIndex = currentCart.findIndex(item => item.flowerId === flower.flowerId);
+        if (existingItemIndex !== -1) {
+          currentCart[existingItemIndex].quantity += 1;
+        } else {
+          currentCart.push({ ...flower, quantity: 1 });
+        }
+        localStorage.setItem('cart', JSON.stringify(currentCart));
+      } else {
+        alert("Sản phẩm đã được thêm vào giỏ hàng!");
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      if (error.response) {
+        console.error('Response data:', error.response.data);
+        console.error('Response status:', error.response.status);
+      }
+      alert("Có lỗi xảy ra khi thêm vào giỏ hàng: " + (error.response?.data || error.message));
+    }
   };
 
   const handleViewDetails = () => {
     navigate(`/product/${flower.flowerId}`);
   };
-
-  const updateCartItemCount = () => {
-    const cart = JSON.parse(localStorage.getItem('cart')) || [];
-    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-    setCartItems(totalItems);
-  };
-
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (user && user.userId) {
-      setCurrentUser(user);
-    }
-    updateCartItemCount();
-  }, []);
 
   if (!flower) return null;
 
@@ -60,10 +62,10 @@ function ProductCard({ flower }) {
         alt={flower.flowerName} 
       />
       <p className="name">{flower.flowerName}</p>
-      <p className="price">{flower.price.toLocaleString()}₫</p>
+      <p className="price">{Number(flower.price).toLocaleString()}₫</p>
       <center>
-        <button onClick={handleAddToCart} disabled={loading}>
-        Thêm vào giỏ hàng
+        <button onClick={handleAddToCart}>
+          Thêm vào giỏ hàng
         </button>
       </center>
     </div>
