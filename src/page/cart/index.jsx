@@ -73,8 +73,7 @@ function Cart() {
       
             console.log('Checkout successful:', response.data);
             alert('Đặt hàng thành công!');
-            localStorage.removeItem('cart');
-            setCartItems([]);
+            clearCart();
             navigate('/products', { state: { orderId: response.data.orderId } });
         } catch (error) {
             console.error('Checkout error:', error);
@@ -120,16 +119,11 @@ function Cart() {
                                                 <path d="M4.5 9.5H13.5" stroke="" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
                                             </svg>
                                         </button>
-                                        <input 
-                                            type="number" 
-                                            value={item.quantity} 
-                                            onChange={(e) => updateQuantity(item.flowerId, e.target.value)}
-                                            onBlur={(e) => {
-                                                if (e.target.value === '' || parseInt(e.target.value, 10) < 1) {
-                                                    updateQuantity(item.flowerId, 1);
-                                                }
-                                            }}
-                                            className="border border-gray-200 rounded-full w-16 aspect-square outline-none text-gray-900 font-semibold text-sm py-1.5 px-3 bg-gray-100 text-center" 
+                                        <input
+                                            type="text"
+                                            value={item.quantity}
+                                            readOnly
+                                            className="border border-gray-200 rounded-full w-10 aspect-square outline-none text-gray-900 font-semibold text-sm py-1.5 px-3 bg-gray-100 text-center"
                                         />
                                         <button
                                             onClick={() => updateQuantity(item.flowerId, item.quantity + 1)}
