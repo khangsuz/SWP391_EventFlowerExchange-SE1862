@@ -24,21 +24,23 @@ const Login = () => {
   };
 
   const loginGoogle = useGoogleLogin({
-    onSuccess: async (response) => {
-      console.log("Google login response:", response);
-      const token = response.access_token;
+    onSuccess: async (tokenResponse) => {
+      console.log("Google login response:", tokenResponse);
       try {
-        const result = await api.post("/Users/google-login", {
-          token: token,
+        const result = await api.post("LoginGoogle/google-login", {
+          accessToken: tokenResponse.access_token,
+          idToken: tokenResponse.id_token
         });
         console.log(result.data);
-        localStorage.setItem("token", token);
-        localStorage.setItem("user", JSON.stringify(result.data));
+        localStorage.setItem("token", result.data.token);
+        localStorage.setItem("user", JSON.stringify(result.data.user));
         navigate("/");
       } catch (error) {
-        console.error("Đăng nhập thất bại:", error.response.data);
+        console.error("Đăng nhập thất bại:", error.response?.data || error.message);
       }
     },
+    flow: 'auth-code',
+    scope: "email profile",
   });
 
   

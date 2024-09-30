@@ -1,7 +1,7 @@
 import { Button, Form, Input } from "antd";
 import React from 'react';
-import "../../index.css"; // Make sure this path is correct for your project
-import Header from "../../component/header"; // Ensure these components are imported correctly
+import "../../index.css"; 
+import Header from "../../component/header"; 
 import api from "../../config/axios";
 import { Link, useNavigate } from "react-router-dom";
 import Footer from "../../component/footer";

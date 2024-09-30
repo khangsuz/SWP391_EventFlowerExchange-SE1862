@@ -3,10 +3,11 @@ import Header from "../../component/header";
 import "../../index.css";
 import api from "../../config/axios";
 import Footer from "../../component/footer";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 
 const Profile = () => {
+    const navigate = useNavigate();
     const [userData, setUserData] = useState(null);
     const [error, setError] = useState(null);
     const [isEditing, setIsEditing] = useState(false);

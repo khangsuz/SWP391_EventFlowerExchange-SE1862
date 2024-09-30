@@ -14,7 +14,7 @@ const Products = () => {
     try {
       const response = await api.get("Flowers");
       setFlowers(response.data);
-      setFilteredFlowers(response.data);
+      setFilteredFlowers(response.data); 
     } catch (err) {
       console.log(err);
     }

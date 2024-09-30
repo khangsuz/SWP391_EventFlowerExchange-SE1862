@@ -6,7 +6,8 @@ import Header from "../../component/header";
 import Footer from "../../component/footer";
 import api from "../../config/axios";
 
-const Cart = () => {
+function Cart() {
+    const navigate = useNavigate();
     const [cartItems, setCartItems] = useState([]);
     const [isCheckingOut, setIsCheckingOut] = useState(false);
     const { updateCartItemCount } = useCart();
@@ -29,10 +30,7 @@ const Cart = () => {
         const updatedCart = cartItems.filter(item => item.flowerId !== flowerId);
         setCartItems(updatedCart);
         localStorage.setItem('cart', JSON.stringify(updatedCart));
-
-        if (updatedCart.length === 0) {
-            updateCartItemCount();
-        }
+        updateCartItemCount();
     };
 
     const clearCart = () => {
@@ -47,35 +45,57 @@ const Cart = () => {
 
     const handleCheckout = async () => {
         const token = localStorage.getItem('token');
-
+        
         if (!token) {
-            console.error('User is not logged in');
             alert('Please log in before checking out');
+            navigate('/login');
             return;
         }
-
+    
+        const subtotal = calculateSubtotal();
+        console.log('Subtotal:', subtotal);
+    
+        if (subtotal > 99999999999999.99) {
+            alert('Tổng giá trị đơn hàng vượt quá giới hạn cho phép. Vui lòng giảm số lượng sản phẩm.');
+            return;
+        }
+      
+        setIsCheckingOut(true);
         try {
-            setIsCheckingOut(true);
             const response = await api.post(
-                'Orders/checkout',
-                {},
+                'Orders/checkout', 
+                { totalAmount: subtotal.toFixed(2) },
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json'
                     }
                 }
             );
-
+      
             console.log('Checkout successful:', response.data);
-            alert('Checkout successful!');
+            alert(`Checkout successful!`);
+            localStorage.removeItem('cart');
             clearCart();
+            navigate('/order-confirmation', { state: { orderId: response.data.orderId } });
         } catch (error) {
             console.error('Checkout error:', error);
-            alert('An error occurred during checkout. Please try again.');
+            if (error.response) {
+                console.error('Error data:', error.response.data);
+                console.error('Error status:', error.response.status);
+                alert(`Checkout failed: ${error.response.data}`);
+            } else if (error.request) {
+                console.error('Error request:', error.request);
+                alert('No response received from server. Please check your internet connection and try again.');
+            } else {
+                console.error('Error message:', error.message);
+                alert(`An unexpected error occurred during checkout: ${error.message}`);
+            }
         } finally {
             setIsCheckingOut(false);
         }
     };
+    
     return (
         <>
             <Header />
@@ -99,8 +119,8 @@ const Cart = () => {
                                 </div>
                                 <div className="flex justify-between items-center">
                                     <div className="flex items-center gap-4">
-                                        <button
-                                            onClick={() => updateQuantity(item.flowerId, item.quantity - 1)}
+                                    <button 
+                                            onClick={() => updateQuantity(item.flowerId, item.quantity - 1)} 
                                             disabled={item.quantity <= 1}
                                             className="group rounded-[50px] border border-gray-200 shadow-sm shadow-transparent p-2.5 flex items-center justify-center bg-white transition-all duration-500 hover:shadow-gray-200 hover:bg-gray-50 hover:border-gray-300 focus-within:outline-gray-300"
                                         >
@@ -138,10 +158,10 @@ const Cart = () => {
                         <p className="font-normal text-base leading-7 text-gray-500 text-center mb-5 mt-6">Phí vận chuyển đã bao gồm trong thanh toán</p>
                         <button
                             onClick={handleCheckout}
-                            disabled={isCheckingOut || cartItems.length === 0}
+                            disabled={cartItems.length === 0 || isCheckingOut}
                             className="rounded-full py-4 px-6 bg-gray-600 text-white font-semibold text-lg w-full text-center transition-all duration-500 hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
                         >
-                            {isCheckingOut ? "Đang xử lý..." : "Thanh toán"}
+                            {isCheckingOut ? 'Đang xử lý...' : 'Thanh toán'}
                         </button>
                     </div>
                 </div>
