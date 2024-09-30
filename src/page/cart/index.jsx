@@ -18,9 +18,10 @@ function Cart() {
     }, []);
 
     const updateQuantity = (flowerId, newQuantity) => {
-        if (newQuantity < 1) return;
+        const parsedQuantity = parseInt(newQuantity, 10);
+        if (isNaN(parsedQuantity) || parsedQuantity < 1) return;
         const updatedCart = cartItems.map(item =>
-            item.flowerId === flowerId ? { ...item, quantity: newQuantity } : item
+            item.flowerId === flowerId ? { ...item, quantity: parsedQuantity } : item
         );
         setCartItems(updatedCart);
         localStorage.setItem('cart', JSON.stringify(updatedCart));
@@ -47,24 +48,21 @@ function Cart() {
         const token = localStorage.getItem('token');
         
         if (!token) {
-            alert('Please log in before checking out');
+            alert('Vui lòng đăng nhập trước khi thanh toán');
             navigate('/login');
             return;
         }
     
-        const subtotal = calculateSubtotal();
-        console.log('Subtotal:', subtotal);
-    
-        if (subtotal > 99999999999999.99) {
-            alert('Tổng giá trị đơn hàng vượt quá giới hạn cho phép. Vui lòng giảm số lượng sản phẩm.');
+        if (cartItems.length === 0) {
+            alert('Giỏ hàng của bạn đang trống');
             return;
         }
-      
+    
         setIsCheckingOut(true);
         try {
             const response = await api.post(
                 'Orders/checkout', 
-                { totalAmount: subtotal.toFixed(2) },
+                cartItems,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -74,22 +72,16 @@ function Cart() {
             );
       
             console.log('Checkout successful:', response.data);
-            alert(`Checkout successful!`);
+            alert('Đặt hàng thành công!');
             localStorage.removeItem('cart');
-            clearCart();
-            navigate('/order-confirmation', { state: { orderId: response.data.orderId } });
+            setCartItems([]);
+            navigate('/products', { state: { orderId: response.data.orderId } });
         } catch (error) {
             console.error('Checkout error:', error);
-            if (error.response) {
-                console.error('Error data:', error.response.data);
-                console.error('Error status:', error.response.status);
+            if (error.response && error.response.data) {
                 alert(`Checkout failed: ${error.response.data}`);
-            } else if (error.request) {
-                console.error('Error request:', error.request);
-                alert('No response received from server. Please check your internet connection and try again.');
             } else {
-                console.error('Error message:', error.message);
-                alert(`An unexpected error occurred during checkout: ${error.message}`);
+                alert('An unexpected error occurred during checkout. Please try again.');
             }
         } finally {
             setIsCheckingOut(false);
@@ -119,7 +111,7 @@ function Cart() {
                                 </div>
                                 <div className="flex justify-between items-center">
                                     <div className="flex items-center gap-4">
-                                    <button 
+                                        <button 
                                             onClick={() => updateQuantity(item.flowerId, item.quantity - 1)} 
                                             disabled={item.quantity <= 1}
                                             className="group rounded-[50px] border border-gray-200 shadow-sm shadow-transparent p-2.5 flex items-center justify-center bg-white transition-all duration-500 hover:shadow-gray-200 hover:bg-gray-50 hover:border-gray-300 focus-within:outline-gray-300"
@@ -128,11 +120,16 @@ function Cart() {
                                                 <path d="M4.5 9.5H13.5" stroke="" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
                                             </svg>
                                         </button>
-                                        <input
-                                            type="text"
-                                            value={item.quantity}
-                                            readOnly
-                                            className="border border-gray-200 rounded-full w-10 aspect-square outline-none text-gray-900 font-semibold text-sm py-1.5 px-3 bg-gray-100 text-center"
+                                        <input 
+                                            type="number" 
+                                            value={item.quantity} 
+                                            onChange={(e) => updateQuantity(item.flowerId, e.target.value)}
+                                            onBlur={(e) => {
+                                                if (e.target.value === '' || parseInt(e.target.value, 10) < 1) {
+                                                    updateQuantity(item.flowerId, 1);
+                                                }
+                                            }}
+                                            className="border border-gray-200 rounded-full w-16 aspect-square outline-none text-gray-900 font-semibold text-sm py-1.5 px-3 bg-gray-100 text-center" 
                                         />
                                         <button
                                             onClick={() => updateQuantity(item.flowerId, item.quantity + 1)}
