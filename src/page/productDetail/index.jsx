@@ -5,10 +5,11 @@ import "../../index.css";
 import Header from "../../component/header";
 import Footer from "../../component/footer";
 import api from "../../config/axios";
+import { useCart } from "../../contexts/CartContext";
 
 const ProductDetail = () => {
+  const { updateCartItemCount } = useCart();
   const { id } = useParams();
-  const navigate = useNavigate();
   const [flower, setFlower] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -62,6 +63,7 @@ const ProductDetail = () => {
       });
       console.log(response);
       addToCart(flower);
+      updateCartItemCount();
       alert("Thêm vào giỏ hàng thành công!");
     } catch (err) {
       console.log(err);

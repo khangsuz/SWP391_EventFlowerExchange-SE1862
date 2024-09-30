@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
+import { useCart } from "../../contexts/CartContext";
 import "../../index.css";
 import Header from "../../component/header";
 import Footer from "../../component/footer";
 import api from "../../config/axios";
 
-const Cart = () => {
+function Cart() {
     const navigate = useNavigate();
     const [cartItems, setCartItems] = useState([]);
     const [isCheckingOut, setIsCheckingOut] = useState(false);
+    const { updateCartItemCount } = useCart();
 
     useEffect(() => {
         const storedCart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -29,6 +31,13 @@ const Cart = () => {
         const updatedCart = cartItems.filter(item => item.flowerId !== flowerId);
         setCartItems(updatedCart);
         localStorage.setItem('cart', JSON.stringify(updatedCart));
+        updateCartItemCount();
+    };
+
+    const clearCart = () => {
+        setCartItems([]);
+        localStorage.setItem('cart', JSON.stringify([]));
+        updateCartItemCount();
     };
 
     const calculateSubtotal = () => {
@@ -64,8 +73,7 @@ const Cart = () => {
       
             console.log('Checkout successful:', response.data);
             alert('Đặt hàng thành công!');
-            localStorage.removeItem('cart');
-            setCartItems([]);
+            clearCart();
             navigate('/products', { state: { orderId: response.data.orderId } });
         } catch (error) {
             console.error('Checkout error:', error);
@@ -78,7 +86,7 @@ const Cart = () => {
             setIsCheckingOut(false);
         }
     };
-
+    
     return (
         <>
             <Header />
@@ -111,18 +119,13 @@ const Cart = () => {
                                                 <path d="M4.5 9.5H13.5" stroke="" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
                                             </svg>
                                         </button>
-                                        <input 
-                                            type="number" 
-                                            value={item.quantity} 
-                                            onChange={(e) => updateQuantity(item.flowerId, e.target.value)}
-                                            onBlur={(e) => {
-                                                if (e.target.value === '' || parseInt(e.target.value, 10) < 1) {
-                                                    updateQuantity(item.flowerId, 1);
-                                                }
-                                            }}
-                                            className="border border-gray-200 rounded-full w-16 aspect-square outline-none text-gray-900 font-semibold text-sm py-1.5 px-3 bg-gray-100 text-center" 
+                                        <input
+                                            type="text"
+                                            value={item.quantity}
+                                            readOnly
+                                            className="border border-gray-200 rounded-full w-10 aspect-square outline-none text-gray-900 font-semibold text-sm py-1.5 px-3 bg-gray-100 text-center"
                                         />
-                                        <button 
+                                        <button
                                             onClick={() => updateQuantity(item.flowerId, item.quantity + 1)}
                                             className="group rounded-[50px] border border-gray-200 shadow-sm shadow-transparent p-2.5 flex items-center justify-center bg-white transition-all duration-500 hover:shadow-gray-200 hover:bg-gray-50 hover:border-gray-300 focus-within:outline-gray-300"
                                         >
@@ -144,7 +147,7 @@ const Cart = () => {
                     </div>
                     <div className="max-lg:max-w-lg max-lg:mx-auto">
                         <p className="font-normal text-base leading-7 text-gray-500 text-center mb-5 mt-6">Phí vận chuyển đã bao gồm trong thanh toán</p>
-                        <button 
+                        <button
                             onClick={handleCheckout}
                             disabled={cartItems.length === 0 || isCheckingOut}
                             className="rounded-full py-4 px-6 bg-gray-600 text-white font-semibold text-lg w-full text-center transition-all duration-500 hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed"

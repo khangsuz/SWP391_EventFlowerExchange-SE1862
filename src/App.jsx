@@ -1,5 +1,6 @@
 import React from "react";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import { CartProvider } from "./contexts/CartContext";
 import Home from "./page/home";
 import Login from "./page/login";
 import SignUp from "./page/signup"
@@ -57,11 +58,11 @@ const App = () => {
     },
   ]);
 
-  return <RouterProvider router={router} />;
+  return(
+    <CartProvider>
+      <RouterProvider router={router} />
+    </CartProvider>
+  );
 };
 
 export default App;
-
-// Single Page Application
-// chỉ sử dụng 1 trang duy nhất
-// khi chuyển trang => thay đổi cái nội dung bên trong trang web

@@ -1,15 +1,16 @@
-// src/component/header/index.jsx
 import React, { useState, useEffect, useRef } from "react";
 import "./index.scss";
 import { Link, useNavigate } from "react-router-dom";
 import Tippy from "@tippyjs/react";
 import 'tippy.js/dist/tippy.css';
 import api from "../../config/axios";
+import { useCart } from "../../contexts/CartContext";
 
 function Header({ setFilteredFlowers }) {
   const navigate = useNavigate();
+  const { cartItems } = useCart();
+
   const [searchValue, setSearchValue] = useState('');
-  const [cartItems, setCartItems] = useState(0);
   const [currentUser, setCurrentUser] = useState(null);
   const [userData, setUserData] = useState(null);
 
@@ -27,15 +28,6 @@ function Header({ setFilteredFlowers }) {
       };
     }, []);
   
-    const updateCartItemCount = () => {
-      const cart = JSON.parse(localStorage.getItem('cart')) || [];
-      const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-      setCartItems(totalItems);
-    };
-  
-    useEffect(() => {
-      updateCartItemCount();
-    });
 
     const fetchUserData = async () => {
       try {
@@ -54,22 +46,27 @@ function Header({ setFilteredFlowers }) {
       try {
         const response = await api.get(`/Flowers`);
         const flowers = response.data;
-        
-        if (query.length === 0) {
-          setFilteredFlowers(flowers);
-        } else {
-          const filtered = flowers.filter(flower => 
-            flower.flowerName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(normalizedQuery)
-          );
-          setFilteredFlowers(filtered);
+    
+        if (setFilteredFlowers) {
+          if (query.length === 0) {
+            setFilteredFlowers(flowers);
+          } else {
+            const filtered = flowers.filter(flower =>
+              flower.flowerName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(normalizedQuery)
+            );
+            setFilteredFlowers(filtered);
+          }
         }
       } catch (error) {
         console.error("Search error:", error);
-        setFilteredFlowers([]);
+        if (setFilteredFlowers) {
+          setFilteredFlowers([]);
+        }
       }
     };
   
     const handleFilterByCategory = async (categoryId) => {
+      navigate('/products', { state: { categoryId } });
       try {
         const [categoryResponse, allFlowersResponse] = await Promise.all([
           api.get(`/Categories/${categoryId}`),
@@ -78,13 +75,18 @@ function Header({ setFilteredFlowers }) {
         const filteredFlowers = allFlowersResponse.data.filter(
           flower => flower.categoryId === categoryId
         );
+
+      if (setFilteredFlowers) {
         setFilteredFlowers(filteredFlowers);
         navigate('/products');
-      } catch (error) {
-        console.error("Error fetching and filtering flowers:", error);
+      }
+    } catch (error) {
+      console.error("Error fetching and filtering flowers:", error);
+      if (setFilteredFlowers) {
         setFilteredFlowers([]);
       }
-    };
+    }
+  };
 
   return (
     <div className="header">

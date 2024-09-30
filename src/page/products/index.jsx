@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import Header from "../../component/header";
 import ProductCard from "../../component/product-card";
 import "./index.scss";
@@ -10,12 +11,20 @@ const Products = () => {
   const [filteredFlowers, setFilteredFlowers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [flowersPerPage] = useState(9);
+  
+  const location = useLocation();
+  const categoryId = location.state?.categoryId;
 
   const fetchFlower = async () => {
     try {
       const response = await api.get("Flowers");
       setFlowers(response.data);
-      setFilteredFlowers(response.data);
+      if (categoryId) {
+        const filtered = response.data.filter(flower => flower.categoryId === categoryId);
+        setFilteredFlowers(filtered);
+      } else {
+        setFilteredFlowers(response.data);
+      }
     } catch (err) {
       console.log(err);
     }
@@ -23,7 +32,7 @@ const Products = () => {
 
   useEffect(() => {
     fetchFlower();
-  }, []);
+  }, [categoryId]);
 
   // Get current flowers
   const indexOfLastFlower = currentPage * flowersPerPage;
@@ -48,21 +57,27 @@ const Products = () => {
         </div>
       </div>
       <div className="home__main-content">
-        {currentFlowers.map((flower) => (
-          <ProductCard key={flower.flowerId} flower={flower} />
-        ))}
+        {currentFlowers.length > 0 ? (
+          currentFlowers.map((flower) => (
+            <ProductCard key={flower.flowerId} flower={flower} />
+          ))
+        ) : (
+          <p>Không có sản phẩm nào</p>
+        )}
       </div>
-      <div className="pagination">
-        {pageNumbers.map(number => (
-          <button
-            key={number}
-            onClick={() => paginate(number)}
-            className={`pagination-button ${currentPage === number ? 'active' : ''}`}
-          >
-            {number}
-          </button>
-        ))}
-      </div>
+      {filteredFlowers.length > flowersPerPage && (
+        <div className="pagination">
+          {pageNumbers.map(number => (
+            <button
+              key={number}
+              onClick={() => paginate(number)}
+              className={`pagination-button ${currentPage === number ? 'active' : ''}`}
+            >
+              {number}
+            </button>
+          ))}
+        </div>
+      )}
       <Footer />
     </div>
   );
