@@ -97,7 +97,6 @@ const App = () => {
             </Col>
           </Row>
         </Content>
-        
       </Layout>
     </Layout>
   );
