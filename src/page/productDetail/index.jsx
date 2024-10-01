@@ -7,7 +7,6 @@ import api from "../../config/axios";
 import { useCart } from "../../contexts/CartContext";
 import ProductCard from "../../component/product-card";
 
-
 const ProductDetail = () => {
   const { updateCartItemCount } = useCart();
   const { id } = useParams();
@@ -18,23 +17,30 @@ const ProductDetail = () => {
 
   const fetchFlowerDetails = async () => {
     try {
+      console.log("Fetching flower details for ID:", id);
       const response = await api.get(`Flowers/${id}`);
+      console.log("Flower details:", response.data);
       setFlower(response.data);
-      fetchRelatedFlowers(response.data.categoryId);
+      if (response.data && response.data.categoryId) {
+        fetchRelatedFlowers(response.data.categoryId);
+      }
     } catch (err) {
-      console.log(err);
+      console.error("Error fetching flower details:", err);
     }
   };
 
   const fetchRelatedFlowers = async (categoryId) => {
     try {
+      console.log("Fetching related flowers for category:", categoryId);
       const response = await api.get(`Flowers`);
-      const related = response.data
+      console.log("All flowers:", response.data);
+      const related = response.data.$values
         .filter(f => f.categoryId === categoryId && f.flowerId !== parseInt(id))
-        .slice(0, 4); // Get up to 4 related flowers
+        .slice(0, 4);
+      console.log("Related flowers:", related);
       setRelatedFlowers(related);
     } catch (err) {
-      console.log(err);
+      console.error("Error fetching related flowers:", err);
     }
   };
 
@@ -76,12 +82,12 @@ const ProductDetail = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log(response);
+      console.log("Add to cart response:", response);
       addToCart(flower);
       updateCartItemCount();
       alert("Thêm vào giỏ hàng thành công!");
     } catch (err) {
-      console.log(err);
+      console.error("Error adding to cart:", err);
       const errorMessage = err.response?.data?.message || "Thêm vào giỏ hàng thất bại!";
       alert(errorMessage);
     } finally {
@@ -134,18 +140,18 @@ const ProductDetail = () => {
       </div>
       
       {/* Related Products Section */}
-      {relatedFlowers.length > 0 && (
-  <div className="related-products container px-5 py-12 mx-auto">
-    <h2 className="related-products-title text-2xl font-bold mb-6">Sản phẩm liên quan</h2>
-    <div className="related-products-grid flex flex-wrap -mx-4">
-      {relatedFlowers.map((relatedFlower) => (
-        <div key={relatedFlower.flowerId} className="related-product-item lg:w-1/2 md:w-1/4 px-2 mb-2">
-          <ProductCard flower={relatedFlower} />
+      {relatedFlowers && relatedFlowers.length > 0 && (
+        <div className="related-products container px-5 py-12 mx-auto">
+          <h2 className="related-products-title text-2xl font-bold mb-6">Sản phẩm liên quan</h2>
+          <div className="related-products-grid flex flex-wrap -mx-4">
+            {relatedFlowers.map((relatedFlower) => (
+              <div key={relatedFlower.flowerId} className="related-product-item lg:w-1/2 md:w-1/4 px-2 mb-2">
+                <ProductCard flower={relatedFlower} />
+              </div>
+            ))}
+          </div>
         </div>
-      ))}
-    </div>
-  </div>
-)}
+      )}
       
       <Footer />
     </>
