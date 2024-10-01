@@ -1,4 +1,3 @@
-// src/page/ProductDetail.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "../../index.css";
@@ -6,11 +5,14 @@ import Header from "../../component/header";
 import Footer from "../../component/footer";
 import api from "../../config/axios";
 import { useCart } from "../../contexts/CartContext";
+import ProductCard from "../../component/product-card";
+
 
 const ProductDetail = () => {
   const { updateCartItemCount } = useCart();
   const { id } = useParams();
   const [flower, setFlower] = useState(null);
+  const [relatedFlowers, setRelatedFlowers] = useState([]);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
 
@@ -18,6 +20,19 @@ const ProductDetail = () => {
     try {
       const response = await api.get(`Flowers/${id}`);
       setFlower(response.data);
+      fetchRelatedFlowers(response.data.categoryId);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const fetchRelatedFlowers = async (categoryId) => {
+    try {
+      const response = await api.get(`Flowers`);
+      const related = response.data
+        .filter(f => f.categoryId === categoryId && f.flowerId !== parseInt(id))
+        .slice(0, 4); // Get up to 4 related flowers
+      setRelatedFlowers(related);
     } catch (err) {
       console.log(err);
     }
@@ -117,6 +132,21 @@ const ProductDetail = () => {
           </div>
         </div>
       </div>
+      
+      {/* Related Products Section */}
+      {relatedFlowers.length > 0 && (
+  <div className="related-products container px-5 py-12 mx-auto">
+    <h2 className="related-products-title text-2xl font-bold mb-6">Sản phẩm liên quan</h2>
+    <div className="related-products-grid flex flex-wrap -mx-4">
+      {relatedFlowers.map((relatedFlower) => (
+        <div key={relatedFlower.flowerId} className="related-product-item lg:w-1/2 md:w-1/4 px-2 mb-2">
+          <ProductCard flower={relatedFlower} />
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+      
       <Footer />
     </>
   );
