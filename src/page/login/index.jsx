@@ -7,7 +7,6 @@ import { useNavigate, Link } from "react-router-dom";
 import { FaGoogle } from "react-icons/fa";
 import { useGoogleLogin } from "@react-oauth/google";
 import Footer from "../../component/footer";
-
 const Login = () => {
   const navigate = useNavigate();
   const handleLogin = async (values) => {
@@ -29,7 +28,11 @@ const Login = () => {
       localStorage.setItem("user", JSON.stringify({ token, userType }));
       
       console.log("Stored user data:", JSON.parse(localStorage.getItem("user")));
-      navigate("/");
+       if (userType === "Admin") {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/");
+      }
     } catch (error) {
       console.error("Login error:", error);
       alert("Sai tên đăng nhập hoặc mật khẩu");
@@ -47,6 +50,7 @@ const Login = () => {
         console.log(result.data);
         localStorage.setItem("token", result.data.token);
         localStorage.setItem("user", JSON.stringify(result.data.user));
+        
         navigate("/");
       } catch (error) {
         console.error("Đăng nhập thất bại:", error.response?.data || error.message);

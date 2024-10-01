@@ -55,13 +55,15 @@ const App = () => {
     },
     {
       path: "admin",
-      element: <PrivateRoute requiredRole="Admin" />,
-      children: [
-        {
-          path: "dashboard",
-          element: <Dashboard />,
-        },
-      ],
+      element: <PrivateRoute requiredRole="Admin">
+        <Dashboard />
+      </PrivateRoute>,
+    },
+    {
+      path: "admin/dashboard",
+      element: <PrivateRoute requiredRole="Admin">
+        <Dashboard />
+      </PrivateRoute>,
     },
   ]);
 
