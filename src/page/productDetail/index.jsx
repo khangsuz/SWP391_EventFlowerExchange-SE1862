@@ -31,7 +31,7 @@ const ProductDetail = () => {
       const response = await api.get(`Flowers`);
       const related = response.data
         .filter(f => f.categoryId === categoryId && f.flowerId !== parseInt(id))
-        .slice(0, 4); // Get up to 4 related flowers
+        .slice(0, 4);
       setRelatedFlowers(related);
     } catch (err) {
       console.log(err);
