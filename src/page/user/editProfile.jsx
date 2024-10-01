@@ -4,7 +4,7 @@ import "../../index.css";
 import api from "../../config/axios";
 import Footer from "../../component/footer";
 import { Link, useNavigate } from "react-router-dom";
-
+import { useCart } from "../../contexts/CartContext";
 
 const Profile = () => {
     const navigate = useNavigate();
@@ -13,6 +13,7 @@ const Profile = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [editedData, setEditedData] = useState({});
     const [success, setSuccess] = useState(null);
+    const { updateCartItemCount } = useCart();
 
     const fetchUserData = async () => {
         try {
@@ -29,10 +30,17 @@ const Profile = () => {
         fetchUserData();
     }, []);
 
+    const clearCart = () => {
+        setCartItems([]);
+        localStorage.setItem('cart', JSON.stringify([]));
+        updateCartItemCount();
+    };
+
     const handleLogout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         localStorage.removeItem('cart');
+        clearCart();
         navigate('/login');
     }
 

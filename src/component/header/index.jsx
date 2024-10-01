@@ -9,7 +9,6 @@ import { useCart } from "../../contexts/CartContext";
 function Header({ setFilteredFlowers }) {
   const navigate = useNavigate();
   const { cartItems } = useCart();
-
   const [searchValue, setSearchValue] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
   const [userData, setUserData] = useState(null);

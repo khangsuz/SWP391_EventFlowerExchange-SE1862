@@ -20,11 +20,11 @@ function Cart() {
     const updateQuantity = (flowerId, newQuantity) => {
         const parsedQuantity = parseInt(newQuantity, 10);
         if (isNaN(parsedQuantity) || parsedQuantity < 1) return;
-        const updatedCart = cartItems.map(item =>
-            item.flowerId === flowerId ? { ...item, quantity: parsedQuantity } : item
+        const updatedCart = cartItems.map(item => item.flowerId === flowerId ? { ...item, quantity: parsedQuantity } : item
         );
         setCartItems(updatedCart);
         localStorage.setItem('cart', JSON.stringify(updatedCart));
+        updateCartItemCount();
     };
 
     const removeFromCart = (flowerId) => {
