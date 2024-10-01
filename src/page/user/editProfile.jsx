@@ -137,13 +137,13 @@ const Profile = () => {
                         <nav class="space-y-2">
                             <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded">Thông tin</Link>
                             <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded">Danh sách đơn hàng</Link>
-                            <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded">Địa chỉ</Link>
+                            <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded">Đổi mật khẩu</Link>
                             {userType === 'Seller' && (
                                 <Link 
                                     to="/manage-product" 
                                     className="block text-gray-700 hover:bg-gray-200 p-2 rounded"
                                 >
-                                    Tạo Sản Phẩm Mới
+                                    Quản lí sản phẩm
                                 </Link>
                             )}
                             <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded" onClick={handleLogout}>Đăng xuất</Link>
@@ -153,17 +153,7 @@ const Profile = () => {
                         <h1 className="text-center text-2xl font-bold mb-5">Thông tin tài khoản</h1>
                         <div className="flex mb-3 gap-4">
                             <h2 className="text-2xl p-2">Họ tên:</h2>
-                            <p className="text-lg">{isEditing ? (
-                                <input
-                                    type="text"
-                                    name="name"
-                                    value={editedData.name}
-                                    onChange={handleChange}
-                                    className="w-full p-2 border rounded"
-                                />
-                            ) : (
                                 <p className="p-2">{userData.name}</p>
-                            )}</p>
                         </div>
                         <div className="flex mb-3 gap-4">
                             <h2 className="text-2xl p-2">Email:</h2>
