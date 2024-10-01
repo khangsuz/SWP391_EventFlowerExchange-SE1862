@@ -11,6 +11,7 @@ const Profile = () => {
     const [userData, setUserData] = useState(null);
     const [error, setError] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
+    const [userType, setUserType] = useState(null); 
     const [editedData, setEditedData] = useState({});
     const [success, setSuccess] = useState(null);
     const { updateCartItemCount } = useCart();
@@ -27,8 +28,14 @@ const Profile = () => {
     };
 
     useEffect(() => {
-        fetchUserData();
-    }, []);
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (user) {
+            setUserType(user.userType);
+            fetchUserData();
+        } else {
+            navigate('/login');
+        }
+    }, [navigate]);
 
     const clearCart = () => {
         setCartItems([]);
@@ -131,7 +138,14 @@ const Profile = () => {
                             <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded">Thông tin</Link>
                             <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded">Danh sách đơn hàng</Link>
                             <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded">Địa chỉ</Link>
-                            <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded">Sản phẩm yêu thích</Link>
+                            {userType === 'Seller' && (
+                                <Link 
+                                    to="/manage-product" 
+                                    className="block text-gray-700 hover:bg-gray-200 p-2 rounded"
+                                >
+                                    Tạo Sản Phẩm Mới
+                                </Link>
+                            )}
                             <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded" onClick={handleLogout}>Đăng xuất</Link>
                         </nav>
                     </div>

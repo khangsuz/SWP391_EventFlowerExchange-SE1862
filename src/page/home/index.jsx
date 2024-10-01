@@ -9,7 +9,6 @@ import { Link } from "react-router-dom";
 const Home = () => {
   const [flowers, setFlowers] = useState([]);
   const [filteredFlowers, setFilteredFlowers] = useState([]);
-  const [userType, setUserType] = useState(null); 
 
   const fetchFlower = async () => {
     try {
@@ -35,11 +34,6 @@ const Home = () => {
     };
   
     fetchFlower();
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (user && user.userType) {
-      setUserType(user.userType);
-    }
-    console.log("Current userType:", user?.userType);
   }, []);
 
   return (
@@ -138,18 +132,6 @@ const Home = () => {
           ))} */}
         </div>
       </div>
-
-      {console.log("Rendering, userType is:", userType)}
-{userType === 'Seller' && (
-  <div className="text-center my-8">
-    <Link 
-      to="/create-product" 
-      className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-    >
-      Tạo Sản Phẩm Mới
-    </Link>
-  </div>
-)}
 
       {/* Send mail for news */}
       <div className="bg-gray-100 p-10 text-center">

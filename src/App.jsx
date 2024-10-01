@@ -11,6 +11,7 @@ import ProductDetail from "./page/productDetail";
 import PrivateRoute from "./component/private-route";
 import About from "./page/about";
 import Profile from "./page/user/editProfile";
+import CreateProduct from "./page/seller"; 
 
 const App = () => {
   const router = createBrowserRouter([
@@ -45,6 +46,12 @@ const App = () => {
     {
       path: "products",
       element: <Products />
+    },
+    {
+      path: "manage-product", 
+      element: <PrivateRoute requiredRole="Seller">
+        <CreateProduct />
+      </PrivateRoute>
     },
     {
       path: "admin",
