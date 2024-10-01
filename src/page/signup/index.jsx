@@ -55,26 +55,26 @@ const SignUp = () => {
             >
               {/* Sign-up title */}
               <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">
-                Sign Up
+                Đăng ký
               </h2>
 
               {/* User Name Input */}
               <Form.Item
                 className="block text-gray-700 text-sm font-bold mb-2"
-                label="Name"
+                label="Tài khoản"
                 name="name"
                 rules={[
                   {
                     required: true,
-                    message: "Please enter your name!",
+                    message: "Vui lòng nhập tài khoản!",
                   },
                   {
                     min: 4,
-                    message: "Username must be at least 4 characters!",
+                    message: "Tài khoản phải ít nhất 4 kí tự!",
                   },
                 ]}
               >
-                <Input type="text" placeholder="UserName" />
+                <Input type="text" placeholder="username" />
               </Form.Item>
 
               {/* Email Input */}
@@ -85,11 +85,11 @@ const SignUp = () => {
                 rules={[
                   {
                     required: true,
-                    message: "Please enter your email!",
+                    message: "Vui lòng nhập email!",
                   },
                   {
                     type: "email",
-                    message: "Invalid email address!",
+                    message: "Email không hợp lệ!",
                   },
                 ]}
               >
@@ -99,44 +99,44 @@ const SignUp = () => {
               {/* Password Input */}
               <Form.Item
                 className="block text-gray-700 text-sm font-bold mb-2"
-                label="Password"
+                label="Mật khẩu"
                 name="password"
                 rules={[
                   {
                     required: true,
-                    message: "Please enter your password!",
+                    message: "Vui lòng nhập mật khẩu!",
                   },
                   {
                     min: 5,
-                    message: "Password must be at least 5 characters!",
+                    message: "Mật khẩu phải ít nhất 5 kí tự",
                   },
                 ]}
               >
-                <Input type="password" placeholder="Password" />
+                <Input type="password" placeholder="password" />
               </Form.Item>
 
               {/* Confirm Password Input */}
               <Form.Item
                 className="block text-gray-700 text-sm font-bold mb-2"
-                label="Confirm Password"
+                label="Xác nhận mật khẩu"
                 name="confirmPassword"
                 dependencies={["password"]}
                 rules={[
                   {
                     required: true,
-                    message: "Please confirm your password!",
+                    message: "Mật khẩu không khớp",
                   },
                   ({ getFieldValue }) => ({
                     validator(_, value) {
                       if (!value || getFieldValue("password") === value) {
                         return Promise.resolve();
                       }
-                      return Promise.reject(new Error("Passwords do not match!"));
+                      return Promise.reject(new Error("Mật khẩu không khớp!"));
                     },
                   }),
                 ]}
               >
-                <Input type="password" placeholder="Confirm Password" />
+                <Input type="password" placeholder="..." />
               </Form.Item>
 
               {/* Register Button */}
@@ -146,18 +146,18 @@ const SignUp = () => {
                   type="primary"
                   htmlType="submit"
                 >
-                  Register
+                  Đăng ký
                 </Button>
               </Form.Item>
 
               {/* Link to Sign In page */}
               <p className="mt-4 text-center text-sm text-gray-600">
-                Already have an account?{" "}
+                Đã có tài khoản?{" "}
                 <Link
                   to={"/login"}
                   className="text-blue-500 hover:text-blue-600 font-semibold"
                 >
-                  Sign In
+                  Đăng nhập
                 </Link>
               </p>
             </Form>

@@ -4,7 +4,7 @@ import "../../index.css";
 import api from "../../config/axios";
 import Footer from "../../component/footer";
 import { Link, useNavigate } from "react-router-dom";
-
+import { useCart } from "../../contexts/CartContext";
 
 const Profile = () => {
     const navigate = useNavigate();
@@ -13,6 +13,7 @@ const Profile = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [editedData, setEditedData] = useState({});
     const [success, setSuccess] = useState(null);
+    const { updateCartItemCount } = useCart();
 
     const fetchUserData = async () => {
         try {
@@ -29,10 +30,17 @@ const Profile = () => {
         fetchUserData();
     }, []);
 
+    const clearCart = () => {
+        setCartItems([]);
+        localStorage.setItem('cart', JSON.stringify([]));
+        updateCartItemCount();
+    };
+
     const handleLogout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         localStorage.removeItem('cart');
+        clearCart();
         navigate('/login');
     }
 
@@ -54,17 +62,44 @@ const Profile = () => {
     };
 
     const handleSave = async () => {
-        try {
-            const response = await api.put('/Users/profile', editedData);
-            setUserData(response.data);
-            setIsEditing(false);
-            setSuccess("Profile updated successfully!");
-            setError(null);
-            setTimeout(() => setSuccess(null), 3000);
-        } catch (error) {
-            console.error("Error updating user data:", error);
-            setError("Failed to update user data. Please try again.");
-            setSuccess(null);
+        let isValid = true;
+        if (editedData.name !== userData.name) {
+            const nameRegex = /^[^\s!@#$%^&*()_+={}\[\]:;"'<>,.?~`]+$/;
+            if (!nameRegex.test(editedData.name)) {
+                alert("Tên không được chứa dấu cách hoặc ký tự đặc biệt.");
+                isValid = false;
+            }
+        }
+
+        if (editedData.email !== userData.email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(editedData.email)) {
+                alert("Email không hợp lệ.");
+                isValid = false;
+            }
+        }
+
+        if (editedData.phone !== userData.phone) {
+            const phoneRegex = /^\d{10,11}$/;
+            if (!phoneRegex.test(editedData.phone)) {
+                alert("Số điện thoại phải có từ 10 đến 11 số.");
+                isValid = false;
+            }
+        }
+
+        if (isValid) {
+            try {
+                const response = await api.put('/Users/profile', editedData);
+                setUserData(response.data);
+                setIsEditing(false);
+                setSuccess("Profile updated successfully!");
+                setError(null);
+                setTimeout(() => setSuccess(null), 3000);
+            } catch (error) {
+                console.error("Error updating user data:", error);
+                setError("Failed to update user data. Please try again.");
+                setSuccess(null);
+            }
         }
     };
 
@@ -76,16 +111,16 @@ const Profile = () => {
         <>
             <Header />
             <div className="bg-slate-100 p-20">
-            {error && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative text-center mb-4" role="alert">
-                    <span className="block sm:inline">{error}</span>
-                </div>
-            )}
-            {success && (
-                <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative text-center mb-4" role="alert">
-                    <span className="block sm:inline">{success}</span>
-                </div>
-            )}
+                {error && (
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative text-center mb-4" role="alert">
+                        <span className="block sm:inline">{error}</span>
+                    </div>
+                )}
+                {success && (
+                    <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative text-center mb-4" role="alert">
+                        <span className="block sm:inline">{success}</span>
+                    </div>
+                )}
                 <div className="flex max-w-6xl mx-auto">
                     <div className="w-1/4 bg-white shadow-md rounded-lg p-5">
                         <div className="text-center mb-5">
@@ -105,58 +140,58 @@ const Profile = () => {
                         <div className="flex mb-3 gap-4">
                             <h2 className="text-2xl p-2">Họ tên:</h2>
                             <p className="text-lg">{isEditing ? (
-                                    <input
-                                        type="text"
-                                        name="name"
-                                        value={editedData.name}
-                                        onChange={handleChange}
-                                        className="w-full p-2 border rounded"
-                                    />
-                                ) : (
-                                    <p className="p-2">{userData.name}</p>
-                                )}</p>
+                                <input
+                                    type="text"
+                                    name="name"
+                                    value={editedData.name}
+                                    onChange={handleChange}
+                                    className="w-full p-2 border rounded"
+                                />
+                            ) : (
+                                <p className="p-2">{userData.name}</p>
+                            )}</p>
                         </div>
                         <div className="flex mb-3 gap-4">
                             <h2 className="text-2xl p-2">Email:</h2>
                             <p className="text-lg">{isEditing ? (
-                                    <input
-                                        type="email"
-                                        name="email"
-                                        value={editedData.email}
-                                        onChange={handleChange}
-                                        className="w-full p-2 border rounded"
-                                    />
-                                ) : (
-                                    <p className="p-2">{userData.email}</p>
-                                )}</p>
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value={editedData.email}
+                                    onChange={handleChange}
+                                    className="w-full p-2 border rounded"
+                                />
+                            ) : (
+                                <p className="p-2">{userData.email}</p>
+                            )}</p>
                         </div>
                         <div className="flex mb-3 gap-4">
                             <h2 className="text-2xl p-2">Số điện thoại:</h2>
                             <p className="text-lg">{isEditing ? (
-                                    <input
-                                        type="tel"
-                                        name="phone"
-                                        value={editedData.phone}
-                                        onChange={handleChange}
-                                        className="w-full p-2 border rounded"
-                                    />
-                                ) : (
-                                    <p className="p-2">{userData.phone}</p>
-                                )}</p>
+                                <input
+                                    type="tel"
+                                    name="phone"
+                                    value={editedData.phone}
+                                    onChange={handleChange}
+                                    className="w-full p-2 border rounded"
+                                />
+                            ) : (
+                                <p className="p-2">{userData.phone}</p>
+                            )}</p>
                         </div>
                         <div className="flex mb-3 gap-4">
                             <h2 className="text-2xl p-2">Địa chỉ:</h2>
                             <p className="text-lg">{isEditing ? (
-                                    <input
-                                        type="text"
-                                        name="address"
-                                        value={editedData.address}
-                                        onChange={handleChange}
-                                        className="w-full p-2 border rounded"
-                                    />
-                                ) : (
-                                    <p className="p-2">{userData.address}</p>
-                                )}</p>
+                                <input
+                                    type="text"
+                                    name="address"
+                                    value={editedData.address}
+                                    onChange={handleChange}
+                                    className="w-full p-2 border rounded"
+                                />
+                            ) : (
+                                <p className="p-2">{userData.address}</p>
+                            )}</p>
                         </div>
                         <div className="">
                             {isEditing ? (
