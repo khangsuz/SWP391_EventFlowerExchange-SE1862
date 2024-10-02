@@ -152,18 +152,8 @@ const Profile = () => {
                     <div className="flex-1 bg-white shadow-md rounded-lg p-5 ml-5">
                         <h1 className="text-center text-2xl font-bold mb-5">Thông tin tài khoản</h1>
                         <div className="flex mb-3 gap-4">
-                            <h2 className="text-2xl p-2">Họ tên:</h2>
-                            <p className="text-lg">{isEditing ? (
-                                <input
-                                    type="text"
-                                    name="name"
-                                    value={editedData.name}
-                                    onChange={handleChange}
-                                    className="w-full p-2 border rounded"
-                                />
-                            ) : (
+                            <h2 className="text-2xl p-2">Tên đăng nhập:</h2>
                                 <p className="p-2">{userData.name}</p>
-                            )}</p>
                         </div>
                         <div className="flex mb-3 gap-4">
                             <h2 className="text-2xl p-2">Email:</h2>

@@ -11,28 +11,25 @@ const Products = () => {
   const [filteredFlowers, setFilteredFlowers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [flowersPerPage] = useState(9);
-
+  
   const location = useLocation();
   const categoryId = location.state?.categoryId;
 
   const fetchFlower = async () => {
-  try {
-    const response = await api.get("Flowers");
-
-    // Lấy mảng từ $values thay vì data trực tiếp
-    const flowersData = Array.isArray(response.data.$values) ? response.data.$values : [];
-
-    setFlowers(flowersData);
-    if (categoryId) {
-      const filtered = flowersData.filter(flower => flower.categoryId === categoryId);
-      setFilteredFlowers(filtered);
-    } else {
-      setFilteredFlowers(flowersData);
+    try {
+      const response = await api.get("Flowers");
+      setFlowers(response.data);
+      if (categoryId) {
+        const filtered = response.data.filter(flower => flower.categoryId === categoryId);
+        setFilteredFlowers(filtered);
+      } else {
+        setFilteredFlowers(response.data);
+      }
+    } catch (err) {
+      console.log(err);
     }
-  } catch (err) {
-    console.log("Error fetching and filtering flowers:", err);
-  }
-};
+  };
+
   useEffect(() => {
     fetchFlower();
   }, [categoryId]);
@@ -40,11 +37,7 @@ const Products = () => {
   // Get current flowers
   const indexOfLastFlower = currentPage * flowersPerPage;
   const indexOfFirstFlower = indexOfLastFlower - flowersPerPage;
-
-  // Đảm bảo filteredFlowers là mảng
-  const currentFlowers = Array.isArray(filteredFlowers) 
-    ? filteredFlowers.slice(indexOfFirstFlower, indexOfLastFlower)
-    : [];
+  const currentFlowers = filteredFlowers.slice(indexOfFirstFlower, indexOfLastFlower);
 
   // Change page
   const paginate = (pageNumber) => setCurrentPage(pageNumber);

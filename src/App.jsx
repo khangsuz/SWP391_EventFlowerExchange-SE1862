@@ -12,6 +12,7 @@ import PrivateRoute from "./component/private-route";
 import About from "./page/about";
 import Profile from "./page/user/editProfile";
 import CreateProduct from "./page/seller"; 
+import ForgotPassword from './page/login/forgetPassword';
 
 const App = () => {
   const router = createBrowserRouter([
@@ -46,6 +47,10 @@ const App = () => {
     {
       path: "products",
       element: <Products />
+    },
+    {
+      path: "forgot-password",
+      element: <ForgotPassword />
     },
     {
       path: "manage-product", 

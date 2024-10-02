@@ -34,11 +34,21 @@ const ProductDetail = () => {
       console.log("Fetching related flowers for category:", categoryId);
       const response = await api.get(`Flowers`);
       console.log("All flowers:", response.data);
-      const related = response.data.$values
-        .filter(f => f.categoryId === categoryId && f.flowerId !== parseInt(id))
-        .slice(0, 4);
-      console.log("Related flowers:", related);
-      setRelatedFlowers(related);
+      
+      if (response.data && Array.isArray(response.data)) {
+        const related = [];
+        for (let i = 0; i < response.data.length; i++) {
+          const flower = response.data[i];
+          if (flower.categoryId === categoryId && flower.flowerId !== parseInt(id)) {
+            related.push(flower);
+            if (related.length === 4) break; // Lấy tối đa 4 sản phẩm liên quan
+          }
+        }
+        console.log("Related flowers:", related);
+        setRelatedFlowers(related);
+      } else {
+        console.error("Unexpected API response structure:", response.data);
+      }
     } catch (err) {
       console.error("Error fetching related flowers:", err);
     }

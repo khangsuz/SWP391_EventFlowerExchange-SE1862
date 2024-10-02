@@ -14,21 +14,21 @@ const Login = () => {
       const response = await api.post("Users/login", values);
       console.log("Raw API response:", response);
       console.log("Login response data:", response.data);
-      
+
       const { token = null, userType = null } = response.data;
-      
+
       console.log("Extracted token:", token);
       console.log("Extracted userType:", userType);
-      
+
       if (!token) {
         throw new Error("No token received from server");
       }
-      
+
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify({ token, userType }));
-      
+
       console.log("Stored user data:", JSON.parse(localStorage.getItem("user")));
-       if (userType === "Admin") {
+      if (userType === "Admin") {
         navigate("/admin/dashboard");
       } else {
         navigate("/");
@@ -50,7 +50,7 @@ const Login = () => {
         console.log(result.data);
         localStorage.setItem("token", result.data.token);
         localStorage.setItem("user", JSON.stringify(result.data.user));
-        
+
         navigate("/");
       } catch (error) {
         console.error("Đăng nhập thất bại:", error.response?.data || error.message);
@@ -60,7 +60,7 @@ const Login = () => {
     scope: "email profile",
   });
 
-  
+
   return (
     <>
       <Header />
@@ -80,7 +80,7 @@ const Login = () => {
             >
               <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">Đăng nhập</h2>
               <div className="flex justify-center space-x-4 mb-6">
-                <button 
+                <button
                   className="p-2 rounded-full bg-red-500 text-white hover:bg-red-600 transition duration-300 ease-in-out transform hover:scale-110"
                   onClick={loginGoogle}
                   type="button"
@@ -103,7 +103,7 @@ const Login = () => {
               >
                 <Input type="text" placeholder="username" />
               </Form.Item>
-          
+
               <Form.Item
                 className="block text-gray-700 text-sm font-bold mb-2"
                 label="Mật khẩu"
@@ -123,8 +123,12 @@ const Login = () => {
                 </Button>
               </Form.Item>
 
+
               <p className="mt-4 text-center text-sm text-gray-600">
                 Chưa có tài khoản? <Link to={"/signup"} className="text-blue-500 hover:text-blue-600 font-semibold">Đăng ký</Link>
+              </p>
+              <p className="mt-2 text-center text-sm text-gray-600">
+                <Link to="/forgot-password" className="text-blue-500 hover:text-blue-600 font-semibold">Quên mật khẩu?</Link>
               </p>
             </Form>
           </div>
