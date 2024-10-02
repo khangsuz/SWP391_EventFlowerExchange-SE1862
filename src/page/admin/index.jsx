@@ -1,100 +1,154 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Input, Dropdown, Menu, Card, Col, Row, Layout, Table } from 'antd';
-import {
-  DashboardOutlined,
-  IdcardOutlined,
-  DollarOutlined,
-  CustomerServiceOutlined,
-  ProductOutlined,
-  ShoppingCartOutlined,
-  UserOutlined,
-} from "@ant-design/icons";
+import React, { useEffect, useState } from "react";
+import { Table, Spin, message } from 'antd';
+import { DesktopOutlined, FileOutlined, PieChartOutlined, TeamOutlined, UserOutlined } from "@ant-design/icons";
+import { Breadcrumb, Layout, Menu, theme } from "antd";
+import { useLocation } from "react-router-dom";
+import PrivateRoute from "../../component/private-route";
+import axios from "axios";
 
 const { Header, Content, Footer, Sider } = Layout;
+const { Column } = Table;
+
+function getItem(label, key, icon, children) {
+  return { key, icon, children, label };
+}
+
+const items = [
+  getItem("Quản lý người dùng", "1", <UserOutlined />),
+  getItem("Quản lý hoa", "2", <PieChartOutlined />),
+  getItem("Quản lý đơn hàng", "3", <DesktopOutlined />),
+  getItem("Thông báo", "4", <TeamOutlined />),
+  getItem("Tài liệu", "5", <FileOutlined />),
+];
 
 const App = () => {
-  const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
+  const { token: { colorBgContainer, borderRadiusLG } } = theme.useToken();
+  const [users, setUsers] = useState([]);
+  const [flowers, setFlowers] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const dataSource = [
-    { key: 1, name: "Hoa Hồng", quantity: 22 },
-    { key: 2, name: "Hoa Mai", quantity: 10 },
-    { key: 3, name: "Hoa Lan", quantity: 7 },
-    { key: 4, name: "Hoa Cúc", quantity: 6 },
-    { key: 5, name: "Hoa Giấy", quantity: 4 },
-  ];
+  // Token admin
+  const adminToken = "your-admin-token-here"; // Thay thế bằng token của bạn
 
-  const columns = [
-    { title: 'ID', dataIndex: 'key', key: 'key' },
-    { title: 'Tên Sản Phẩm', dataIndex: 'name', key: 'name' },
-    { title: 'Tổng Số Lượng', dataIndex: 'quantity', key: 'quantity' },
-  ];
+  // Hàm fetch người dùng với timeout
+  const fetchUsers = async (token) => {
+    try {
+      const response = await axios.get('https://localhost:7288/api/admin/users', {
+        headers: { Authorization: `Bearer ${token}` },
+        timeout: 5000 // Thời gian chờ là 5 giây
+      });
+      console.log("Fetched Users Response: ", response.data);
+      setUsers(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      setError("Lỗi khi tải dữ liệu người dùng."); // Ghi nhận lỗi
+    }
+  };
 
-  const menu = (
-    <Menu>
-      <Menu.Item key="1">Your Profile</Menu.Item>
-      <Menu.Item key="2">Settings</Menu.Item>
-      <Menu.Item key="3">Sign out</Menu.Item>
-    </Menu>
-  );
+  // Hàm fetch hoa với timeout
+  const fetchFlowers = async (token) => {
+    try {
+      const response = await axios.get('https://localhost:7288/api/admin/flowers', {
+        headers: { Authorization: `Bearer ${token}` },
+        timeout: 5000 // Thời gian chờ là 5 giây
+      });
+      console.log("Fetched Flowers Response: ", response.data);
+      setFlowers(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      console.error("Error fetching flowers:", error);
+      setError("Lỗi khi tải dữ liệu hoa."); // Ghi nhận lỗi
+    }
+  };
+
+  // Hàm fetch đơn hàng với timeout
+  const fetchOrders = async (token) => {
+    try {
+      const response = await axios.get('https://localhost:7288/api/admin/orders', {
+        headers: { Authorization: `Bearer ${token}` },
+        timeout: 5000 // Thời gian chờ là 5 giây
+      });
+      console.log("Fetched Orders Response: ", response.data);
+      setOrders(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      setError("Lỗi khi tải dữ liệu đơn hàng."); // Ghi nhận lỗi
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      const token = localStorage.getItem("token"); // Lấy token từ localStorage
+      if (token) {
+        await Promise.all([fetchUsers(token), fetchFlowers(token), fetchOrders(token)]);
+      } else {
+        setError("Token không hợp lệ. Vui lòng đăng nhập lại.");
+      }
+      setLoading(false);
+    };
+    fetchData();
+  }, []);
 
   return (
-    <Layout className="min-h-screen">
-     
+    <Layout style={{ minHeight: "100vh" }}>
+      
       <Layout>
-        <Header className="bg-white flex justify-between items-center p-4">
-          <Input placeholder="Search..." className="w-1/2" />
-          <Dropdown overlay={menu} trigger={['click']}>
-            <a onClick={(e) => e.preventDefault()}>
-              <UserOutlined className="text-2xl" />
-            </a>
-          </Dropdown>
-        </Header>
-        <Content className="m-4">
-          <Row gutter={[16, 16]} justify="start" className="mt-5">
-            <Col span={16}>
-              <Row gutter={[16, 16]} className="h-full">
-                {/* Các Card hiển thị thông tin */}
-                {[
-                  { title: "TỔNG KHÁCH HÀNG", value: 9, icon: "https://cdn-icons-png.flaticon.com/128/8890/8890215.png" },
-                  { title: "TỔNG SẢN PHẨM", value: 52, icon: "https://cdn-icons-png.flaticon.com/128/11898/11898499.png" },
-                  { title: "TỔNG PHẢN HỒI", value: 65, icon: "https://cdn-icons-png.flaticon.com/128/1632/1632726.png" },
-                  { title: "TỔNG ĐƠN HÀNG", value: 65, icon: "https://cdn-icons-png.flaticon.com/128/15321/15321033.png" },
-                  { title: "TỔNG THU NHẬP", value: 72459000, icon: "https://cdn-icons-png.flaticon.com/128/10930/10930720.png" },
-                  { title: "TỔNG LỢI NHUẬN", value: 218789000, icon: "https://cdn-icons-png.flaticon.com/128/11334/11334720.png" },
-                ].map((item, index) => (
-                  <Col span={8} key={index}>
-                    <Card className="bg-white rounded-lg shadow-md p-4 h-90">
-                      <div className="flex items-center justify-start h-full">
-                        <img src={item.icon} className="w-12 h-12 mr-4" />
-                        <div className="flex-1 text-left">
-                          <h4 className="m-0 text-lg font-bold text-red-600">{item.title}</h4>
-                          <p className="text-2xl font-bold m-2">{item.value}</p>
-                          <p className="text-gray-500">Tổng số {item.title.toLowerCase()}.</p>
-                        </div>
-                      </div>
-                    </Card>
-                  </Col>
-                ))}
-              </Row>
-            </Col>
-            <Col span={8}>
-              <Card className="h-full rounded-lg shadow-md p-4">
-                <h4 className="m-0">BIỂU ĐỒ THỐNG KÊ</h4>
-                {/* Thêm mã biểu đồ của bạn ở đây */}
-              </Card>
-            </Col>
-          </Row>
-          <Row gutter={[16, 16]} className="mt-5">
-            <Col span={24}>
-              <Card className="rounded-lg shadow-md p-4">
-                <h4 className="m-0">SẢN PHẨM BÁN CHẠY NHẤT</h4>
-                <Table dataSource={dataSource} columns={columns} pagination={false} bordered />
-              </Card>
-            </Col>
-          </Row>
+        <Header style={{ padding: 0, background: colorBgContainer }} />
+        <Content style={{ margin: "0 16px" }}>
+          <Breadcrumb items={[{ title: 'Admin' }, { title: 'Quản lý' }]} />
+          <div
+            style={{
+              padding: 24,
+              minHeight: 360,
+              background: colorBgContainer,
+              borderRadius: borderRadiusLG,
+            }}
+          >
+            <PrivateRoute>
+              {error && <p style={{ color: 'red' }}>{error}</p>}
+              {loading ? (
+                <Spin />
+              ) : (
+                <>
+                  <h2>Quản lý người dùng</h2>
+                  <Table dataSource={users} rowKey="userId">
+                    <Column title="ID" dataIndex="userId" key="userId" />
+                    <Column title="Tên người dùng" dataIndex="name" key="name" />
+                    <Column title="Email" dataIndex="email" key="email" />
+                    <Column title="Vai trò" dataIndex="userType" key="userType" />
+                    <Column title="Số điện thoại" dataIndex="phone" key="phone" />
+                    <Column title="Địa chỉ" dataIndex="address" key="address" />
+                    <Column title="Ngày đăng ký" dataIndex="registrationDate" key="registrationDate" render={(date) => new Date(date).toLocaleDateString()} />
+                  </Table>
+
+                  <h2>Quản lý hoa</h2>
+                  <Table dataSource={flowers} rowKey="flowerId">
+                    <Column title="ID" dataIndex="flowerId" key="flowerId" />
+                    <Column title="Tên hoa" dataIndex="flowerName" key="flowerName" />
+                    <Column title="Người bán" dataIndex="userId" key="userId" />
+                    <Column title="Số lượng" dataIndex="quantity" key="quantity" />
+                    <Column title="Trạng thái" dataIndex="status" key="status" />
+                  </Table>
+
+                  <h2>Quản lý đơn hàng</h2>
+                  <Table dataSource={orders} rowKey="orderId">
+                    <Column title="ID" dataIndex="orderId" key="orderId" />
+                    <Column title="Người mua" dataIndex="userId" key="userId" />
+                    <Column title="Ngày đặt hàng" dataIndex="orderDate" key="orderDate" />
+                    <Column title="Trạng thái" dataIndex="orderStatus" key="orderStatus" />
+                    <Column title="Địa chỉ giao hàng" dataIndex="deliveryAddress" key="deliveryAddress" />
+                  </Table>
+                </>
+              )}
+            </PrivateRoute>
+          </div>
         </Content>
+        <Footer style={{ textAlign: "center" }}>
+          Ant Design ©{new Date().getFullYear()} Created by Ant UED
+        </Footer>
       </Layout>
     </Layout>
   );
