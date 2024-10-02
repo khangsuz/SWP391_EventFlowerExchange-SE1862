@@ -17,8 +17,6 @@ const App = () => {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
 
-  
-
   const dataSource = [
     { key: 1, name: "Hoa Hồng", quantity: 22 },
     { key: 2, name: "Hoa Mai", quantity: 10 },
