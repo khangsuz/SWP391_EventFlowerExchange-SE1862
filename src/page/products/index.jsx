@@ -34,15 +34,12 @@ const Products = () => {
     fetchFlower();
   }, [categoryId]);
 
-  // Get current flowers
   const indexOfLastFlower = currentPage * flowersPerPage;
   const indexOfFirstFlower = indexOfLastFlower - flowersPerPage;
   const currentFlowers = filteredFlowers.slice(indexOfFirstFlower, indexOfLastFlower);
 
-  // Change page
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  // Generate page numbers
   const pageNumbers = [];
   for (let i = 1; i <= Math.ceil(filteredFlowers.length / flowersPerPage); i++) {
     pageNumbers.push(i);

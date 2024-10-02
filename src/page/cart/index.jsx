@@ -58,11 +58,21 @@ function Cart() {
             return;
         }
     
+        const confirmCheckout = window.confirm('Bạn có chắc chắn muốn thanh toán?');
+        if (!confirmCheckout) {
+            return;
+        }
+    
         setIsCheckingOut(true);
         try {
+            const cartItemsToSend = cartItems.map(item => ({
+                flowerId: item.flowerId,
+                quantity: item.quantity
+            }));
+    
             const response = await api.post(
                 'Orders/checkout', 
-                cartItems,
+                cartItemsToSend,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -77,10 +87,12 @@ function Cart() {
             navigate('/products', { state: { orderId: response.data.orderId } });
         } catch (error) {
             console.error('Checkout error:', error);
-            if (error.response && error.response.data) {
+            if (error.response) {
                 alert(`Checkout failed: ${error.response.data}`);
+            } else if (error.request) {
+                alert('Network error. Please check your connection and try again.');
             } else {
-                alert('An unexpected error occurred during checkout. Please try again.');
+                alert('An unexpected error occurred. Please try again.');
             }
         } finally {
             setIsCheckingOut(false);

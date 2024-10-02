@@ -11,6 +11,9 @@ import ProductDetail from "./page/productDetail";
 import PrivateRoute from "./component/private-route";
 import About from "./page/about";
 import Profile from "./page/user/editProfile";
+import CreateProduct from "./page/seller"; 
+import AdminLayout from "./page/admin/AdminLayout";
+import QuanLiSanPham from "./page/admin/QuanLiSanPham";
 
 const App = () => {
   const router = createBrowserRouter([
@@ -47,12 +50,26 @@ const App = () => {
       element: <Products />
     },
     {
+      path: "manage-product", 
+      element: <PrivateRoute requiredRole="Seller">
+        <CreateProduct />
+      </PrivateRoute>
+    },
+    {
       path: "admin",
-      element: <PrivateRoute requiredRole="Admin" />,
+      element: (
+        <PrivateRoute requiredRole="Admin"> 
+          <AdminLayout /> 
+        </PrivateRoute>
+      ),
       children: [
         {
           path: "dashboard",
           element: <Dashboard />,
+        },
+        {
+          path: "quanlisanpham",
+          element: <QuanLiSanPham />, 
         },
       ],
     },

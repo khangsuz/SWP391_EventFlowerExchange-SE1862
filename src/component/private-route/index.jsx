@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
-const PrivateRoute = ({ requiredRole = null }) => {
+const PrivateRoute = ({ requiredRole = null, children }) => {
   const navigate = useNavigate();
   const [isAuthorized, setIsAuthorized] = useState(false);
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     const userString = localStorage.getItem("user");
@@ -15,11 +16,7 @@ const PrivateRoute = ({ requiredRole = null }) => {
     } catch (error) {
       console.error("Error parsing user data:", error);
     }  
-    // console.log("Token:", token);
-    // console.log("Parsed user object:", user);
-    // console.log("User Type:", user.userType);
-    // console.log("Required Role:", requiredRole);
-  
+
     if (!token) {
       navigate("/login");
     } else if (requiredRole && user?.userType !== requiredRole) {
@@ -32,10 +29,10 @@ const PrivateRoute = ({ requiredRole = null }) => {
   }, [navigate, requiredRole]);
 
   if (!isAuthorized) {
-    return null; // Or a loading spinner
+    return <div>Loading...</div>; // Or a loading spinner
   }
 
-  return <Outlet />;
+  return children;
 };
 
 export default PrivateRoute;
