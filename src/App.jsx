@@ -14,6 +14,8 @@ import Profile from "./page/user/editProfile";
 import CreateProduct from "./page/seller"; 
 import AdminLayout from "./page/admin/AdminLayout";
 import QuanLiSanPham from "./page/admin/QuanLiSanPham";
+import PaymentButton from "./component/button/PaymentButton";
+import PaymentResult from "./component/button/PaymentResult";
 
 const App = () => {
   const router = createBrowserRouter([
@@ -72,6 +74,14 @@ const App = () => {
           element: <QuanLiSanPham />, 
         },
       ],
+    },
+    {
+      path: "payment", // Route cho thanh toán
+      element: <PaymentButton />,
+    },
+    {
+      path: "payment-result", // Route xử lý kết quả thanh toán
+      element: <PaymentResult />,
     },
   ]);
 
