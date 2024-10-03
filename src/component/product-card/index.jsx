@@ -4,6 +4,7 @@ import { useState } from "react";
 import "./index.scss";
 import api from "../../config/axios";
 import { useCart } from "../../contexts/CartContext";
+import { getFullImageUrl } from '../../utils/imageHelpers';
 
 function ProductCard({ flower }) {
   const navigate = useNavigate();
@@ -70,13 +71,15 @@ function ProductCard({ flower }) {
     navigate(`/product/${flower.flowerId}`);
   };
 
+  const imageUrl = getFullImageUrl(flower.imageUrl);
+
   if (!flower) return null;
 
   return (
     <div className="product-card">
       <div onClick={handleViewDetails}>
       <img 
-        src={flower.imageUrl || "https://i.postimg.cc/Jz0MW07g/top-view-roses-flowers-Photoroom.png"} 
+        src={imageUrl || "https://i.postimg.cc/Jz0MW07g/top-view-roses-flowers-Photoroom.png"} 
         alt={flower.flowerName} 
       />
       <p className="name">{flower.flowerName} ({flower.quantity})</p>

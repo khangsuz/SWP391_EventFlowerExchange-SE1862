@@ -137,13 +137,13 @@ const Profile = () => {
                         <nav class="space-y-2">
                             <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded">Thông tin</Link>
                             <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded">Danh sách đơn hàng</Link>
-                            <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded">Địa chỉ</Link>
+                            <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded">Đổi mật khẩu</Link>
                             {userType === 'Seller' && (
                                 <Link 
                                     to="/manage-product" 
                                     className="block text-gray-700 hover:bg-gray-200 p-2 rounded"
                                 >
-                                    Tạo Sản Phẩm Mới
+                                    Quản lí sản phẩm
                                 </Link>
                             )}
                             <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded" onClick={handleLogout}>Đăng xuất</Link>
