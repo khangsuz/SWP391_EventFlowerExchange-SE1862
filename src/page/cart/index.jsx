@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../../contexts/CartContext";
+import PaymentButton from "../../component/button/PaymentButton";
 import "../../index.css";
 import Header from "../../component/header";
 import Footer from "../../component/footer";
@@ -166,6 +167,7 @@ function Cart() {
                         >
                             {isCheckingOut ? 'Đang xử lý...' : 'Thanh toán'}
                         </button>
+                        <PaymentButton />
                     </div>
                 </div>
             </div>
