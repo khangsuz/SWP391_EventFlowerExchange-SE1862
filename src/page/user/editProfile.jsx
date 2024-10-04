@@ -11,7 +11,7 @@ const Profile = () => {
     const [userData, setUserData] = useState(null);
     const [error, setError] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
-    const [userType, setUserType] = useState(null); 
+    const [userType, setUserType] = useState(null);
     const [editedData, setEditedData] = useState({});
     const [success, setSuccess] = useState(null);
     const { updateCartItemCount } = useCart();
@@ -139,8 +139,8 @@ const Profile = () => {
                             <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded">Danh sách đơn hàng</Link>
                             <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded">Đổi mật khẩu</Link>
                             {userType === 'Seller' && (
-                                <Link 
-                                    to="/manage-product" 
+                                <Link
+                                    to="/manage-product"
                                     className="block text-gray-700 hover:bg-gray-200 p-2 rounded"
                                 >
                                     Quản lí sản phẩm
@@ -153,8 +153,23 @@ const Profile = () => {
                         <h1 className="text-center text-2xl font-bold mb-5">Thông tin tài khoản</h1>
                         <div className="flex mb-3 gap-4">
                             <h2 className="text-2xl p-2">Tên đăng nhập:</h2>
-                                <p className="p-2">{userData.name}</p>
+                            <p className="p-2">{userData.name}</p>
                         </div>
+                        <div className="flex mb-3 gap-4">
+                            <h2 className="text-2xl p-2">Tên đầy đủ:</h2>
+                            <p className="text-lg">{isEditing ? (
+                                <input
+                                    type="text"
+                                    name="fullName"
+                                    value={editedData.fullName}
+                                    onChange={handleChange}
+                                    className="w-full p-2 border rounded"
+                                />
+                            ) : (
+                                <p className="p-2">{userData.fullName}</p>
+                            )}</p>
+                        </div>
+
                         <div className="flex mb-3 gap-4">
                             <h2 className="text-2xl p-2">Email:</h2>
                             <p className="text-lg">{isEditing ? (
