@@ -15,6 +15,8 @@ import CreateProduct from "./page/seller";
 import ForgotPassword from './page/login/forgetPassword';
 import AdminLayout from "./page/admin/AdminLayout";
 import QuanLiSanPham from "./page/admin/QuanLiSanPham";
+import QuanLiNguoiDung from "./page/admin/QuanLiNguoiDung";
+import QuanLiDonHang from "./page/admin/QuanLiDonHang";
 import PaymentButton from "./component/button/PaymentButton";
 import PaymentResult from "./page/payment";
 
@@ -75,8 +77,16 @@ const App = () => {
           element: <Dashboard />,
         },
         {
+          path: "quanlinguoidung",
+          element: <QuanLiNguoiDung />,
+        },
+        {
           path: "quanlisanpham",
           element: <QuanLiSanPham />, 
+        },
+        {
+          path: "quanlidonhang",
+          element: <QuanLiDonHang />,
         },
       ],
     },
