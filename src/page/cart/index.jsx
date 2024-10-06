@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../../contexts/CartContext";
-import PaymentButton from "../../component/button/PaymentButton";
-import "../../index.css";
+import api from "../../config/axios";
 import Header from "../../component/header";
 import Footer from "../../component/footer";
-import api from "../../config/axios";
 
 function Cart() {
     const navigate = useNavigate();
@@ -21,7 +19,8 @@ function Cart() {
     const updateQuantity = (flowerId, newQuantity) => {
         const parsedQuantity = parseInt(newQuantity, 10);
         if (isNaN(parsedQuantity) || parsedQuantity < 1) return;
-        const updatedCart = cartItems.map(item => item.flowerId === flowerId ? { ...item, quantity: parsedQuantity } : item
+        const updatedCart = cartItems.map(item =>
+            item.flowerId === flowerId ? { ...item, quantity: parsedQuantity } : item
         );
         setCartItems(updatedCart);
         localStorage.setItem('cart', JSON.stringify(updatedCart));
@@ -45,35 +44,29 @@ function Cart() {
         return cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
     };
 
-    const handleCheckout = async () => {
+    const handleCheckoutAndPayment = async () => {
         const token = localStorage.getItem('token');
-        
+
         if (!token) {
             alert('Vui lòng đăng nhập trước khi thanh toán');
             navigate('/login');
             return;
         }
-    
+
         if (cartItems.length === 0) {
             alert('Giỏ hàng của bạn đang trống');
             return;
         }
-    
-        const confirmCheckout = window.confirm('Bạn có chắc chắn muốn thanh toán?');
-        if (!confirmCheckout) {
-            return;
-        }
-    
+
         setIsCheckingOut(true);
         try {
-            const cartItemsToSend = cartItems.map(item => ({
-                flowerId: item.flowerId,
-                quantity: item.quantity
-            }));
-    
-            const response = await api.post(
-                'Orders/checkout', 
-                cartItemsToSend,
+            // Bước 1: Tạo đơn hàng
+            const checkoutResponse = await api.post(
+                'Orders/checkout',
+                cartItems.map(item => ({
+                    flowerId: item.flowerId,
+                    quantity: item.quantity
+                })),
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -81,25 +74,43 @@ function Cart() {
                     }
                 }
             );
-      
-            console.log('Checkout successful:', response.data);
-            alert('Đặt hàng thành công!');
-            clearCart();
-            navigate('/products', { state: { orderId: response.data.orderId } });
-        } catch (error) {
-            console.error('Checkout error:', error);
-            if (error.response) {
-                alert(`Checkout failed: ${error.response.data}`);
-            } else if (error.request) {
-                alert('Network error. Please check your connection and try again.');
-            } else {
-                alert('An unexpected error occurred. Please try again.');
+
+            if (!checkoutResponse.data || !checkoutResponse.data.orderId) {
+                throw new Error('Không thể tạo đơn hàng');
             }
+
+            // Bước 2: Tạo thanh toán VNPay
+            const paymentResponse = await api.post(
+                'Payments/createVnpPayment',
+                {
+                    amount: calculateSubtotal(),
+                    orderId: checkoutResponse.data.orderId
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            if (paymentResponse.data && paymentResponse.data.paymentUrl) {
+                // Clear the cart here
+                clearCart(); 
+                localStorage.removeItem('cartItems'); 
+                localStorage.setItem('currentOrderId', checkoutResponse.data.orderId);
+                window.location.href = paymentResponse.data.paymentUrl;
+            } else {
+                throw new Error('Không thể tạo URL thanh toán');
+            }
+        } catch (error) {
+            console.error('Checkout and payment error:', error);
+            alert('Có lỗi xảy ra khi xử lý đơn hàng và thanh toán. Vui lòng thử lại.');
         } finally {
             setIsCheckingOut(false);
         }
     };
-    
+
     return (
         <>
             <Header />
@@ -117,14 +128,14 @@ function Cart() {
                                     <button onClick={() => removeFromCart(item.flowerId)} className="rounded-full group flex items-center justify-center focus-within:outline-red-500 ">
                                         <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <circle className="fill-red-50 transition-all duration-500 group-hover:fill-red-400" cx="17" cy="17" r="17" fill="" />
-                                            <path className="stroke-red-500 transition-all duration-500 group-hover:stroke-white" d="M14.1673 13.5997V12.5923C14.1673 11.8968 14.7311 11.333 15.4266 11.333H18.5747C19.2702 11.333 19.834 11.8968 19.834 12.5923V13.5997M19.834 13.5997C19.834 13.5997 14.6534 13.5997 11.334 13.5997C6.90804 13.5998 27.0933 13.5998 22.6673 13.5997C21.5608 13.5997 19.834 13.5997 19.834 13.5997ZM12.4673 13.5997H21.534V18.8886C21.534 20.6695 21.534 21.5599 20.9807 22.1131C20.4275 22.6664 19.5371 22.6664 17.7562 22.6664H16.2451C14.4642 22.6664 13.5738 22.6664 13.0206 22.1131C12.4673 21.5599 12.4673 20.6695 12.4673 18.8886V13.5997Z" stroke="#EF4444" strokeWidth="1.6" strokeLinecap="round" />
+                                            <path className="stroke-red-500 transition-all duration-500 group-hover:stroke-white" d="M14.1673 13.5997V12.5923C14.1673 11.7805 14.8223 11.1255 15.6342 11.1255H18.3673C19.1792 11.1255 19.8342 11.7805 19.8342 12.5923V13.5997M21.3332 13.5997V21.4082C21.3332 22.22 20.6782 22.875 19.8663 22.875H14.1353C13.3235 22.875 12.6685 22.22 12.6685 21.4082V13.5997M22.8748 13.5997H11.1268" stroke="" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                         </svg>
                                     </button>
                                 </div>
-                                <div className="flex justify-between items-center">
-                                    <div className="flex items-center gap-4">
-                                        <button 
-                                            onClick={() => updateQuantity(item.flowerId, item.quantity - 1)} 
+                                <div className="flex items-center justify-between w-full">
+                                    <div className="flex items-center gap-3">
+                                        <button
+                                            onClick={() => updateQuantity(item.flowerId, item.quantity - 1)}
                                             disabled={item.quantity <= 1}
                                             className="group rounded-[50px] border border-gray-200 shadow-sm shadow-transparent p-2.5 flex items-center justify-center bg-white transition-all duration-500 hover:shadow-gray-200 hover:bg-gray-50 hover:border-gray-300 focus-within:outline-gray-300"
                                         >
@@ -161,19 +172,18 @@ function Cart() {
                     <div className="max-lg:max-w-lg max-lg:mx-auto">
                         <p className="font-normal text-base leading-7 text-gray-500 text-center mb-5 mt-6">Phí vận chuyển đã bao gồm trong thanh toán</p>
                         <button
-                            onClick={handleCheckout}
+                            onClick={handleCheckoutAndPayment}
                             disabled={cartItems.length === 0 || isCheckingOut}
                             className="rounded-full py-4 px-6 bg-gray-600 text-white font-semibold text-lg w-full text-center transition-all duration-500 hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
                         >
-                            {isCheckingOut ? 'Đang xử lý...' : 'Thanh toán'}
+                            {isCheckingOut ? 'Đang xử lý...' : 'Thanh toán với VNPay'}
                         </button>
-                        <PaymentButton />
                     </div>
                 </div>
             </div>
             <Footer />
         </>
-    )
+    );
 }
 
 export default Cart;

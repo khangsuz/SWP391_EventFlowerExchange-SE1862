@@ -19,23 +19,22 @@ const Login = () => {
   const handleLogin = async (values) => {
     try {
       const response = await api.post("Users/login", values);
-      console.log("Raw API response:", response);
       console.log("Login response data:", response.data);
-
-      const { token = null, role = null } = response.data;
-
+  
+      const { token = null, userType = null } = response.data;
+  
       console.log("Extracted token:", token);
-      console.log("Extracted role:", role);
-
+      console.log("Extracted userType:", userType);
+  
       if (!token) {
         throw new Error("No token received from server");
       }
-
+  
       localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify({ token, role }));
-
+      localStorage.setItem("user", JSON.stringify({ token, userType }));
+  
       console.log("Stored user data:", JSON.parse(localStorage.getItem("user")));
-      if (role === "Admin") {
+      if (userType === "Admin") {
         navigate("/admin/dashboard");
       } else {
         navigate("/");
@@ -66,7 +65,7 @@ const Login = () => {
           localStorage.setItem("token", result.data.token);
           localStorage.setItem("user", JSON.stringify(result.data.user));
 
-          if (result.data.user.role === "Admin") {
+          if (result.data.user.userType === "Admin") {
             navigate("/admin/dashboard");
           } else {
             navigate("/");

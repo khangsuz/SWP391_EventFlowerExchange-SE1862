@@ -16,7 +16,7 @@ import ForgotPassword from './page/login/forgetPassword';
 import AdminLayout from "./page/admin/AdminLayout";
 import QuanLiSanPham from "./page/admin/QuanLiSanPham";
 import PaymentButton from "./component/button/PaymentButton";
-import PaymentResult from "./page/payment";
+import PaymentResult from "./page/payment/paymentResult";
 
 const App = () => {
   const router = createBrowserRouter([
@@ -51,6 +51,10 @@ const App = () => {
     {
       path: "products",
       element: <Products />
+    },
+    {
+      path: "/payment-result",
+      element: <PaymentResult />
     },
     {
       path: "forgot-password",

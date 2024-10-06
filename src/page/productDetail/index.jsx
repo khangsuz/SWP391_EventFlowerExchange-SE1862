@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import "../../index.css";
 import Header from "../../component/header";
 import Footer from "../../component/footer";
@@ -14,6 +14,9 @@ const ProductDetail = () => {
   const [relatedFlowers, setRelatedFlowers] = useState([]);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const [newReview, setNewReview] = useState({ rating: 5, reviewComment: "" });
+  const [canReview, setCanReview] = useState(false);
 
   const fetchFlowerDetails = async () => {
     try {
@@ -54,8 +57,43 @@ const ProductDetail = () => {
     }
   };
 
+  const fetchReviews = async () => {
+    try {
+      const response = await api.get(`Reviews/flower/${id}`);
+      return response.data;
+    } catch (err) {
+      console.error("Error fetching reviews:", err);
+      return [];
+    }
+  };
+
+  const sortReviews = (reviews) => {
+    return reviews.sort((a, b) => new Date(b.reviewDate) - new Date(a.reviewDate));
+  };
+
+  const checkCanReview = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setCanReview(false);
+      return;
+    }
+    try {
+      const response = await api.get(`Reviews/canReview/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setCanReview(response.data);
+    } catch (err) {
+      console.error("Error checking review ability:", err);
+      setCanReview(false);
+    }
+  };
+
   useEffect(() => {
     fetchFlowerDetails();
+    fetchReviews().then(fetchedReviews => {
+      setReviews(sortReviews(fetchedReviews));
+    });
+    checkCanReview();
   }, [id]);
 
   const addToCart = (item) => {
@@ -105,6 +143,36 @@ const ProductDetail = () => {
     }
   };
 
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem("token");
+    if (!token || !canReview) {
+      alert("Bạn không có quyền đánh giá sản phẩm này.");
+      return;
+    }
+    try {
+      const userId = JSON.parse(localStorage.getItem("user")).userId;
+      const response = await api.post("Reviews", {
+        ...newReview,
+        flowerId: flower.flowerId,
+        userId: userId,
+      }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      
+      if (response.data) {
+        alert("Đánh giá đã được gửi thành công!");
+        setNewReview({ rating: 5, reviewComment: "" });
+        setReviews(sortReviews([response.data, ...reviews]));
+      } else {
+        throw new Error('Invalid response data');
+      }
+    } catch (err) {
+      console.error("Error submitting review:", err);
+      alert("Có lỗi xảy ra khi gửi đánh giá.");
+    }
+  };
+
   if (!flower) return <div>Loading...</div>;
 
   return (
@@ -149,13 +217,65 @@ const ProductDetail = () => {
         </div>
       </div>
       
+      {/* Reviews Section */}
+      <div className="reviews-section container px-5 py-12 mx-auto">
+        <h2 className="text-2xl font-bold mb-6">Đánh giá sản phẩm</h2>
+        
+        {canReview ? (
+          <form onSubmit={handleReviewSubmit} className="mb-8">
+            <div className="mb-4">
+              <label className="block mb-2">Đánh giá:</label>
+              <select
+                value={newReview.rating}
+                onChange={(e) => setNewReview({ ...newReview, rating: parseInt(e.target.value) })}
+                className="border rounded p-2"
+              >
+                {[1, 2, 3, 4, 5].map((num) => (
+                  <option key={num} value={num}>{num} sao</option>
+                ))}
+              </select>
+            </div>
+            <div className="mb-4">
+              <label className="block mb-2">Nhận xét:</label>
+              <textarea
+                value={newReview.reviewComment}
+                onChange={(e) => setNewReview({ ...newReview, reviewComment: e.target.value })}
+                className="border rounded p-2 w-full"
+                rows="4"
+              ></textarea>
+            </div>
+            <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">Gửi đánh giá</button>
+          </form>
+        ) : (
+          <p className="mb-8 text-gray-600">Chỉ những khách hàng đã mua sản phẩm mới có thể đánh giá.</p>
+        )}
+
+        {/* Display Reviews */}
+        <div className="reviews-list">
+          {reviews.length > 0 ? (
+            reviews.map((review) => (
+              <div key={review.reviewId} className="review-item border-b py-4">
+                <div className="flex items-center mb-2">
+                  <span className="font-bold mr-2">{review.userName || 'Anonymous'}</span>
+                  <span>{review.rating} sao</span>
+                </div>
+                <p>{review.reviewComment}</p>
+                <span className="text-sm text-gray-500">{new Date(review.reviewDate).toLocaleDateString()}</span>
+              </div>
+            ))
+          ) : (
+            <p>Chưa có đánh giá nào cho sản phẩm này.</p>
+          )}
+        </div>
+      </div>
+
       {/* Related Products Section */}
       {relatedFlowers && relatedFlowers.length > 0 && (
         <div className="related-products container px-5 py-12 mx-auto">
           <h2 className="related-products-title text-2xl font-bold mb-6">Sản phẩm liên quan</h2>
           <div className="related-products-grid flex flex-wrap -mx-4">
             {relatedFlowers.map((relatedFlower) => (
-              <div key={relatedFlower.flowerId} className="related-product-item lg:w-1/2 md:w-1/4 px-2 mb-2">
+              <div key={relatedFlower.flowerId} className="related-product-item lg:w-1/2 md:w-1/4 px-2 mbitem lg:w-1/2 md:w-1/4 px-2 mb-2">
                 <ProductCard flower={relatedFlower} />
               </div>
             ))}
