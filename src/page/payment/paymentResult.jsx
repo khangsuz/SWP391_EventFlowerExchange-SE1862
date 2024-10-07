@@ -10,37 +10,24 @@ function PaymentResult() {
     const [paymentStatus, setPaymentStatus] = useState(null);
 
     useEffect(() => {
-        const queryParams = new URLSearchParams(location.search);
-        const vnp_ResponseCode = queryParams.get('vnp_ResponseCode');
-        const vnp_TxnRef = queryParams.get('vnp_TxnRef');
-    
-        const updatePaymentStatus = async () => {
+        const processPaymentResult = async () => {
             try {
-                const token = localStorage.getItem('token');
-                const response = await api.get(`Payments/vnpay-callback`, {
-                    params: { vnp_ResponseCode, vnp_TxnRef },
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
-                console.log('Payment status updated successfully');
+                const response = await api.get(`Payments/vnpay-return${location.search}`);
+                console.log('Payment result processed:', response.data);
                 
                 if (response.data.status === 'success') {
                     setPaymentStatus('Giao dịch thành công!');
-                    // Clear the cart here
-                    localStorage.removeItem('cartItems');
-                    // If you're using a state management library like Redux, dispatch an action to clear the cart
-                    // For example: dispatch(clearCart());
+                    localStorage.removeItem('cart');
                 } else {
-                    setPaymentStatus('Giao dịch không thành công. ' + response.data.message);
+                    setPaymentStatus(response.data.message || 'Giao dịch không thành công. Vui lòng thử lại sau.');
                 }
             } catch (error) {
-                console.error('Error updating payment status:', error.response?.data || error.message);
-                setPaymentStatus('Có lỗi xảy ra khi cập nhật trạng thái thanh toán.');
+                console.error('Error processing payment result:', error.response?.data || error.message);
+                setPaymentStatus(error.response?.data?.message || 'Có lỗi xảy ra khi xử lý kết quả thanh toán.');
             }
         };
     
-        updatePaymentStatus();
+        processPaymentResult();
     }, [location]);
 
     const handleContinueShopping = () => {

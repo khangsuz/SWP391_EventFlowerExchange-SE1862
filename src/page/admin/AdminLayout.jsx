@@ -19,15 +19,15 @@ const AdminLayout = () => {
             <Link to="/admin/dashboard">Bảng điều khiển</Link>
           </Menu.Item>
           <Menu.Item key="2" icon={<TeamOutlined />}>
-            <Link to="/admin/quanlinhanvien">Quản lý nhân viên</Link>
+            <Link to="/admin/QuanLiNguoiDung">Quản lý người dùng</Link>
           </Menu.Item>
-          <Menu.Item key="3" icon={<CustomerServiceOutlined />}>
+          {/* <Menu.Item key="3" icon={<CustomerServiceOutlined />}>
             <Link to="/admin/quanlikhachhang">Quản lý khách hàng</Link>
-          </Menu.Item>
-          <Menu.Item key="4" icon={<ShopOutlined />}>
+          </Menu.Item> */}
+          <Menu.Item key="3" icon={<ShopOutlined />}>
             <Link to="/admin/quanlisanpham">Quản lý sản phẩm</Link>
           </Menu.Item>
-          <Menu.Item key="5" icon={<ShopOutlined />}>
+          <Menu.Item key="4" icon={<ShopOutlined />}>
             <Link to="/admin/quanlidonhang">Quản lý đơn hàng</Link>
           </Menu.Item>
         </Menu>
@@ -37,7 +37,7 @@ const AdminLayout = () => {
           <h2 className="text-center">Admin Dashboard</h2>
         </Header>
         <Content className="m-4">
-          <h3 className="text-center mb-5">Chào mừng trở lại</h3>
+          <h3 className="text-center mb-5"></h3>
           <Outlet /> {/* Đây là nơi các trang con sẽ được render */}
         </Content>
         <Footer className="text-center">
