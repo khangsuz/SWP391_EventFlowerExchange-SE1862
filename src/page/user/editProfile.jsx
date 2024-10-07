@@ -131,6 +131,11 @@ const Profile = () => {
                 <div className="flex max-w-6xl mx-auto">
                     <div className="w-1/4 bg-white shadow-md rounded-lg p-5">
                         <div className="text-center mb-5">
+                            <img 
+                                    src={userData.profileImageUrl} 
+                                    alt={userData.name} 
+                                    className="w-24 h-24 rounded-full mx-auto mb-2" 
+                                />
                             <h2 className="text-xl font-semibold mt-2">{userData.name}</h2>
                             <p className="text-gray-600">{userData.email}</p>
                         </div>
