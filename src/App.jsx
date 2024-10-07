@@ -21,7 +21,6 @@ import PaymentButton from "./component/button/PaymentButton";
 import PaymentResult from "./page/payment";
 import PersonalProduct from "./page/personalProduct";
 
-
 const App = () => {
   const router = createBrowserRouter([
     {
@@ -53,14 +52,13 @@ const App = () => {
       element: <ProductDetail />,
     },
     {
+      path: "personal-product/:userId", 
+      element: <PersonalProduct />, 
+    },
+    {
       path: "products",
       element: <Products />
     },
-    {
-      path: "personal-product/:userId", 
-      element: <PersonalProduct />,
-    },
-    
     {
       path: "forgot-password",
       element: <ForgotPassword />
