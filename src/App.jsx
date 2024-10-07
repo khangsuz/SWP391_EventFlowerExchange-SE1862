@@ -19,6 +19,7 @@ import QuanLiNguoiDung from "./page/admin/QuanLiNguoiDung";
 import QuanLiDonHang from "./page/admin/QuanLiDonHang";
 import PaymentButton from "./component/button/PaymentButton";
 import PaymentResult from "./page/payment";
+import Chat from "./page/chat";
 
 const App = () => {
   const router = createBrowserRouter([
@@ -63,6 +64,10 @@ const App = () => {
       element: <PrivateRoute requiredRole="Seller">
         <CreateProduct />
       </PrivateRoute>
+    },
+    {
+      path: "chat",
+      element: <Chat />,
     },
     {
       path: "admin",
