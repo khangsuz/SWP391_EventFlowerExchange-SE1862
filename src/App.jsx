@@ -21,6 +21,8 @@ import QuanLiDonHang from "./page/admin/QuanLiDonHang";
 import PaymentButton from "./component/button/PaymentButton";
 import PaymentResult from "./page/payment";
 import Chat from "./page/chat";
+import PersonalProduct from "./page/personalProduct";
+
 const App = () => {
   const router = createBrowserRouter([
     {
@@ -50,6 +52,10 @@ const App = () => {
     {
       path: "product/:id",
       element: <ProductDetail />,
+    },
+    {
+      path: "personal-product/:userId", 
+      element: <PersonalProduct />, 
     },
     {
       path: "products",
