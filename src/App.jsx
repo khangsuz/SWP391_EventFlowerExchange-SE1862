@@ -8,7 +8,6 @@ import Dashboard from "./page/admin";
 import Cart from "./page/cart";
 import Products from "./page/products";
 import ProductDetail from "./page/productDetail";
-import SellerProfile from "./page/seller/profile";
 import PrivateRoute from "./component/private-route";
 import About from "./page/about";
 import Profile from "./page/user/editProfile";
@@ -74,10 +73,6 @@ const App = () => {
     {
       path: "chat",
       element: <Chat />,
-    },
-    {
-      path: "seller/:sellerId", // Thêm route cho SellerProfile
-      element: <SellerProfile />,
     },
     {
       path: "admin",
