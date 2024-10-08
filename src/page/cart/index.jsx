@@ -60,6 +60,8 @@ function Cart() {
     
         navigate('/checkout');
     };
+
+    
     
     return (
         <>
