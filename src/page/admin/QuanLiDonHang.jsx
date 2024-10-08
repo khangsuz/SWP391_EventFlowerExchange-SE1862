@@ -88,7 +88,7 @@ const QuanLiDonHang = () => {
         const response = await axios.get(`https://localhost:7288/api/admin/orders/${order.orderId}`, {
             headers: { Authorization: `Bearer ${token}` },
         });
-        setSelectedOrder(response.data); // Cập nhật selectedOrder với dữ liệu chi tiết
+        setSelectedOrder(response.data);
         setIsDetailModalVisible(true);
     } catch (error) {
         message.error("Lỗi khi lấy chi tiết đơn hàng.");

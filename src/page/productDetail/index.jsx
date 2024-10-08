@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import "../../index.css";
+import { Link } from "react-router-dom";
 import Header from "../../component/header";
 import Footer from "../../component/footer";
 import api from "../../config/axios";
@@ -14,16 +15,14 @@ const ProductDetail = () => {
   const [relatedFlowers, setRelatedFlowers] = useState([]);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [seller, setSeller] = useState(null);
 
   const fetchFlowerDetails = async () => {
     try {
-      console.log("Fetching flower details for ID:", id);
-      const response = await api.get(`Flowers/${id}`);
-      console.log("Flower details:", response.data);
-      setFlower(response.data);
-      if (response.data && response.data.categoryId) {
-        fetchRelatedFlowers(response.data.categoryId);
-      }
+      const flowerResponse = await api.get(`Flowers/${id}`);
+      setFlower(flowerResponse.data);
+      const sellerResponse = await api.get(`Users/${flowerResponse.data.userId}`);
+      setSeller(sellerResponse.data);
     } catch (err) {
       console.error("Error fetching flower details:", err);
     }
@@ -31,21 +30,10 @@ const ProductDetail = () => {
 
   const fetchRelatedFlowers = async (categoryId) => {
     try {
-      console.log("Fetching related flowers for category:", categoryId);
       const response = await api.get(`Flowers`);
-      console.log("All flowers:", response.data);
-      
       if (response.data && Array.isArray(response.data)) {
-        const related = [];
-        for (let i = 0; i < response.data.length; i++) {
-          const flower = response.data[i];
-          if (flower.categoryId === categoryId && flower.flowerId !== parseInt(id)) {
-            related.push(flower);
-            if (related.length === 4) break; // Lấy tối đa 4 sản phẩm liên quan
-          }
-        }
-        console.log("Related flowers:", related);
-        setRelatedFlowers(related);
+        const related = response.data.filter(flower => flower.categoryId === categoryId && flower.flowerId !== parseInt(id));
+        setRelatedFlowers(related.slice(0, 4));
       } else {
         console.error("Unexpected API response structure:", response.data);
       }
@@ -55,7 +43,14 @@ const ProductDetail = () => {
   };
 
   useEffect(() => {
-    fetchFlowerDetails();
+    const fetchData = async () => {
+      await fetchFlowerDetails();
+      if (flower) {
+        fetchRelatedFlowers(flower.categoryId);
+      }
+    };
+
+    fetchData();
   }, [id]);
 
   const addToCart = (item) => {
@@ -80,10 +75,9 @@ const ProductDetail = () => {
     setLoading(true);
 
     const token = localStorage.getItem("token");
-    console.log("Token:", token);
 
     try {
-      const response = await api.post("Orders/addtocart", null, {
+      await api.post("Orders/addtocart", null, {
         params: {
           flowerId: flower.flowerId,
           quantity: quantity,
@@ -92,7 +86,6 @@ const ProductDetail = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log("Add to cart response:", response);
       addToCart(flower);
       updateCartItemCount();
       alert("Thêm vào giỏ hàng thành công!");
@@ -117,24 +110,22 @@ const ProductDetail = () => {
             <div className="lg:w-1/2 w-full lg:pl-10 lg:py-6 mt-3 lg:mt-0">
               <h1 className="text-gray-900 text-3xl title-font font-medium mb-1 mt-3">{flower.flowerName}</h1>
               <span className="title-font font-medium text-xl text-[#bc0000]">{flower.price.toLocaleString()}₫</span>
-              <div className="flex mb-4"></div>
-              <p className="leading-relaxed">Lưu ý : Sản phẩm thực tế có thể sẽ khác đôi chút so với sản phẩm mẫu do đặc tính cắm, gói hoa thủ công. Các loại hoa không có sẵn, hoặc hết mùa sẽ được thay thế bằng các loại hoa khác, nhưng vẫn đảm bảo về định lượng hoa, tone màu, kiểu dáng và độ thẩm mỹ như sản phẩm mẫu.</p>
+              <p className="leading-relaxed">Lưu ý: Sản phẩm thực tế có thể sẽ khác đôi chút so với sản phẩm mẫu do đặc tính cắm, gói hoa thủ công. Các loại hoa không có sẵn, hoặc hết mùa sẽ được thay thế bằng các loại hoa khác, nhưng vẫn đảm bảo về định lượng hoa, tone màu, kiểu dáng và độ thẩm mỹ như sản phẩm mẫu.</p>
               <div className="flex mt-6 items-center pb-5 border-b-2 border-gray-200 mb-5">
                 <div className="flex ml-6 items-center">
                   <div className="relative">
-                    <span className="absolute right-0 top-0 h-full w-10 text-center text-gray-600 pointer-events-none flex items-center justify-center">
-                    </span>
+                    <span className="absolute right-0 top-0 h-full w-10 text-center text-gray-600 pointer-events-none flex items-center justify-center"></span>
                   </div>
                 </div>
               </div>
               <div className="flex">
-                <button className="px-4 text-lg border-2 py-2 text-gray-800 font-bold rounded hover:bg-gray-300 transition duration-300 ease-in-out disabled:cursor-not-allowed" 
+                <button className="px-4 text-lg border-2 py-2 text-gray-800 font-bold rounded hover:bg-gray-300 transition duration-300 ease-in-out" 
                 onClick={() => setQuantity(quantity - 1)} 
                 disabled={quantity <= 1}>
                   -
                 </button>
                 <span className="mt-1 mx-4 text-4xl font-semibold">{quantity}</span>
-                <button className="px-4 text-lg border-2 py-2  text-gray-800 font-bold rounded hover:bg-gray-300 transition duration-300 ease-in-out" 
+                <button className="px-4 text-lg border-2 py-2 text-gray-800 font-bold rounded hover:bg-gray-300 transition duration-300 ease-in-out" 
                 onClick={() => setQuantity(quantity + 1)}>
                   +
                 </button>
@@ -148,9 +139,37 @@ const ProductDetail = () => {
           </div>
         </div>
       </div>
-      
+
+      {/* Seller Info */}
+      {seller && (
+        <div className="seller-info container px-5 py-12 mx-auto">
+          <div className="flex items-center justify-between border-b pb-4">
+            <div className="flex items-center">
+              <Link to={`/seller/${seller.userId}`}>
+              <img src={seller.avatarUrl} alt={seller.name} className="w-16 h-16 rounded-full border border-gray-300" />
+              </Link>
+              <div className="ml-4">
+                <h3 className="text-lg font-semibold">{seller.name}</h3>
+                <p className="text-gray-500">Online 13 Phút Trước</p>
+              </div>
+            </div>
+            <button className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Chat Ngay</button>
+          </div>
+          <div className="flex justify-between mt-4">
+            <div>
+              <p className="text-gray-700">Đánh Giá: <span className="font-bold">{seller.rating} ({seller.reviewCount})</span></p>
+              <p className="text-gray-700">Sản Phẩm: <span className="font-bold">{seller.productCount}</span></p>
+            </div>
+            <div>
+              <p className="text-gray-700">Ngày Tham Gia: <span className="font-bold">{new Date(seller.registrationDate).toLocaleDateString()}</span></p>
+              <p className="text-gray-700">Người Theo Dõi: <span className="font-bold">{seller.followerCount}</span></p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Related Products Section */}
-      {relatedFlowers && relatedFlowers.length > 0 && (
+      {relatedFlowers.length > 0 && (
         <div className="related-products container px-5 py-12 mx-auto">
           <h2 className="related-products-title text-2xl font-bold mb-6">Sản phẩm liên quan</h2>
           <div className="related-products-grid flex flex-wrap -mx-4">

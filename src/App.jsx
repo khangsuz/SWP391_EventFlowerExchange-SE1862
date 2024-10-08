@@ -8,6 +8,7 @@ import Dashboard from "./page/admin";
 import Cart from "./page/cart";
 import Products from "./page/products";
 import ProductDetail from "./page/productDetail";
+import SellerProfile from "./page/seller/profile";
 import PrivateRoute from "./component/private-route";
 import About from "./page/about";
 import Profile from "./page/user/editProfile";
@@ -20,7 +21,6 @@ import QuanLiDonHang from "./page/admin/QuanLiDonHang";
 import PaymentButton from "./component/button/PaymentButton";
 import PaymentResult from "./page/payment";
 import Chat from "./page/chat";
-
 const App = () => {
   const router = createBrowserRouter([
     {
@@ -41,11 +41,11 @@ const App = () => {
     },
     {
       path: "cart",
-      element: <Cart />
+      element: <Cart />,
     },
     {
       path: "about",
-      element: <About />
+      element: <About />,
     },
     {
       path: "product/:id",
@@ -53,11 +53,11 @@ const App = () => {
     },
     {
       path: "products",
-      element: <Products />
+      element: <Products />,
     },
     {
       path: "forgot-password",
-      element: <ForgotPassword />
+      element: <ForgotPassword />,
     },
     {
       path: "manage-product", 
@@ -68,6 +68,10 @@ const App = () => {
     {
       path: "chat",
       element: <Chat />,
+    },
+    {
+      path: "seller/:sellerId", // Thêm route cho SellerProfile
+      element: <SellerProfile />,
     },
     {
       path: "admin",

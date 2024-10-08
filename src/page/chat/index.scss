@@ -1,0 +1,31 @@
+.chat-box {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 300px;
+    border: 1px solid #ccc;
+    background-color: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    z-index: 1000;
+}
+
+.messages {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+}
+
+.messages .message {
+    margin: 5px 0;
+}
+
+.messages .user {
+    text-align: right;
+    color: blue;
+}
+
+.messages .seller {
+    text-align: left;
+    color: green;
+}

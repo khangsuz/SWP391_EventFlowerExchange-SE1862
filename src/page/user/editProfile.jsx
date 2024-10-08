@@ -151,7 +151,7 @@ const Profile = () => {
                     </div>
                     <div className="flex-1 bg-white shadow-md rounded-lg p-5 ml-5">
                         <h1 className="text-center text-2xl font-bold mb-5">Thông tin tài khoản</h1>
-                        <div className="flex mb-3 gap-4">
+                        <div className="flex mb-3 gap-10">
                             <h2 className="text-2xl p-2">Tên đầy đủ:</h2>
                             <p className="text-lg">{isEditing ? (
                                 <input
@@ -159,14 +159,14 @@ const Profile = () => {
                                     name="fullName"
                                     value={editedData.fullName}
                                     onChange={handleChange}
-                                    className="w-full p-2 border rounded"
+                                    className="text-2xl w-full p-2 border rounded"
                                 />
                             ) : (
-                                <p className="p-2">{userData.fullName}</p>
+                                <p className="text-2xl p-2">{userData.fullName}</p>
                             )}</p>
                         </div>
 
-                        <div className="flex mb-3 gap-4">
+                        <div className="flex mb-3 gap-10">
                             <h2 className="text-2xl p-2">Email:</h2>
                             <p className="text-lg">{isEditing ? (
                                 <input
@@ -174,13 +174,13 @@ const Profile = () => {
                                     name="email"
                                     value={editedData.email}
                                     onChange={handleChange}
-                                    className="w-full p-2 border rounded"
+                                    className="text-2xl w-full p-2 border rounded"
                                 />
                             ) : (
-                                <p className="p-2">{userData.email}</p>
+                                <p className="p-2 text-2xl">{userData.email}</p>
                             )}</p>
                         </div>
-                        <div className="flex mb-3 gap-4">
+                        <div className="flex mb-3 gap-10">
                             <h2 className="text-2xl p-2">Số điện thoại:</h2>
                             <p className="text-lg">{isEditing ? (
                                 <input
@@ -188,13 +188,13 @@ const Profile = () => {
                                     name="phone"
                                     value={editedData.phone}
                                     onChange={handleChange}
-                                    className="w-full p-2 border rounded"
+                                    className="text-2xl w-full p-2 border rounded"
                                 />
                             ) : (
-                                <p className="p-2">{userData.phone}</p>
+                                <p className="p-2 text-2xl">{userData.phone}</p>
                             )}</p>
                         </div>
-                        <div className="flex mb-3 gap-4">
+                        <div className="flex mb-3 gap-10">
                             <h2 className="text-2xl p-2">Địa chỉ:</h2>
                             <p className="text-lg">{isEditing ? (
                                 <input
@@ -202,10 +202,10 @@ const Profile = () => {
                                     name="address"
                                     value={editedData.address}
                                     onChange={handleChange}
-                                    className="w-full p-2 border rounded"
+                                    className="text-2xl w-full p-2 border rounded"
                                 />
                             ) : (
-                                <p className="p-2">{userData.address}</p>
+                                <p className="p-2 text-2xl">{userData.address}</p>
                             )}</p>
                         </div>
                         <div className="">
