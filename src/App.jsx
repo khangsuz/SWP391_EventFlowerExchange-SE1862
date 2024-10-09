@@ -18,8 +18,11 @@ import QuanLiSanPham from "./page/admin/QuanLiSanPham";
 import QuanLiNguoiDung from "./page/admin/QuanLiNguoiDung";
 import QuanLiDonHang from "./page/admin/QuanLiDonHang";
 import PaymentButton from "./component/button/PaymentButton";
-import PaymentResult from "./page/payment";
+import PaymentResult from "./page/payment/paymentResult";
+import CheckoutPage from './page/payment/checkOutPage'; 
 import PersonalProduct from "./page/personalProduct";
+import ManageProducts from './page/personalProduct/ManageProducts';
+
 
 const App = () => {
   const router = createBrowserRouter([
@@ -56,8 +59,20 @@ const App = () => {
       element: <PersonalProduct />, 
     },
     {
+      path: "manage-products/:userId", // Đường dẫn quản lý sản phẩm
+      element: <ManageProducts />,
+    },
+    {
       path: "products",
       element: <Products />
+    },
+    {
+      path: "/payment-result",
+      element: <PaymentResult />
+    },
+    {
+      path: "/checkout",
+      element: <CheckoutPage />
     },
     {
       path: "forgot-password",
@@ -103,6 +118,7 @@ const App = () => {
       path: "payment-result", 
       element: <PaymentResult />,
     },
+    
   ]);
 
   return(

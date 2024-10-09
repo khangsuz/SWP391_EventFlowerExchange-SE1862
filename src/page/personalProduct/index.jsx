@@ -12,7 +12,17 @@ const PersonalProduct = () => {
   const [sellerProducts, setSellerProducts] = useState([]);
   const [sellerProfile, setSellerProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  
+  const [currentUserId, setCurrentUserId] = useState(null);
+
+  const fetchCurrentUser = async () => {
+    try {
+      const response = await api.get("/Users/current-user");
+      setCurrentUserId(response.data.userId);
+    } catch (err) {
+      console.error("Error fetching current user:", err);
+    }
+  };
+
   const fetchSellerProducts = async () => {
     try {
       const response = await api.get(`Flowers/seller/${userId}`);
@@ -32,6 +42,7 @@ const PersonalProduct = () => {
   };
 
   useEffect(() => {
+    fetchCurrentUser();
     fetchSellerProducts();
     fetchSellerProfile();
   }, [userId]);
@@ -43,8 +54,14 @@ const PersonalProduct = () => {
   }, [sellerProducts]);
 
   const handleChat = () => {
-    navigate(`/chat/${userId}`); // Redirect to chat page
+    navigate(`/chat/${userId}`);
   };
+
+  const handleManageProducts = () => {
+    navigate(`/manage-products/${userId}`); // Đường dẫn tới trang quản lý sản phẩm
+  };
+  
+
 
   if (loading) return <div>Loading...</div>;
 
@@ -58,7 +75,6 @@ const PersonalProduct = () => {
               <img src={sellerProfile.profileImageUrl} alt={sellerProfile.name} className="w-10 h-10 rounded-full mr-2" />
               <div className="ml-2">
                 <h2 className="text-xl font-bold">{sellerProfile.name}</h2>
-                
                 <div className="flex mt-2">
                   <div className="mr-6">
                     <span>Đánh Giá: </span><strong>{sellerProfile.rating || 0}</strong>
@@ -77,16 +93,27 @@ const PersonalProduct = () => {
                   <button className="text-sm border border-gray-300 rounded py-1 px-2" onClick={() => {}}>
                     Yêu Thích
                   </button>
+                  {currentUserId === parseInt(userId) && ( // Kiểm tra nếu người dùng hiện tại là người bán
+                    <button
+                      className="text-sm border border-gray-300 rounded py-1 px-2 ml-2"
+                      onClick={handleManageProducts}
+                    >
+                      Quản lý sản phẩm
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
           </div>
         )}
+
         <h1 className="text-2xl font-bold mb-6">Sản phẩm của người bán</h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {sellerProducts.length > 0 ? (
             sellerProducts.map((product) => (
-              <ProductCard key={product.flowerId} flower={product} />
+              <div key={product.flowerId} className="relative">
+                <ProductCard flower={product} />
+              </div>
             ))
           ) : (
             <p>Không có sản phẩm nào từ người bán này.</p>

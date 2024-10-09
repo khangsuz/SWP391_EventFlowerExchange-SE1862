@@ -16,12 +16,14 @@ const Profile = () => {
     const [success, setSuccess] = useState(null);
     const { updateCartItemCount } = useCart();
     const [profileImage, setProfileImage] = useState(null); 
+    
 
     const fetchUserData = async () => {
         try {
             const response = await api.get('/Users/profile');
             setUserData(response.data);
             setEditedData(response.data);
+            const storedImage = localStorage.getItem('profileImage');
         } catch (error) {
             console.error("Error fetching user data:", error);
             setError("Failed to load user data. Please try again later.");
@@ -74,13 +76,14 @@ const Profile = () => {
         if (file) {
             setProfileImage(file);
             setEditedData({ ...editedData, profileImageUrl: URL.createObjectURL(file) }); 
+            localStorage.setItem('profileImage', imageUrl);
         }
     };
 
     const handleSave = async () => {
         let isValid = true;
         if (editedData.name !== userData.name) {
-            const nameRegex = /^[^\s!@#$%^&*()_+={}\[\]:;"'<>,.?~`]+$/;
+            const nameRegex = /^[^\s!@#$%^&*()_+={}\[\]:;"'<>,.?~]+$/;
             if (!nameRegex.test(editedData.name)) {
                 alert("Tên không được chứa dấu cách hoặc ký tự đặc biệt.");
                 isValid = false;
@@ -129,7 +132,7 @@ const Profile = () => {
     if (!userData) {
         return <div>Loading...</div>;
     }
-
+    const userId = userData.userId;
     return (
         <>
             <Header />
@@ -170,10 +173,10 @@ const Profile = () => {
                             <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded">Đổi mật khẩu</Link>
                             {userType === 'Seller' && (
                                 <Link
-                                    to="/manage-product"
+                                    to={`/personal-product/${userId}`}
                                     className="block text-gray-700 hover:bg-gray-200 p-2 rounded"
                                 >
-                                    Quản lí sản phẩm
+                                    Quản lí Shop
                                 </Link>
                             )}
                             <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded" onClick={handleLogout}>Đăng xuất</Link>

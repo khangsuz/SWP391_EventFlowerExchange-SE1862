@@ -7,6 +7,7 @@ import api from "../../config/axios";
 import { useCart } from "../../contexts/CartContext";
 import ProductCard from "../../component/product-card";
 import { useNavigate } from "react-router-dom";
+import { getFullImageUrl } from '../../utils/imageHelpers';
 
 
 const ProductDetail = () => {
@@ -21,10 +22,13 @@ const ProductDetail = () => {
   const [newReview, setNewReview] = useState({ rating: 5, reviewComment: "" });
   const [canReview, setCanReview] = useState(false);
   const [seller, setSeller] = useState(null);
+  const imageUrl = flower ? getFullImageUrl(flower.imageUrl) : null;
 
   const fetchFlowerDetails = async () => {
     try {
+      console.log("Fetching flower details for ID:", id);
       const response = await api.get(`Flowers/${id}`);
+      console.log("Flower details:", response.data);
       setFlower(response.data);
 
       // Fetch seller details using userId
@@ -175,8 +179,8 @@ const ProductDetail = () => {
       <div className="text-gray-700 body-font overflow-hidden bg-white product-detail">
         <div className="container px-5 py-24 mx-auto">
           <div className="lg:w-3/5 mx-auto flex flex-wrap">
-            <img alt="ecommerce" className="lg:w-3/6 w-full object-cover object-center rounded border border-gray-200" src={flower.imageUrl} />
-            <div className="lg:w-1/2 w-full lg:pl-10 lg:py-6 mt-3 lg:mt-0">
+          <img alt="ecommerce" className="lg:w-3/6 w-full object-cover object-center rounded border border-gray-200"  src={imageUrl}  />
+          <div className="lg:w-1/2 w-full lg:pl-10 lg:py-6 mt-3 lg:mt-0">
               <h1 className="text-gray-900 text-3xl title-font font-medium mb-1 mt-3">{flower.flowerName}</h1>
               <span className="title-font font-medium text-xl text-[#bc0000]">{flower.price.toLocaleString()}₫</span>
               <p className="leading-relaxed">Lưu ý: Sản phẩm thực tế có thể sẽ khác đôi chút so với sản phẩm mẫu do đặc tính cắm, gói hoa thủ công.</p>
