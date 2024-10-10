@@ -7,6 +7,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { FaGoogle } from "react-icons/fa";
 import { useGoogleLogin } from "@react-oauth/google";
 import Footer from "../../component/footer";
+import { Notification, notifySuccess, notifyError } from '../../component/notification';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -25,23 +26,17 @@ const Login = () => {
   
       console.log("Extracted token:", token);
       console.log("Extracted userType:", userType);
-  
-      if (!token) {
-        throw new Error("No token received from server");
-      }
-  
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify({ token, userType }));
-  
       console.log("Stored user data:", JSON.parse(localStorage.getItem("user")));
+      notifySuccess("Đăng nhập thành công")
       if (userType === "Admin") {
         navigate("/admin/dashboard");
       } else {
         navigate("/");
       }
     } catch (error) {
-      console.error("Login error:", error);
-      alert("Sai tên đăng nhập hoặc mật khẩu");
+      notifyError("Sai tên đăng nhập hoặc mật khẩu");
     }
   };
 
@@ -67,7 +62,7 @@ const Login = () => {
         }
       } catch (error) {
         console.error("Đăng nhập thất bại:", error.response?.data || error.message);
-        alert("Đăng nhập bằng Google thất bại. Vui lòng thử lại.");
+        notifyError("Đăng nhập bằng Google thất bại. Vui lòng thử lại.");
       }
     },
     flow: 'implicit',
@@ -86,18 +81,21 @@ const Login = () => {
       if (result.data.token) {
         localStorage.setItem("token", result.data.token);
         localStorage.setItem("user", JSON.stringify(result.data.user));
+        localStorage.setItem("cart", JSON.stringify([]));
+        notifySuccess("Đăng ký thành công!");
         navigate("/");
       } else {
         throw new Error("Không nhận được token từ server");
       }
     } catch (error) {
       console.error("Đăng ký thất bại:", error.response?.data || error.message);
-      alert("Đăng ký thất bại. Vui lòng thử lại.");
+      notifyError("Đăng ký thất bại. Vui lòng thử lại.");
     }
   };
 
   return (
     <>
+    <Notification />
       <Header />
       <div className="login">
         <div className="login__image mt-1 mb-1">

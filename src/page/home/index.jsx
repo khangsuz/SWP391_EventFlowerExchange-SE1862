@@ -6,6 +6,7 @@ import Footer from "../../component/footer";
 import ProductCard from "../../component/product-card";
 import { Link } from "react-router-dom";
 
+
 const Home = () => {
   const [flowers, setFlowers] = useState([]);
   const [filteredFlowers, setFilteredFlowers] = useState([]);

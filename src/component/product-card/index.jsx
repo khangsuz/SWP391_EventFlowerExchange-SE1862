@@ -5,6 +5,7 @@ import "./index.scss";
 import api from "../../config/axios";
 import { useCart } from "../../contexts/CartContext";
 import { getFullImageUrl } from '../../utils/imageHelpers';
+import { Notification, notifySuccess, notifyError } from '../../component/notification';
 
 function ProductCard({ flower }) {
   const navigate = useNavigate();
@@ -37,11 +38,9 @@ function ProductCard({ flower }) {
     console.log("Token:", token);
 
     const quantity = 1;
-
     if (!token) {
-      alert("Bạn cần đăng nhập để thêm sản phẩm!");
+      notifyError("Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng!");
       setLoading(false);
-      navigate("/login")
       return;
     }
 
@@ -58,11 +57,11 @@ function ProductCard({ flower }) {
       addToCart(flower, quantity);
       updateCartItemCount();
       console.log(response);
-      alert("Thêm vào giỏ hàng thành công!");
+      notifySuccess(`${flower.flowerName} đã được thêm vào giỏ hàng!`);
     } catch (err) {
       console.log(err);
       const errorMessage = err.response?.data?.message || "Thêm vào giỏ hàng thất bại!";
-      alert(errorMessage);
+      notifyError(errorMessage);
     } finally {
       setLoading(false);
     }

@@ -14,10 +14,8 @@ function Header({ setFilteredFlowers }) {
   const [userData, setUserData] = useState(null);
 
   useEffect(() => {
-    console.log("Header useEffect running");
     const token = localStorage.getItem('token');
     const user = localStorage.getItem('user');
-    console.log("Token:", token);
     console.log("User:", user);
     if (token && user) {
       setCurrentUser(JSON.parse(user));

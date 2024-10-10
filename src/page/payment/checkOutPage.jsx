@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback  } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../component/header';
 import Footer from '../../component/footer';
 import api from '../../config/axios';
+import { Notification, notifySuccess, notifyError } from '../../component/notification';
 
 function CheckoutPage() {
     const navigate = useNavigate();
@@ -31,19 +32,62 @@ function CheckoutPage() {
     useEffect(() => {
         if (selectedDistrict) {
             fetchWards(selectedDistrict);
+            setSelectedWard('');
+            setShippingFee(0);
         }
     }, [selectedDistrict]);
 
-    useEffect(() => {
-        if (selectedDistrict && selectedWard) {
-            handleShippingFeeCalculation();
+    const handleShippingFeeCalculation = useCallback(async () => {
+        if (!selectedDistrict || !selectedWard) {
+            setShippingFee(0);
+            return;
         }
-    }, [selectedDistrict, selectedWard]);
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            notifyError('Vui lòng đăng nhập trước khi thanh toán');
+            navigate('/login');
+            return;
+        }
+
+        try {
+            const shippingRequest = {
+                from_district_id: 1442,
+                to_district_id: selectedDistrict,
+                to_ward_code: selectedWard,
+                insurance_value: cartItems.reduce((total, item) => total + item.price * item.quantity, 0),
+                weight: 6000 * cartItems.length,
+                length: 10,
+                width: 10,
+                height: 10
+            };
+            const response = await api.post('Shipping/calculate-shipping-fee', shippingRequest, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.data && response.data.data) {
+                setShippingFee(response.data.data.total);
+            } else {
+                console.error('Unexpected response structure:', response);
+                notifyError('Shop chưa hỗ trợ giao hàng đến địa chỉ này.');
+            }
+        } catch (error) {
+            console.error('Error calculating shipping fee:', error);
+            notifyError('Shop chưa hỗ trợ giao hàng đến địa chỉ này.');
+        }
+    }, [selectedDistrict, selectedWard, cartItems, navigate]);
+
+    useEffect(() => {
+        handleShippingFeeCalculation();
+    }, [handleShippingFeeCalculation]);
 
     const fetchUserInfo = async () => {
         const token = localStorage.getItem('token');
         if (!token) {
-            alert('Vui lòng đăng nhập trước khi thanh toán');
+            notifyError('Vui lòng đăng nhập trước khi thanh toán');
             navigate('/login');
             return;
         }
@@ -57,7 +101,7 @@ function CheckoutPage() {
             setUserInfo(response.data);
         } catch (error) {
             console.error('Error fetching user info:', error);
-            alert('Không thể lấy thông tin người dùng. Vui lòng thử lại sau.');
+            notifyError('Không thể lấy thông tin người dùng. Vui lòng thử lại sau.');
         }
     };
 
@@ -89,59 +133,22 @@ function CheckoutPage() {
         return total >= 0 ? total : 0;
     };
 
-    const handleShippingFeeCalculation = async () => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            alert('Vui lòng đăng nhập trước khi thanh toán');
-            navigate('/login');
-            return;
-        }
-
-        try {
-            const shippingRequest = {
-                from_district_id: 1442,
-                to_district_id: selectedDistrict,
-                to_ward_code: selectedWard,
-                weight: 100,
-                length: 10,
-                width: 10,
-                height: 10
-            };
-            const response = await api.post('Shipping/calculate-shipping-fee', shippingRequest, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.data && response.data.data) {
-                setShippingFee(response.data.data.total);
-            } else {
-                console.error('Unexpected response structure:', response);
-                alert('Shop chưa hỗ trợ giao hàng đến địa chỉ này.');
-            }
-        } catch (error) {
-            console.error('Error calculating shipping fee:', error);
-            alert('Shop chưa hỗ trợ giao hàng đến địa chỉ này.');
-        }
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         const token = localStorage.getItem('token');
         if (!token) {
-            alert('Vui lòng đăng nhập trước khi thanh toán');
+            notifyError('Vui lòng đăng nhập trước khi thanh toán');
             navigate('/login');
             return;
         }
 
         if (!selectedDistrict || !selectedWard) {
-            alert('Vui lòng chọn quận/huyện và phường/xã trong TP. Hồ Chí Minh.');
+            notifyError('Vui lòng chọn quận/huyện và phường/xã trong TP. Hồ Chí Minh.');
             return;
         }
 
         if (!paymentMethod) {
-            alert('Vui lòng chọn phương thức thanh toán.');
+            notifyError('Vui lòng chọn phương thức thanh toán.');
             return;
         }
 
@@ -178,27 +185,38 @@ function CheckoutPage() {
                     }
                 }
             );
-
+            notifySuccess('Đặt hàng thành công. Chuyển đến trang thanh toán');
             localStorage.setItem('pendingOrderId', checkoutResponse.data.orderId);
             window.location.href = paymentResponse.data.paymentUrl;
-
+            
         } catch (error) {
-            console.error('Payment error:', error);
+            notifyError('Thanh toán thất bại');
             if (error.response) {
-                alert(`Payment failed: ${error.response.data}`);
+                notifyError(`Thanh toán thất bại: ${error.response.data}`);
             } else if (error.request) {
-                alert('Network error. Please check your connection and try again.');
+                notifyError('Lỗi mạng. Vui lòng kiểm tra kết nối và thử lại.');
             } else {
-                alert('An unexpected error occurred. Please try again.');
+                notifyError('Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.');
             }
         } finally {
             setIsProcessing(false);
         }
     };
 
+    const handleDistrictChange = (e) => {
+        setSelectedDistrict(e.target.value);
+        setSelectedWard('');
+        setShippingFee(0);
+    };
+
+    const handleWardChange = (e) => {
+        setSelectedWard(e.target.value);
+    };
+
     return (
         <>
-            <Header />
+        <Notification />
+        <Header />
             <div className="container mx-auto px-4 py-8 flex">
                 <div className="w-full md:w-2/3 px-4">
                     <h2 className="text-2xl text-amber-500 font-bold mb-4">Thông tin thanh toán</h2>
@@ -253,7 +271,7 @@ function CheckoutPage() {
                             <select
                                 name="district"
                                 value={selectedDistrict}
-                                onChange={(e) => setSelectedDistrict(e.target.value)}
+                                onChange={handleDistrictChange}
                                 className="w-full p-2 border rounded"
                                 required
                             >   
@@ -270,7 +288,7 @@ function CheckoutPage() {
                             <select
                                 name="ward"
                                 value={selectedWard}
-                                onChange={(e) => setSelectedWard(e.target.value)}
+                                onChange={handleWardChange}
                                 className="w-full p-2 border rounded"
                                 required
                             >

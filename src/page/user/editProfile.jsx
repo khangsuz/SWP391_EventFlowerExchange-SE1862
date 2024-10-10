@@ -5,6 +5,7 @@ import api from "../../config/axios";
 import Footer from "../../component/footer";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../../contexts/CartContext";
+import { Notification, notifySuccess, notifyError } from '../../component/notification';
 
 const Profile = () => {
     const navigate = useNavigate();
@@ -48,6 +49,7 @@ const Profile = () => {
         localStorage.removeItem('user');
         localStorage.removeItem('cart');
         clearCart();
+        notifySuccess("Đăng xuất thành công!");
         navigate('/login');
     }
 
@@ -74,7 +76,7 @@ const Profile = () => {
         if (editedData.email !== userData.email) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(editedData.email)) {
-                alert("Email không hợp lệ.");
+                notifyError("Email không hợp lệ.");
                 isValid = false;
             }
         }
@@ -82,7 +84,7 @@ const Profile = () => {
         if (editedData.phone !== userData.phone) {
             const phoneRegex = /^\d{10,11}$/;
             if (!phoneRegex.test(editedData.phone)) {
-                alert("Số điện thoại phải có từ 10 đến 11 số.");
+                notifyError("Số điện thoại phải có từ 10 đến 11 số.");
                 isValid = false;
             }
         }
@@ -92,12 +94,12 @@ const Profile = () => {
                 const response = await api.put('/Users/profile', editedData);
                 setUserData(response.data);
                 setIsEditing(false);
-                setSuccess("Profile updated successfully!");
+                setSuccess("Cập nhật thành công!");
                 setError(null);
                 setTimeout(() => setSuccess(null), 3000);
             } catch (error) {
                 console.error("Error updating user data:", error);
-                setError("Failed to update user data. Please try again.");
+                setError("Cập nhật thất bại! Vui lòng thử lại sau.");
                 setSuccess(null);
             }
         }
@@ -109,6 +111,7 @@ const Profile = () => {
 
     return (
         <>
+        <Notification />
             <Header />
             <div className="bg-slate-100 p-20">
                 {error && (

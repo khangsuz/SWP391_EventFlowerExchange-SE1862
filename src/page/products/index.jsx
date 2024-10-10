@@ -7,6 +7,7 @@ import api from "../../config/axios";
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import "./index.scss";
+import { Notification } from '../../component/notification'; // Import Notification
 
 const Products = () => {
   const [flowers, setFlowers] = useState([]);
@@ -89,9 +90,9 @@ const Products = () => {
 
   return (
     <div className="products__main">
+      <Notification />
       <Header setFilteredFlowers={setFilteredFlowers} />
       <div className="filters-container">
-        
         <button className="filter-toggle" onClick={() => setIsFilterOpen(!isFilterOpen)}>
           Lọc & Sắp xếp {isFilterOpen ? '▲' : '▼'}
         </button>
