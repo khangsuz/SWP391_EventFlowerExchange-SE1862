@@ -6,6 +6,8 @@ import api from "../../config/axios";
 import { useCart } from "../../contexts/CartContext";
 import { getFullImageUrl } from '../../utils/imageHelpers';
 import { Notification, notifySuccess, notifyError } from '../../component/notification';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faStar } from '@fortawesome/free-solid-svg-icons';
 
 function ProductCard({ flower }) {
   const navigate = useNavigate();
@@ -73,6 +75,10 @@ function ProductCard({ flower }) {
 
   const imageUrl = getFullImageUrl(flower.imageUrl);
 
+  const averageRating = flower.rating ? (flower.rating.reduce((acc, curr) => acc + curr, 0) / flower.rating.length).toFixed(1) : 0;
+  const fullStars = Math.floor(averageRating);
+  const halfStar = averageRating % 1 >= 0.5 ? 1 : 0;
+
   if (!flower) return null;
 
   return (
@@ -84,6 +90,17 @@ function ProductCard({ flower }) {
       />
       <p className="name">{flower.flowerName} ({flower.quantity})</p>
       <p className="price">{Number(flower.price).toLocaleString()}₫</p>
+      
+      <div className="rating flex items-center">
+        {[...Array(fullStars)].map((_, index) => (
+          <FontAwesomeIcon key={index} icon={faStar} className="star filled" />
+        ))}
+        {halfStar === 1 && <FontAwesomeIcon icon={faStar} className="start half" />}
+        {[...Array(5 - fullStars - halfStar)].map((_, index) => (
+          <FontAwesomeIcon key={index + fullStars + halfStar} icon={faStar} className="star" /> 
+        ))}
+      </div>
+
       <center>
         <button onClick={handleAddToCart}>
           Thêm vào giỏ hàng

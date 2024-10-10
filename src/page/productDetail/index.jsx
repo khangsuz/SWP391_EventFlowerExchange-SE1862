@@ -7,6 +7,8 @@ import api from "../../config/axios";
 import { useCart } from "../../contexts/CartContext";
 import ProductCard from "../../component/product-card";
 import { getFullImageUrl } from '../../utils/imageHelpers';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faStar } from '@fortawesome/free-solid-svg-icons';
 
 const ProductDetail = () => {
   const navigate = useNavigate(); 
@@ -30,7 +32,6 @@ const ProductDetail = () => {
       const response = await api.get(`Flowers/${id}`);
       setFlower(response.data);
 
-      // Fetch seller details using userId
       if (response.data && response.data.userId) {
         const sellerResponse = await api.get(`Users/${response.data.userId}`);
         setSeller(sellerResponse.data);
@@ -210,6 +211,16 @@ const ProductDetail = () => {
             <img alt="ecommerce" className="lg:w-3/6 w-full object-cover object-center rounded border border-gray-200"  src={imageUrl || "https://i.postimg.cc/Jz0MW07g/top-view-roses-flowers-Photoroom.png"}  />
             <div className="lg:w-1/2 w-full lg:pl-10 lg:py-6 mt-3 lg:mt-0">
               <h1 className="text-gray-900 text-3xl title-font font-medium mb-1 mt-3">{flower.flowerName}</h1>
+              <div className="rating flex items-center mt-4 mb-4">
+              <span className="mr-2 text-lg underline">{averageRating.toFixed(1)}</span>
+                {[...Array(Math.floor(averageRating))].map((_, index) => (
+                  <FontAwesomeIcon key={index} icon={faStar} className="w-5 h-5 text-yellow-500" />
+                ))}
+                {averageRating % 1 >= 0.5 && <FontAwesomeIcon icon={faStar} className="w-5 h-5 text-yellow-500 opacity-50" />} {/* Sao nửa */}
+                {[...Array(5 - Math.ceil(averageRating))].map((_, index) => (
+                  <FontAwesomeIcon key={index + Math.ceil(averageRating)} icon={faStar} className="w-5 h-5 text-gray-300" /> // Sao chưa được đánh giá
+                ))}
+              </div>
               <span className="title-font font-medium text-xl text-[#bc0000]">{flower.price.toLocaleString()}₫</span>
               <div className="flex mb-4"></div>
               <p className="leading-relaxed">Lưu ý : Sản phẩm thực tế có thể sẽ khác đôi chút so với sản phẩm mẫu do đặc tính cắm, gói hoa thủ công. Các loại hoa không có sẵn, hoặc hết mùa sẽ được thay thế bằng các loại hoa khác, nhưng vẫn đảm bảo về định lượng hoa, tone màu, kiểu dáng và độ thẩm mỹ như sản phẩm mẫu.</p>
@@ -367,14 +378,18 @@ const ProductDetail = () => {
       </div>
   
       {/* Related Products Section */}
-      {relatedFlowers.length > 0 && (
+      {relatedFlowers && relatedFlowers.length > 0 && (
         <div className="related-products container px-5 py-12 mx-auto">
-          <h2 className="related-products-title text-2xl font-bold mb-6">Sản phẩm liên quan</h2>
-          <div className="related-products-grid flex flex-wrap -mx-4">
+          <h2 className="related-products-title text-2xl font-bold mb-6 text-center">Sản phẩm liên quan</h2>
+          <div className="related-products-grid flex overflow-x-auto space-x-6">
             {relatedFlowers.map((relatedFlower) => (
-              <div key={relatedFlower.flowerId} className="related-product-item lg:w-1/2 md:w-1/4 px-2 mbitem lg:w-1/2 md:w-1/4 px-2 mb-2">
-                <ProductCard flower={relatedFlower} />
-              </div>
+              <Link key={relatedFlower.flowerId} to={`/product/${relatedFlower.flowerId}`} className="related-product-item w-1/6 bg-white shadow overflow-hidden">
+                <img src={relatedFlower.imageUrl} alt={relatedFlower.flowerName} className="w-full h-48 object-cover" /> {/* Thay đổi ở đây */}
+                <div className="p-4">
+                  <h3 className="text-sm font-semibold">{relatedFlower.flowerName}</h3>
+                  <span className="text-sm text-[#bc0000]">{relatedFlower.price.toLocaleString()}₫</span>
+                </div>
+              </Link>
             ))}
           </div>
         </div>

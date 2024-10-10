@@ -52,7 +52,25 @@
         background-color: #446084;
       }
     }
+  }
+  .rating {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 10px 0;
 
-    
+    .star {
+      font-size: 20px;
+      color: gray;
+  
+      &.filled {
+        color: yellow;
+      }
+  
+      &.half {
+        color: yellow;
+        opacity: 0.5;
+      }
+    }
   }
 }
