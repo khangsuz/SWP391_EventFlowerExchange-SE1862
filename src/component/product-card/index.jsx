@@ -41,6 +41,7 @@ function ProductCard({ flower }) {
     if (!token) {
       alert("Bạn cần đăng nhập để thêm sản phẩm!");
       setLoading(false);
+      navigate("/login")
       return;
     }
 

@@ -20,6 +20,7 @@ import QuanLiDonHang from "./page/admin/QuanLiDonHang";
 import PaymentButton from "./component/button/PaymentButton";
 import PaymentResult from "./page/payment/paymentResult";
 import CheckoutPage from './page/payment/checkOutPage'; 
+import PersonalProduct from "./page/personalProduct";
 
 const App = () => {
   const router = createBrowserRouter([
@@ -56,6 +57,10 @@ const App = () => {
       element: <Products />
     },
     {
+      path: "personal-product/:userId", 
+      element: <PersonalProduct />, 
+    },
+    {
       path: "/payment-result",
       element: <PaymentResult />
     },
@@ -84,6 +89,10 @@ const App = () => {
         {
           path: "dashboard",
           element: <Dashboard />,
+        },
+        {
+          path: "personal-product/:userId", 
+          element: <PersonalProduct />, 
         },
         {
           path: "quanlinguoidung",

@@ -2,15 +2,20 @@ import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import Header from "../../component/header";
 import ProductCard from "../../component/product-card";
-import "./index.scss";
-import api from "../../config/axios";
 import Footer from "../../component/footer";
+import api from "../../config/axios";
+import Slider from 'rc-slider';
+import 'rc-slider/assets/index.css';
+import "./index.scss";
 
 const Products = () => {
   const [flowers, setFlowers] = useState([]);
   const [filteredFlowers, setFilteredFlowers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [flowersPerPage] = useState(9);
+  const [priceRange, setPriceRange] = useState([0, 10000000]); // Giả sử giá tối đa là 10 triệu
+  const [sortOption, setSortOption] = useState("default");
+  const [isFilterOpen, setIsFilterOpen] = useState(true);
   
   const location = useLocation();
   const categoryId = location.state?.categoryId;
@@ -19,20 +24,53 @@ const Products = () => {
     try {
       const response = await api.get("Flowers");
       setFlowers(response.data);
-      if (categoryId) {
-        const filtered = response.data.filter(flower => flower.categoryId === categoryId);
-        setFilteredFlowers(filtered);
-      } else {
-        setFilteredFlowers(response.data);
-      }
     } catch (err) {
       console.log(err);
     }
   };
 
+  const filterAndSortFlowers = (flowers) => {
+    let filtered = [...flowers];
+
+    // Áp dụng bộ lọc giá
+    filtered = filtered.filter(flower => flower.price >= priceRange[0] && flower.price <= priceRange[1]);
+
+    // Áp dụng sắp xếp
+    switch (sortOption) {
+      case "name-asc":
+        filtered.sort((a, b) => a.flowerName.localeCompare(b.flowerName));
+        break;
+      case "name-desc":
+        filtered.sort((a, b) => b.flowerName.localeCompare(a.flowerName));
+        break;
+      case "price-asc":
+        filtered.sort((a, b) => a.price - b.price);
+        break;
+      case "price-desc":
+        filtered.sort((a, b) => b.price - a.price);
+        break;
+      default:
+        break;
+    }
+
+    return filtered;
+  };
+
   useEffect(() => {
     fetchFlower();
-  }, [categoryId]);
+  }, []);
+
+  useEffect(() => {
+    if (flowers.length > 0) {
+      let filtered = flowers;
+      if (categoryId) {
+        filtered = filtered.filter(flower => flower.categoryId === categoryId);
+      }
+      filtered = filterAndSortFlowers(filtered);
+      setFilteredFlowers(filtered);
+      setCurrentPage(1);
+    }
+  }, [flowers, categoryId, priceRange, sortOption]);
 
   const indexOfLastFlower = currentPage * flowersPerPage;
   const indexOfFirstFlower = indexOfLastFlower - flowersPerPage;
@@ -45,13 +83,50 @@ const Products = () => {
     pageNumbers.push(i);
   }
 
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+  };
+
   return (
     <div className="products__main">
       <Header setFilteredFlowers={setFilteredFlowers} />
-      <div className="collection-top-bar">
-        <div className="text-center collection-title mt-7">
-          <h1 className="text-2xl font-bold">Tất cả sản phẩm</h1>
-        </div>
+      <div className="filters-container">
+        
+        <button className="filter-toggle" onClick={() => setIsFilterOpen(!isFilterOpen)}>
+          Lọc & Sắp xếp {isFilterOpen ? '▲' : '▼'}
+        </button>
+        {isFilterOpen && (
+          <div className="filters-wrapper">
+            <div className="filter-group">
+              <label>Lọc theo giá:</label>
+              <Slider
+                range
+                min={0}
+                max={10000000}
+                value={priceRange}
+                onChange={setPriceRange}
+              />
+              <div className="price-range-display">
+                {formatPrice(priceRange[0])} - {formatPrice(priceRange[1])}
+              </div>
+            </div>
+            <div className="filter-group">
+              <label htmlFor="sortOption">Sắp xếp:</label>
+              <select
+                id="sortOption"
+                value={sortOption}
+                onChange={(e) => setSortOption(e.target.value)}
+                className="filter-select"
+              >
+                <option value="default">Mặc định</option>
+                <option value="name-asc">Tên A-Z</option>
+                <option value="name-desc">Tên Z-A</option>
+                <option value="price-asc">Giá tăng dần</option>
+                <option value="price-desc">Giá giảm dần</option>
+              </select>
+            </div>
+          </div>
+        )}
       </div>
       <div className="home__main-content">
         {currentFlowers.length > 0 ? (
