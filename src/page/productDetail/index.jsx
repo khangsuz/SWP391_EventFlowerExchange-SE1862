@@ -9,6 +9,7 @@ import ProductCard from "../../component/product-card";
 import { getFullImageUrl } from '../../utils/imageHelpers';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStar } from '@fortawesome/free-solid-svg-icons';
+import { Notification, notifySuccess, notifyError } from '../../component/notification';
 
 const ProductDetail = () => {
   const navigate = useNavigate(); 
@@ -141,11 +142,11 @@ const ProductDetail = () => {
       });
       addToCart(flower);
       updateCartItemCount();
-      alert("Thêm vào giỏ hàng thành công!");
+      notifySuccess("Thêm vào giỏ hàng thành công!");
     } catch (err) {
       console.error("Error adding to cart:", err);
-      const errorMessage = err.response?.data?.message || "Thêm vào giỏ hàng thất bại!";
-      alert(errorMessage);
+      const errorMessage = err.response?.data?.message || "Không thể thêm quá số lượng trong kho!";
+      notifyError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -164,7 +165,7 @@ const ProductDetail = () => {
     e.preventDefault();
     const token = localStorage.getItem("token");
     if (!token || !canReview) {
-      alert("Bạn không có quyền đánh giá sản phẩm này.");
+      notifyError("Bạn không có quyền đánh giá sản phẩm này.");
       return;
     }
     try {
@@ -187,7 +188,7 @@ const ProductDetail = () => {
       }
       
       if (response.status === 204 || response.data) {
-        alert(reviewId ? "Đánh giá đã được cập nhật thành công!" : "Đánh giá đã được gửi thành công!");
+        notifySuccess(reviewId ? "Đánh giá đã được cập nhật thành công!" : "Đánh giá đã được gửi thành công!");
         fetchReviews();
         setEditingReviewId(null);
         setNewReview({ rating: 5, reviewComment: "" });
@@ -196,7 +197,7 @@ const ProductDetail = () => {
       }
     } catch (err) {
       console.error("Error submitting review:", err);
-      alert("Có lỗi xảy ra khi gửi đánh giá. Vui lòng thử lại sau.");
+      notifyError("Có lỗi xảy ra khi gửi đánh giá. Vui lòng thử lại sau.");
     }
   };
 
@@ -204,6 +205,7 @@ const ProductDetail = () => {
 
   return (
     <>
+      <Notification />
       <Header />
       <div className="text-gray-700 body-font overflow-hidden bg-white product-detail">
         <div className="container px-5 py-24 mx-auto">

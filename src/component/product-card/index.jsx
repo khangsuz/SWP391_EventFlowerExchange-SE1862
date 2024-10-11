@@ -19,15 +19,21 @@ function ProductCard({ flower }) {
     const existingItem = storedCart.find((cartItem) => cartItem.flowerId === item.flowerId);
     
     if (existingItem) {
+      if (existingItem.quantity + quantity > item.quantity) {
+        notifyError(`Không thể thêm quá số lượng trong kho!`);
+        return;
+      }
       const updatedCart = storedCart.map((cartItem) =>
         cartItem.flowerId === item.flowerId
           ? { ...cartItem, quantity: cartItem.quantity + quantity }
           : cartItem
       );
       localStorage.setItem('cart', JSON.stringify(updatedCart));
+      notifySuccess(`${item.flowerName} đã được thêm vào giỏ hàng!`);
     } else {
       const updatedCart = [...storedCart, { ...item, quantity: quantity }];
       localStorage.setItem('cart', JSON.stringify(updatedCart));
+      notifySuccess(`${item.flowerName} đã được thêm vào giỏ hàng!`);
     }
   };
 
@@ -59,7 +65,6 @@ function ProductCard({ flower }) {
       addToCart(flower, quantity);
       updateCartItemCount();
       console.log(response);
-      notifySuccess(`${flower.flowerName} đã được thêm vào giỏ hàng!`);
     } catch (err) {
       console.log(err);
       const errorMessage = err.response?.data?.message || "Thêm vào giỏ hàng thất bại!";

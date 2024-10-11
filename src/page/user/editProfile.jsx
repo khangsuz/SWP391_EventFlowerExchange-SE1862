@@ -6,7 +6,6 @@ import Footer from "../../component/footer";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../../contexts/CartContext";
 import { Notification, notifySuccess, notifyError } from '../../component/notification';
-
 const Profile = () => {
     const navigate = useNavigate();
     const [userData, setUserData] = useState(null);
@@ -106,7 +105,9 @@ const Profile = () => {
     };
 
     if (!userData) {
-        return <div>Loading...</div>;
+        return (
+        <div>Loading...</div>
+        );
     }
 
     return (

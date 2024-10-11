@@ -1,11 +1,11 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../../contexts/CartContext";
 import "../../index.css";
 import Header from "../../component/header";
 import Footer from "../../component/footer";
-import api from "../../config/axios";
+import { getFullImageUrl } from '../../utils/imageHelpers';
+import { Notification, notifySuccess, notifyError } from '../../component/notification';
 
 function Cart() {
     const navigate = useNavigate();
@@ -59,12 +59,12 @@ function Cart() {
             return;
         }
     
-        // Chuyển hướng đến trang checkout
         navigate('/checkout');
     };
     
     return (
         <>
+            <Notification />
             <Header />
             <div className="py-24 relative">
                 <div className="w-full max-w-7xl px-4 md:px-5 lg-6 mx-auto">
@@ -72,7 +72,7 @@ function Cart() {
                     {cartItems.map((item) => (
                         <div key={item.flowerId} className="rounded-3xl border-2 border-gray-200 p-4 lg:p-8 grid grid-cols-12 mb-8 max-lg:max-w-lg max-lg:mx-auto gap-y-4">
                             <div className="col-span-12 lg:col-span-2 img box">
-                                <img src={item.imageUrl} alt={item.flowerName} className="max-lg:w-full lg:w-[180px] rounded-lg object-cover" />
+                                <img src={getFullImageUrl(item.imageUrl)} alt={item.flowerName} className="max-lg:w-full lg:w-[180px] rounded-lg object-cover" />
                             </div>
                             <div className="col-span-12 lg:col-span-10 detail w-full lg:pl-3">
                                 <div className="flex items-center justify-between w-full mb-4">
@@ -103,6 +103,7 @@ function Cart() {
                                         />
                                         <button
                                             onClick={() => updateQuantity(item.flowerId, item.quantity + 1)}
+                                            disabled={item.quantity <= 0} // Vô hiệu hóa nếu số lượng <= 0
                                             className="group rounded-[50px] border border-gray-200 shadow-sm shadow-transparent p-2.5 flex items-center justify-center bg-white transition-all duration-500 hover:shadow-gray-200 hover:bg-gray-50 hover:border-gray-300 focus-within:outline-gray-300"
                                         >
                                             <svg className="stroke-gray-900 transition-all duration-500 group-hover:stroke-black" width="18" height="19" viewBox="0 0 18 19" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -128,7 +129,7 @@ function Cart() {
                             disabled={cartItems.length === 0 || isCheckingOut}
                             className="rounded-full py-4 px-6 bg-gray-600 text-white font-semibold text-lg w-full text-center transition-all duration-500 hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
                         >
-                            {isCheckingOut ? 'Đang xử lý...' : 'Thanh toán qua VNPay'}
+                            {isCheckingOut ? 'Đang xử lý...' : 'Thanh toán'}
                         </button>
                     </div>
                 </div>

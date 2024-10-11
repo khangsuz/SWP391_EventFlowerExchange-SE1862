@@ -185,11 +185,13 @@ function CheckoutPage() {
                     }
                 }
             );
+
             notifySuccess('Đặt hàng thành công. Chuyển đến trang thanh toán');
             localStorage.setItem('pendingOrderId', checkoutResponse.data.orderId);
             window.location.href = paymentResponse.data.paymentUrl;
-            
+
         } catch (error) {
+            console.error('Error during checkout:', error);
             notifyError('Thanh toán thất bại');
             if (error.response) {
                 notifyError(`Thanh toán thất bại: ${error.response.data}`);
