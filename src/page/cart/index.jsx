@@ -59,9 +59,10 @@ function Cart() {
             return;
         }
     
-        // Chuyển hướng đến trang checkout
         navigate('/checkout');
     };
+
+    
     
     return (
         <>

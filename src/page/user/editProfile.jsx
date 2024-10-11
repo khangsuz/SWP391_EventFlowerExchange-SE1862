@@ -15,12 +15,15 @@ const Profile = () => {
     const [editedData, setEditedData] = useState({});
     const [success, setSuccess] = useState(null);
     const { updateCartItemCount } = useCart();
+    const [profileImage, setProfileImage] = useState(null); 
+    
 
     const fetchUserData = async () => {
         try {
             const response = await api.get('/Users/profile');
             setUserData(response.data);
             setEditedData(response.data);
+            const storedImage = localStorage.getItem('profileImage');
         } catch (error) {
             console.error("Error fetching user data:", error);
             setError("Failed to load user data. Please try again later.");
@@ -60,6 +63,7 @@ const Profile = () => {
     const handleCancel = () => {
         setIsEditing(false);
         setEditedData(userData);
+        setProfileImage(null);
         setError(null);
         setSuccess(null);
     };
@@ -67,9 +71,24 @@ const Profile = () => {
     const handleChange = (e) => {
         setEditedData({ ...editedData, [e.target.name]: e.target.value });
     };
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setProfileImage(file);
+            setEditedData({ ...editedData, profileImageUrl: URL.createObjectURL(file) }); 
+            localStorage.setItem('profileImage', imageUrl);
+        }
+    };
 
     const handleSave = async () => {
         let isValid = true;
+        if (editedData.name !== userData.name) {
+            const nameRegex = /^[^\s!@#$%^&*()_+={}\[\]:;"'<>,.?~]+$/;
+            if (!nameRegex.test(editedData.name)) {
+                alert("Tên không được chứa dấu cách hoặc ký tự đặc biệt.");
+                isValid = false;
+            }
+        }
 
         if (editedData.email !== userData.email) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -88,6 +107,13 @@ const Profile = () => {
         }
 
         if (isValid) {
+            const formData = new FormData();
+            Object.keys(editedData).forEach(key => {
+                formData.append(key, editedData[key]);
+            });
+            if (profileImage) {
+                formData.append("profileImage", profileImage); 
+            }
             try {
                 const response = await api.put('/Users/profile', editedData);
                 setUserData(response.data);
@@ -106,7 +132,7 @@ const Profile = () => {
     if (!userData) {
         return <div>Loading...</div>;
     }
-
+    const userId = userData.userId;
     return (
         <>
             <Header />
@@ -123,20 +149,34 @@ const Profile = () => {
                 )}
                 <div className="flex max-w-6xl mx-auto">
                     <div className="w-1/4 bg-white shadow-md rounded-lg p-5">
-                        <div className="text-center mb-5">
-                            <h2 className="text-xl font-semibold mt-2">{userData.name}</h2>
-                            <p className="text-gray-600">{userData.email}</p>
-                        </div>
+                    <div className="text-center mb-5">
+                        <img 
+                            src={isEditing && profileImage ? URL.createObjectURL(profileImage) : userData.profileImageUrl} 
+                            alt={userData.name} 
+                            className="w-24 h-24 rounded-full mx-auto mb-2" 
+                        />
+                        {isEditing && (
+                            <input 
+                                type="file" 
+                                accept="image/*" 
+                                onChange={handleImageChange}
+                                className="mt-3 p-2 border rounded"
+                            />
+                        )}
+                        <h2 className="text-xl font-semibold mt-2">{userData.name}</h2>
+                        <p className="text-gray-600">{userData.email}</p>
+                        
+                    </div>
                         <nav class="space-y-2">
                             <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded">Thông tin</Link>
                             <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded">Danh sách đơn hàng</Link>
                             <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded">Đổi mật khẩu</Link>
                             {userType === 'Seller' && (
                                 <Link
-                                    to="/manage-product"
+                                    to={`/personal-product/${userId}`}
                                     className="block text-gray-700 hover:bg-gray-200 p-2 rounded"
                                 >
-                                    Quản lí sản phẩm
+                                    Quản lí Shop
                                 </Link>
                             )}
                             <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded" onClick={handleLogout}>Đăng xuất</Link>
@@ -145,6 +185,10 @@ const Profile = () => {
                     <div className="flex-1 bg-white shadow-md rounded-lg p-5 ml-5">
                         <h1 className="text-center text-2xl font-bold mb-5">Thông tin tài khoản</h1>
                         <div className="flex mb-3 gap-4">
+                            <h2 className="text-2xl p-2">Tên đăng nhập:</h2>
+                            <p className="p-2">{userData.name}</p>
+                        </div>
+                        <div className="flex mb-3 gap-10">
                             <h2 className="text-2xl p-2">Tên đầy đủ:</h2>
                             <p className="text-lg">{isEditing ? (
                                 <input
@@ -152,14 +196,14 @@ const Profile = () => {
                                     name="fullName"
                                     value={editedData.fullName}
                                     onChange={handleChange}
-                                    className="w-full p-2 border rounded"
+                                    className="text-2xl w-full p-2 border rounded"
                                 />
                             ) : (
-                                <p className="p-2">{userData.fullName}</p>
+                                <p className="text-2xl p-2">{userData.fullName}</p>
                             )}</p>
                         </div>
 
-                        <div className="flex mb-3 gap-4">
+                        <div className="flex mb-3 gap-10">
                             <h2 className="text-2xl p-2">Email:</h2>
                             <p className="text-lg">{isEditing ? (
                                 <input
@@ -167,13 +211,13 @@ const Profile = () => {
                                     name="email"
                                     value={editedData.email}
                                     onChange={handleChange}
-                                    className="w-full p-2 border rounded"
+                                    className="text-2xl w-full p-2 border rounded"
                                 />
                             ) : (
-                                <p className="p-2">{userData.email}</p>
+                                <p className="p-2 text-2xl">{userData.email}</p>
                             )}</p>
                         </div>
-                        <div className="flex mb-3 gap-4">
+                        <div className="flex mb-3 gap-10">
                             <h2 className="text-2xl p-2">Số điện thoại:</h2>
                             <p className="text-lg">{isEditing ? (
                                 <input
@@ -181,13 +225,13 @@ const Profile = () => {
                                     name="phone"
                                     value={editedData.phone}
                                     onChange={handleChange}
-                                    className="w-full p-2 border rounded"
+                                    className="text-2xl w-full p-2 border rounded"
                                 />
                             ) : (
-                                <p className="p-2">{userData.phone}</p>
+                                <p className="p-2 text-2xl">{userData.phone}</p>
                             )}</p>
                         </div>
-                        <div className="flex mb-3 gap-4">
+                        <div className="flex mb-3 gap-10">
                             <h2 className="text-2xl p-2">Địa chỉ:</h2>
                             <p className="text-lg">{isEditing ? (
                                 <input
@@ -195,10 +239,10 @@ const Profile = () => {
                                     name="address"
                                     value={editedData.address}
                                     onChange={handleChange}
-                                    className="w-full p-2 border rounded"
+                                    className="text-2xl w-full p-2 border rounded"
                                 />
                             ) : (
-                                <p className="p-2">{userData.address}</p>
+                                <p className="p-2 text-2xl">{userData.address}</p>
                             )}</p>
                         </div>
                         <div className="">

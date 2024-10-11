@@ -16,6 +16,7 @@ const CreateProduct = () => {
     Quantity: 0,
     CategoryId: '',
   });
+  const [userId, setUserId] = useState(null); // Khởi tạo state cho userId
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -36,7 +37,17 @@ const CreateProduct = () => {
       }
     };
 
+    const fetchCurrentUser = async () => {
+      try {
+        const response = await api.get("/Users/current-user");
+        setUserId(response.data.userId); // Lưu userId vào state
+      } catch (error) {
+        console.error("Error fetching current user:", error);
+      }
+    };
+
     fetchCategories();
+    fetchCurrentUser(); // Gọi hàm fetchCurrentUser để lấy thông tin người dùng
     return () => {
       imageFile && URL.revokeObjectURL(imageFile.preview);
     };
@@ -111,8 +122,9 @@ const CreateProduct = () => {
         console.error("Lỗi khi tạo thông báo:", notificationError.message);
       }
 
+      
       alert('Sản phẩm đã được tạo thành công!');
-      navigate('/products');
+      navigate(`/manage-products/${userId}`); // Sử dụng userId đã lưu để điều hướng
     } catch (error) {
       console.error('Error creating product:', error);
       if (error.response) {

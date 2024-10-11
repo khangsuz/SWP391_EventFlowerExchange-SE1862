@@ -20,7 +20,11 @@ import QuanLiDonHang from "./page/admin/QuanLiDonHang";
 import PaymentButton from "./component/button/PaymentButton";
 import PaymentResult from "./page/payment/paymentResult";
 import CheckoutPage from './page/payment/checkOutPage'; 
+// import PaymentResult from "./page/payment";
+// import Chat from "./page/chat";
 import PersonalProduct from "./page/personalProduct";
+import ManageProducts from "./page/personalProduct/ManageProducts";
+
 
 const App = () => {
   const router = createBrowserRouter([
@@ -42,23 +46,27 @@ const App = () => {
     },
     {
       path: "cart",
-      element: <Cart />
+      element: <Cart />,
     },
     {
       path: "about",
-      element: <About />
+      element: <About />,
     },
     {
       path: "product/:id",
       element: <ProductDetail />,
     },
     {
-      path: "products",
-      element: <Products />
-    },
-    {
       path: "personal-product/:userId", 
       element: <PersonalProduct />, 
+    },
+    {
+      path: "manage-products/:userId", // Đường dẫn quản lý sản phẩm
+      element: <ManageProducts />,
+    },
+    {
+      path: "products",
+      element: <Products />,
     },
     {
       path: "/payment-result",
@@ -70,7 +78,7 @@ const App = () => {
     },
     {
       path: "forgot-password",
-      element: <ForgotPassword />
+      element: <ForgotPassword />,
     },
     {
       path: "manage-product", 
@@ -78,6 +86,10 @@ const App = () => {
         <CreateProduct />
       </PrivateRoute>
     },
+    // {
+    //   path: "chat",
+    //   element: <Chat />,
+    // },
     {
       path: "admin",
       element: (
@@ -116,6 +128,7 @@ const App = () => {
       path: "payment-result", 
       element: <PaymentResult />,
     },
+    
   ]);
 
   return(
