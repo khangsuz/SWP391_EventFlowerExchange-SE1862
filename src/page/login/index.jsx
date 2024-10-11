@@ -21,19 +21,17 @@ const Login = () => {
       const response = await api.post("Users/login", values);
       console.log("Login response data:", response.data);
   
-      const { token = null, userType = null } = response.data;
+      const { token, userType, userId } = response.data;
   
-      console.log("Extracted token:", token);
-      console.log("Extracted userType:", userType);
-  
-      if (!token) {
-        throw new Error("No token received from server");
+      if (!token || !userId) {
+        throw new Error("Invalid response from server");
       }
   
+      const userData = { token, userType, userId };
       localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify({ token, userType }));
+      localStorage.setItem("user", JSON.stringify(userData));
   
-      console.log("Stored user data:", JSON.parse(localStorage.getItem("user")));
+      console.log("Stored user data:", userData);
       if (userType === "Admin") {
         navigate("/admin/dashboard");
       } else {
@@ -52,18 +50,21 @@ const Login = () => {
         const result = await api.post("LoginGoogle/google-login", {
           accessToken: tokenResponse.access_token
         });
-
+  
         console.log("Google login result:", result.data);
-
+  
         if (result.data.isNewUser) {
+          // Xử lý người dùng mới
           setIsNewUser(true);
           setNewUserEmail(result.data.email);
-        } else if (result.data.token) {
+          // Chuyển hướng đến trang hoàn tất đăng ký hoặc hiển thị form đăng ký
+        } else if (result.data.token && result.data.user) {
+          // Xử lý người dùng đã tồn tại
           localStorage.setItem("token", result.data.token);
           localStorage.setItem("user", JSON.stringify(result.data.user));
           navigate(result.data.user.userType === "Admin" ? "/admin/dashboard" : "/");
         } else {
-          throw new Error("Không nhận được token từ server");
+          throw new Error("Không nhận được thông tin người dùng hợp lệ từ server");
         }
       } catch (error) {
         console.error("Đăng nhập thất bại:", error.response?.data || error.message);
@@ -73,7 +74,8 @@ const Login = () => {
     flow: 'implicit',
     scope: "email profile",
   });
-
+  
+  // Hàm xử lý hoàn tất đăng ký cho người dùng mới
   const handleCompleteRegistration = async (values) => {
     try {
       const result = await api.post("LoginGoogle/complete-registration", {
@@ -82,20 +84,19 @@ const Login = () => {
         phone: values.phone,
         address: values.address
       });
-
-      if (result.data.token) {
+  
+      if (result.data.token && result.data.user) {
         localStorage.setItem("token", result.data.token);
         localStorage.setItem("user", JSON.stringify(result.data.user));
         navigate("/");
       } else {
-        throw new Error("Không nhận được token từ server");
+        throw new Error("Không nhận được thông tin người dùng hợp lệ từ server");
       }
     } catch (error) {
       console.error("Đăng ký thất bại:", error.response?.data || error.message);
       alert("Đăng ký thất bại. Vui lòng thử lại.");
     }
   };
-
   return (
     <>
       <Header />

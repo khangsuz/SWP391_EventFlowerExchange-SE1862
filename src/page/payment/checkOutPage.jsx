@@ -102,8 +102,8 @@ function CheckoutPage() {
                 from_district_id: 1442,
                 to_district_id: selectedDistrict,
                 to_ward_code: selectedWard,
-                weight: 100,
-                length: 10,
+                weight: 6000 * cartItems.length,
+                length: 10, 
                 width: 10,
                 height: 10
             };
