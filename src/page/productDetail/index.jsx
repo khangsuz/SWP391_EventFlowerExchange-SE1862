@@ -6,7 +6,7 @@ import Footer from "../../component/footer";
 import api from "../../config/axios";
 import { useCart } from "../../contexts/CartContext";
 import ProductCard from "../../component/product-card";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link  } from "react-router-dom";
 import { getFullImageUrl } from '../../utils/imageHelpers';
 
 
@@ -22,21 +22,22 @@ const ProductDetail = () => {
   const [newReview, setNewReview] = useState({ rating: 5, reviewComment: "" });
   const [canReview, setCanReview] = useState(false);
   const [seller, setSeller] = useState(null);
+  const [averageRating, setAverageRating] = useState(0);
+  const [userReview, setUserReview] = useState(null);
+  const [editingReviewId, setEditingReviewId] = useState(null);
   const imageUrl = flower ? getFullImageUrl(flower.imageUrl) : null;
 
   const fetchFlowerDetails = async () => {
     try {
-      console.log("Fetching flower details for ID:", id);
       const response = await api.get(`Flowers/${id}`);
-      console.log("Flower details:", response.data);
       setFlower(response.data);
-
+  
       // Fetch seller details using userId
       if (response.data && response.data.userId) {
         const sellerResponse = await api.get(`Users/${response.data.userId}`);
         setSeller(sellerResponse.data);
       }
-
+  
       if (response.data && response.data.categoryId) {
         fetchRelatedFlowers(response.data.categoryId);
       }
@@ -49,8 +50,18 @@ const ProductDetail = () => {
     try {
       const response = await api.get(`Flowers`);
       if (response.data && Array.isArray(response.data)) {
-        const related = response.data.filter(flower => flower.categoryId === categoryId && flower.flowerId !== parseInt(id));
-        setRelatedFlowers(related.slice(0, 4)); // Lấy tối đa 4 sản phẩm liên quan
+        const related = [];
+        for (let i = 0; i < response.data.length; i++) {
+          const flower = response.data[i];
+          if (flower.categoryId === categoryId && flower.flowerId !== parseInt(id)) {
+            related.push(flower);
+            if (related.length === 4) break;
+          }
+        }
+        console.log("Related flowers:", related);
+        setRelatedFlowers(related);
+      } else {
+        console.error("Unexpected API response structure:", response.data);
       }
     } catch (err) {
       console.error("Error fetching related flowers:", err);
@@ -59,8 +70,15 @@ const ProductDetail = () => {
 
   const fetchReviews = async () => {
     try {
-      const response = await api.get(`Reviews/flower/${id}`);
-      return response.data;
+      const response = await api.get('Reviews/flower/${id}');
+      
+      setAverageRating(response.data.averageRating);
+      setReviews(response.data.reviews);
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (user) {const userReview = response.data.reviews.find(review => review.userId === user.userId);
+        setUserReview(userReview);
+        setNewReview(userReview || { rating: 5, reviewComment: "" });
+      }
     } catch (err) {
       console.error("Error fetching reviews:", err);
       return [];
@@ -78,8 +96,8 @@ const ProductDetail = () => {
       return;
     }
     try {
-      const response = await api.get(`Reviews/canReview/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await api.get('Reviews/canReview/${id}', {
+        headers: { Authorization: 'Bearer ${token}' },
       });
       setCanReview(response.data);
     } catch (err) {
@@ -126,7 +144,7 @@ const ProductDetail = () => {
           quantity: quantity,
         },
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: 'Bearer ${token}',
         },
       });
       addToCart(flower);
@@ -155,7 +173,7 @@ const ProductDetail = () => {
         flowerId: flower.flowerId,
         userId: userId,
       }, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: 'Bearer ${token}' },
       });
       
       if (response.data) {
@@ -179,8 +197,8 @@ const ProductDetail = () => {
       <div className="text-gray-700 body-font overflow-hidden bg-white product-detail">
         <div className="container px-5 py-24 mx-auto">
           <div className="lg:w-3/5 mx-auto flex flex-wrap">
-          <img alt="ecommerce" className="lg:w-3/6 w-full object-cover object-center rounded border border-gray-200"  src={imageUrl}  />
-          <div className="lg:w-1/2 w-full lg:pl-10 lg:py-6 mt-3 lg:mt-0">
+            <img alt="ecommerce" className="lg:w-3/6 w-full object-cover object-center rounded border border-gray-200" src={flower.imageUrl} />
+            <div className="lg:w-1/2 w-full lg:pl-10 lg:py-6 mt-3 lg:mt-0">
               <h1 className="text-gray-900 text-3xl title-font font-medium mb-1 mt-3">{flower.flowerName}</h1>
               <span className="title-font font-medium text-xl text-[#bc0000]">{flower.price.toLocaleString()}₫</span>
               <p className="leading-relaxed">Lưu ý: Sản phẩm thực tế có thể sẽ khác đôi chút so với sản phẩm mẫu do đặc tính cắm, gói hoa thủ công.</p>
@@ -234,13 +252,15 @@ const ProductDetail = () => {
               </div>
             </div>
           )}
+
       
-      {/* Reviews Section */}
-      <div className="reviews-section container px-5 py-12 mx-auto">
+       {/* Reviews Section */}
+       <div className="reviews-section container px-5 py-12 mx-auto">
         <h2 className="text-2xl font-bold mb-6">Đánh giá sản phẩm</h2>
+        <p className="mb-4">Đánh giá trung bình: {averageRating.toFixed(1)} sao</p>
         
-        {canReview ? (
-          <form onSubmit={handleReviewSubmit} className="mb-8">
+        {canReview && !userReview && (
+          <form onSubmit={(e) => handleReviewSubmit(e)} className="mb-8">
             <div className="mb-4">
               <label className="block mb-2">Đánh giá:</label>
               <select
@@ -254,7 +274,7 @@ const ProductDetail = () => {
               </select>
             </div>
             <div className="mb-4">
-              <label className="block mb-2">Nhận xét:</label>
+            <label className="block mb-2">Nhận xét:</label>
               <textarea
                 value={newReview.reviewComment}
                 onChange={(e) => setNewReview({ ...newReview, reviewComment: e.target.value })}
@@ -262,23 +282,64 @@ const ProductDetail = () => {
                 rows="4"
               ></textarea>
             </div>
-            <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">Gửi đánh giá</button>
+            <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
+              Gửi đánh giá
+            </button>
           </form>
-        ) : (
-          <p className="mb-8 text-gray-600">Chỉ những khách hàng đã mua sản phẩm mới có thể đánh giá.</p>
         )}
-
+  
         {/* Display Reviews */}
         <div className="reviews-list">
           {reviews.length > 0 ? (
             reviews.map((review) => (
               <div key={review.reviewId} className="review-item border-b py-4">
-                <div className="flex items-center mb-2">
-                  <span className="font-bold mr-2">{review.userName || 'Anonymous'}</span>
-                  <span>{review.rating} sao</span>
-                </div>
-                <p>{review.reviewComment}</p>
-                <span className="text-sm text-gray-500">{new Date(review.reviewDate).toLocaleDateString()}</span>
+                {editingReviewId === review.reviewId ? (
+                  <form onSubmit={(e) => handleReviewSubmit(e, review.reviewId)} className="mb-4">
+                    <div className="mb-2">
+                      <label className="block mb-1">Đánh giá:</label>
+                      <select
+                        value={newReview.rating}
+                        onChange={(e) => setNewReview({ ...newReview, rating: parseInt(e.target.value) })}
+                        className="border rounded p-1"
+                      >
+                        {[1, 2, 3, 4, 5].map((num) => (
+                          <option key={num} value={num}>{num} sao</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="mb-2">
+                      <label className="block mb-1">Nhận xét:</label>
+                      <textarea
+                        value={newReview.reviewComment}
+                        onChange={(e) => setNewReview({ ...newReview, reviewComment: e.target.value })}
+                        className="border rounded p-1 w-full"
+                        rows="3"
+                      ></textarea>
+                    </div>
+                    <button type="submit" className="bg-blue-500 text-white px-3 py-1 rounded mr-2">
+                      Cập nhật
+                    </button>
+                    <button type="button" onClick={() => setEditingReviewId(null)} className="bg-gray-300 text-black px-3 py-1 rounded">
+                      Hủy
+                    </button>
+                  </form>
+                ) : (
+                  <>
+                    <div className="flex items-center mb-2">
+                      <span className="font-bold mr-2">{review.userName || 'Anonymous'}</span>
+                      <span>{review.rating} sao</span>
+                      {review.userId === JSON.parse(localStorage.getItem("user"))?.userId && (
+                        <button 
+                          onClick={() => handleEditReview(review.reviewId)}
+                          className="ml-4 text-blue-500 hover:text-blue-700"
+                        >
+                          Chỉnh sửa
+                        </button>)}
+                    </div>
+                    <p>{review.reviewComment}</p>
+                    <span className="text-sm text-gray-500">{new Date(review.reviewDate).toLocaleDateString()}</span>
+                  </>
+                )}
               </div>
             ))
           ) : (
@@ -286,7 +347,7 @@ const ProductDetail = () => {
           )}
         </div>
       </div>
-
+  
       {/* Related Products Section */}
       {relatedFlowers.length > 0 && (
         <div className="related-products container px-5 py-12 mx-auto">

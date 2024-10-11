@@ -79,7 +79,7 @@ function ProductCard({ flower }) {
     <div className="product-card">
       <div onClick={handleViewDetails}>
       <img 
-        src={imageUrl || "https://i.postimg.cc/Jz0MW07g/top-view-roses-flowers-Photoroom.png"} 
+        src={imageUrl} 
         alt={flower.flowerName} 
       />
       <p className="name">{flower.flowerName} ({flower.quantity})</p>

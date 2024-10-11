@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { Spin } from "antd";
 const PrivateRoute = ({ requiredRole = null, children }) => {
   const navigate = useNavigate();
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -29,7 +29,11 @@ const PrivateRoute = ({ requiredRole = null, children }) => {
   }, [navigate, requiredRole]);
 
   if (!isAuthorized) {
-    return <div>Loading...</div>; // Or a loading spinner
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Spin size="large" />
+      </div>
+    );
   }
 
   return children;

@@ -107,6 +107,11 @@ function Header({ setFilteredFlowers }) {
           <li className="relative group">
             <Link to="/products" className="flex items-center text-gray-700 hover:text-gray-900">
               <p><b>Sản Phẩm</b></p>
+            </Link>
+          </li>
+          <li className="relative group">
+            <Link to="/events" className="flex items-center text-gray-700 hover:text-gray-900">
+              <p><b>Hoa Sự Kiện</b></p>
               <i className="ml-1">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -146,9 +151,6 @@ function Header({ setFilteredFlowers }) {
                 </li>
               </ul>
             </div>
-          </li>
-          <li>
-            <Link to="/events" className="text-gray-700 hover:text-gray-900"><p><b>Hoa Sự Kiện</b></p></Link>
           </li>
         </ul>
       </div>
