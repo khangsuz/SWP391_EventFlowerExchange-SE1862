@@ -52,8 +52,11 @@ const ProductDetail = () => {
         for (let i = 0; i < response.data.length; i++) {
           const flower = response.data[i];
           if (flower.categoryId === categoryId && flower.flowerId !== parseInt(id)) {
-            related.push(flower);
-            if (related.length === 4) break;
+            related.push({
+              ...flower,
+              imageUrl: getFullImageUrl(flower.imageUrl)
+            });
+            if (related.length === 6) break;
           }
         }
         console.log("Related flowers:", related);
@@ -65,7 +68,6 @@ const ProductDetail = () => {
       console.error("Error fetching related flowers:", err);
     }
   };
-
   const fetchReviews = async () => {
     try {
       const response = await api.get(`Reviews/flower/${id}`);
@@ -132,7 +134,7 @@ const ProductDetail = () => {
     const token = localStorage.getItem("token");
 
     try {
-        await api.post("Orders/addtocart", null, {
+      await api.post("Orders/addtocart", null, {
         params: {
           flowerId: flower.flowerId,
           quantity: quantity,
@@ -237,33 +239,33 @@ const ProductDetail = () => {
       </div>
 
       {seller && (
-  <div className="seller-info container mx-auto mt-6 p-7 border border-gray-200 rounded shadow-sm">
-    <div className="flex flex-nowrap items-center">
-      <img src={seller.profileImageUrl} alt={seller.name} className="w-20 h-20 rounded-full mr-2" />
-      <div className="ml-2 mr-2">
-        <p className="text-lg text-center">{seller.name || "Không xác định"}</p>
-        <div className="flex mt-2">
-          <button className="chat-button text-sm border border-gray-300 rounded py-2 px-3 mr-2">Chat Ngay</button>
-          <button className="text-sm border border-gray-300 rounded py-1 px-2" onClick={() => navigate(`/personal-product/${seller.userId}`)}>
-            Xem Shop
-          </button>
+        <div className="seller-info container mx-auto mt-6 p-7 border border-gray-200 rounded shadow-sm">
+          <div className="flex flex-nowrap items-center">
+            <img src={seller.profileImageUrl} alt={seller.name} className="w-20 h-20 rounded-full mr-2" />
+            <div className="ml-2 mr-2">
+              <p className="text-lg text-center">{seller.name || "Không xác định"}</p>
+              <div className="flex mt-2">
+                <button className="chat-button text-sm border border-gray-300 rounded py-2 px-3 mr-2">Chat Ngay</button>
+                <button className="text-sm border border-gray-300 rounded py-1 px-2" onClick={() => navigate(`/personal-product/${seller.userId}`)}>
+                  Xem Shop
+                </button>
+              </div>
+            </div>
+            <div className="mx-2 border-l h-16"></div>
+            <div className="flex mt-2 ml-6">
+              <div className="mr-6">
+                <span>Đánh Giá: </span><strong>{seller.rating || 0}</strong>
+              </div>
+              <div className="mr-6">
+                <span>Sản Phẩm: </span><strong>{seller.productCount || 0}</strong>
+              </div>
+              <div>
+                <span>Người Theo Dõi: </span><strong>{seller.followers || 0}</strong>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-      <div className="mx-2 border-l h-16"></div>
-      <div className="flex mt-2 ml-6">
-        <div className="mr-6">
-          <span>Đánh Giá: </span><strong>{seller.rating || 0}</strong>
-        </div>
-        <div className="mr-6">
-          <span>Sản Phẩm: </span><strong>{seller.productCount || 0}</strong>
-        </div>
-        <div>
-          <span>Người Theo Dõi: </span><strong>{seller.followers || 0}</strong>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
+      )}
 
       {/* Reviews Section */}
       <div className="reviews-section container px-5 py-12 mx-auto">
