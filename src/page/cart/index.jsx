@@ -5,7 +5,7 @@ import "../../index.css";
 import Header from "../../component/header";
 import Footer from "../../component/footer";
 import { getFullImageUrl } from '../../utils/imageHelpers';
-import { Notification, notifySuccess, notifyError } from '../../component/notification';
+import { Notification, notifySuccess, notifyError } from '../../component/alert';
 
 function Cart() {
     const navigate = useNavigate();

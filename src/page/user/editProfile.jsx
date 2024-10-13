@@ -5,7 +5,7 @@ import api from "../../config/axios";
 import Footer from "../../component/footer";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../../contexts/CartContext";
-import { Notification, notifySuccess, notifyError } from '../../component/notification';
+import { Notification, notifySuccess, notifyError } from '../../component/alert';
 const Profile = () => {
     const navigate = useNavigate();
     const [userData, setUserData] = useState(null);

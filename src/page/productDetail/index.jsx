@@ -9,7 +9,7 @@ import ProductCard from "../../component/product-card";
 import { getFullImageUrl } from '../../utils/imageHelpers';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStar } from '@fortawesome/free-solid-svg-icons';
-import { Notification, notifySuccess, notifyError } from '../../component/notification';
+import { Notification, notifySuccess, notifyError } from '../../component/alert';
 
 const ProductDetail = () => {
   const navigate = useNavigate(); 

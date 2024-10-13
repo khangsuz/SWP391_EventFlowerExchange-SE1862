@@ -21,6 +21,7 @@ import PaymentButton from "./component/button/PaymentButton";
 import PaymentResult from "./page/payment/paymentResult";
 import CheckoutPage from './page/payment/checkOutPage'; 
 import PersonalProduct from "./page/personalProduct";
+import Events from "./page/events";
 
 const App = () => {
   const router = createBrowserRouter([
@@ -55,6 +56,10 @@ const App = () => {
     {
       path: "products",
       element: <Products />
+    },
+    {
+      path: "events",
+      element: <Events />
     },
     {
       path: "personal-product/:userId", 

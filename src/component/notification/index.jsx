@@ -1,20 +1,23 @@
-import React from 'react';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-const notifySuccess = (message) => {
-    toast.success(message);
-};
+import React, { useState, useEffect } from "react";
+import api from "../../config/axios";
 
-const notifyError = (message) => {
-    toast.error(message);
-};
+function Notification() {
+    const [notifications, setNotifications] = useState([]);
 
-const Notification = () => {
-    return (
-        <>
-            <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
-        </>
-    );
-};
+    const fetchNotifications = async () => {
+        try {
+            const response = await api.get(`Notification`);
+            console.log("Notifications response:", response.data);
+            setNotifications(Array.isArray(response.data.notifications) ? response.data.notifications : []);
+        } catch (error) {
+            console.error("Error fetching notifications:", error.response?.data || error.message);
+            setNotifications([]);
+        }
+    };
 
-export { Notification, notifySuccess, notifyError };
+    useEffect(() => {
+        fetchNotifications();
+    }, []);
+}
+
+export default Notification;

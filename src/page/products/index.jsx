@@ -7,17 +7,17 @@ import api from "../../config/axios";
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import "./index.scss";
-import { Notification } from '../../component/notification'; // Import Notification
+import { Notification, notifySuccess, notifyError } from "../../component/alert";
 
 const Products = () => {
   const [flowers, setFlowers] = useState([]);
   const [filteredFlowers, setFilteredFlowers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [flowersPerPage] = useState(9);
-  const [priceRange, setPriceRange] = useState([0, 10000000]); // Giả sử giá tối đa là 10 triệu
+  const [flowersPerPage] = useState(12);
+  const [priceRange, setPriceRange] = useState([0, 10000000]);
   const [sortOption, setSortOption] = useState("default");
   const [isFilterOpen, setIsFilterOpen] = useState(true);
-  
+
   const location = useLocation();
   const categoryId = location.state?.categoryId;
 
@@ -131,9 +131,13 @@ const Products = () => {
       </div>
       <div className="home__main-content">
         {currentFlowers.length > 0 ? (
-          currentFlowers.map((flower) => (
-            <ProductCard key={flower.flowerId} flower={flower} />
-          ))
+          <div className="product-grid">
+            {currentFlowers.map((flower) => (
+              <div key={flower.flowerId} className="product-grid-item">
+                <ProductCard flower={flower} />
+              </div>
+            ))}
+          </div>
         ) : (
           <p>Không có sản phẩm nào</p>
         )}

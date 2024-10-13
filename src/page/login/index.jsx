@@ -7,7 +7,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { FaGoogle } from "react-icons/fa";
 import { useGoogleLogin } from "@react-oauth/google";
 import Footer from "../../component/footer";
-import { Notification, notifySuccess, notifyError } from '../../component/notification';
+import { Notification, notifySuccess, notifyError } from '../../component/alert';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -36,7 +36,6 @@ const Login = () => {
         navigate("/");
       }
     } catch (error) {
-      notifyError("Sai tên đăng nhập hoặc mật khẩu");
     }
   };
 

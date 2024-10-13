@@ -5,7 +5,7 @@ import "./index.scss";
 import api from "../../config/axios";
 import { useCart } from "../../contexts/CartContext";
 import { getFullImageUrl } from '../../utils/imageHelpers';
-import { Notification, notifySuccess, notifyError } from '../../component/notification';
+import { Notification, notifySuccess, notifyError } from "../../component/alert";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStar } from '@fortawesome/free-solid-svg-icons';
 
@@ -17,7 +17,7 @@ function ProductCard({ flower }) {
   const addToCart = (item, quantity) => {
     const storedCart = JSON.parse(localStorage.getItem('cart')) || [];
     const existingItem = storedCart.find((cartItem) => cartItem.flowerId === item.flowerId);
-    
+
     if (existingItem) {
       if (existingItem.quantity + quantity > item.quantity) {
         notifyError(`Không thể thêm quá số lượng trong kho!`);
@@ -87,30 +87,37 @@ function ProductCard({ flower }) {
   if (!flower) return null;
 
   return (
-    <div className="product-card">
+    <div className="product-card relative border border-gray-300 p-2 rounded-lg transition-shadow duration-300 ease-in-out hover:shadow-lg">
       <div onClick={handleViewDetails}>
-      <img 
-        src={imageUrl || "https://i.postimg.cc/Jz0MW07g/top-view-roses-flowers-Photoroom.png"} 
-        alt={flower.flowerName} 
-      />
-      <p className="name">{flower.flowerName} ({flower.quantity})</p>
-      <p className="price">{Number(flower.price).toLocaleString()}₫</p>
-      
-      <div className="rating flex items-center">
-        {[...Array(fullStars)].map((_, index) => (
-          <FontAwesomeIcon key={index} icon={faStar} className="star filled" />
-        ))}
-        {halfStar === 1 && <FontAwesomeIcon icon={faStar} className="start half" />}
-        {[...Array(5 - fullStars - halfStar)].map((_, index) => (
-          <FontAwesomeIcon key={index + fullStars + halfStar} icon={faStar} className="star" /> 
-        ))}
-      </div>
+        <img
+          src={imageUrl || "https://i.postimg.cc/Jz0MW07g/top-view-roses-flowers-Photoroom.png"}
+          alt={flower.flowerName}
+          className="w-full h-auto object-cover rounded-md transition-transform duration-300 ease-in-out hover:scale-105" // Thêm hiệu ứng hover
+        />
+        <p className="name text-center mt-3 text-lg font-medium">
+          {flower.flowerName} ({flower.quantity})
+        </p>
+        <p className="price text-center text-red-500 font-bold">
+          {Number(flower.price).toLocaleString()}₫
+        </p>
+        <div className="rating flex justify-center items-center space-x-1 mt-2">
+          {[...Array(fullStars)].map((_, index) => (
+            <FontAwesomeIcon key={index} icon={faStar} className="text-yellow-400" />
+          ))}
+          {halfStar === 1 && <FontAwesomeIcon icon={faStar} className="text-yellow-400" />}
+          {[...Array(5 - fullStars - halfStar)].map((_, index) => (
+            <FontAwesomeIcon key={index + fullStars + halfStar} icon={faStar} className="text-gray-300" />
+          ))}
+        </div>
 
-      <center>
-        <button onClick={handleAddToCart}>
-          Thêm vào giỏ hàng
-        </button>
-      </center>
+        <div className="text-center pb-4">
+          <button
+            onClick={handleAddToCart}
+            className=""
+          >
+            Thêm vào giỏ hàng
+          </button>
+        </div>
       </div>
     </div>
   );
