@@ -8,6 +8,7 @@ import api from "../../config/axios";
 import { useCart } from "../../contexts/CartContext";
 import { getFullImageUrl } from '../../utils/imageHelpers';
 import { Link } from "react-router-dom";
+import { Notification, notifySuccess, notifyError } from "../../component/alert";
 
 const ProductDetail = () => {
   const { updateCartItemCount } = useCart();
@@ -56,7 +57,6 @@ const ProductDetail = () => {
               ...flower,
               imageUrl: getFullImageUrl(flower.imageUrl)
             });
-            if (related.length === 6) break;
           }
         }
         console.log("Related flowers:", related);
@@ -105,7 +105,7 @@ const ProductDetail = () => {
   useEffect(() => {
     fetchFlowerDetails();
     fetchReviews().then(fetchedReviews => {
-      setReviews(sortReviews(fetchedReviews));
+    setReviews(sortReviews(fetchedReviews));
     });
     checkCanReview();
   }, [id]);
@@ -164,7 +164,7 @@ const ProductDetail = () => {
     });
   };
 
-  const handleReviewSubmit = async (e) => {
+  const handleReviewSubmit = async (e, reviewId = null) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
     if (!token || !canReview) {
@@ -173,24 +173,34 @@ const ProductDetail = () => {
     }
     try {
       const userId = JSON.parse(localStorage.getItem("user")).userId;
-      const response = await api.post("Reviews", {
+      const reviewData = {
         ...newReview,
         flowerId: flower.flowerId,
         userId: userId,
-      }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (response.data) {
-        alert("Đánh giá đã được gửi thành công!");
+      };
+      
+      let response;
+      if (reviewId) {
+        response = await api.put(`Reviews/${reviewId}`, reviewData, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } else {
+        response = await api.post("Reviews", reviewData, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      }
+      
+      if (response.status === 204 || response.data) {
+        notifySuccess(reviewId ? "Đánh giá đã được cập nhật thành công!" : "Đánh giá đã được gửi thành công!");
+        fetchReviews();
+        setEditingReviewId(null);
         setNewReview({ rating: 5, reviewComment: "" });
-        setReviews(sortReviews([response.data, ...reviews]));
       } else {
         throw new Error('Invalid response data');
       }
     } catch (err) {
       console.error("Error submitting review:", err);
-      alert("Có lỗi xảy ra khi gửi đánh giá.");
+      notifyError("Bạn đã đánh giá sản phẩm này. Không thể đánh giá thêm!");
     }
   };
 
@@ -198,6 +208,7 @@ const ProductDetail = () => {
 
   return (
     <>
+    <Notification />
       <Header />
       <div className="text-gray-700 body-font overflow-hidden bg-white product-detail">
         <div className="container px-5 py-24 mx-auto">
@@ -363,18 +374,28 @@ const ProductDetail = () => {
 
       {/* Related Products Section */}
       {relatedFlowers && relatedFlowers.length > 0 && (
-        <div className="related-products container px-5 py-12 mx-auto">
-          <h2 className="related-products-title text-2xl font-bold mb-6 text-center">Sản phẩm liên quan</h2>
-          <div className="related-products-grid flex overflow-x-auto space-x-6">
-            {relatedFlowers.map((relatedFlower) => (
-              <Link key={relatedFlower.flowerId} to={`/product/${relatedFlower.flowerId}`} className="related-product-item w-1/6 bg-white shadow overflow-hidden">
-                <img src={relatedFlower.imageUrl} alt={relatedFlower.flowerName} className="w-62 object-cover" />
-                <div className="p-4">
-                  <h3 className="text-sm font-semibold">{relatedFlower.flowerName}</h3>
-                  <span className="text-sm text-[#bc0000]">{relatedFlower.price.toLocaleString()}₫</span>
-                </div>
-              </Link>
-            ))}
+        <div className="related-products container mx-auto px-5 py-12">
+          <h2 className="text-2xl font-bold mb-6 text-center">Sản phẩm liên quan</h2>
+          <div className="related-products-grid overflow-x-auto">
+            <div className="flex space-x-6">
+              {relatedFlowers.map((relatedFlower) => (
+                <Link 
+                  key={relatedFlower.flowerId} 
+                  to={`/product/${relatedFlower.flowerId}`} 
+                  className="related-product-item mb-2 bg-white shadow-lg rounded-lg overflow-hidden transition-transform transform w-1/4 min-w-[200px]"
+                >
+                  <img 
+                    src={relatedFlower.imageUrl} 
+                    alt={relatedFlower.flowerName} 
+                    className="w-full h-48 object-cover" 
+                  />
+                  <div className="p-4">
+                    <h3 className="text-sm font-semibold mb-2">{relatedFlower.flowerName}</h3>
+                    <span className="text-sm text-[#bc0000] font-bold">{relatedFlower.price.toLocaleString()}₫</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       )}

@@ -55,11 +55,10 @@ function CheckoutPage() {
                 from_district_id: 1442,
                 to_district_id: selectedDistrict,
                 to_ward_code: selectedWard,
-                insurance_value: cartItems.reduce((total, item) => total + item.price * item.quantity, 0),
-                weight: 6000 * cartItems.length,
-                length: 10,
-                width: 10,
-                height: 10
+                weight: 5000 * cartItems.length,
+                length: 30,
+                width: 30,
+                height: 30
             };
             const response = await api.post('Shipping/calculate-shipping-fee', shippingRequest, {
                 headers: {
