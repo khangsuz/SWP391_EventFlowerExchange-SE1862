@@ -43,7 +43,7 @@ const PersonalProduct = () => {
   }, [sellerProducts]);
 
   const handleChat = () => {
-    navigate(`/chat/${userId}`); // Redirect to chat page
+    navigate(`/chat/${userId}`);
   };
 
   if (loading) return <div>Loading...</div>;
@@ -83,10 +83,12 @@ const PersonalProduct = () => {
           </div>
         )}
         <h1 className="text-2xl font-bold mb-6">Sản phẩm của người bán</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="product-grid">
           {sellerProducts.length > 0 ? (
             sellerProducts.map((product) => (
-              <ProductCard key={product.flowerId} flower={product} />
+              <div key={product.flowerId} className="product-grid-item">
+                    <ProductCard flower={product} />
+              </div>
             ))
           ) : (
             <p>Không có sản phẩm nào từ người bán này.</p>

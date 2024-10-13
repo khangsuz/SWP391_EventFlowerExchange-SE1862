@@ -7,7 +7,6 @@ import 'tippy.js/dist/tippy.css';
 import api from "../../config/axios";
 import "./index.scss";
 import { useCart } from "../../contexts/CartContext";
-import Notification from "../notification";
 
 function Header({ setFilteredFlowers }) {
   const navigate = useNavigate();
@@ -30,18 +29,8 @@ function Header({ setFilteredFlowers }) {
       setCurrentUser(JSON.parse(user));
       fetchUserData();
     }
-    const handleClickOutside = (event) => {
-      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
-        setShowNotifications(false);
-      }
-      if (searchRef.current && !searchRef.current.contains(event.target)) {
-        setSearchVisible(false);
-      }
-    };
 
-    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-    document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
@@ -55,34 +44,27 @@ function Header({ setFilteredFlowers }) {
     }
   };
 
-  const handleSearch = async (e) => {
-    const query = e.target.value.toLowerCase();
-    setSearchValue(query);
-    const normalizedQuery = query.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-
-    try {
-      const response = await api.get(`/Flowers`);
-      const flowers = response.data;
-
-      if (setFilteredFlowers) {
-        if (query.length === 0) {
-          setFilteredFlowers(flowers);
-        } else {
-          const filtered = flowers.filter(flower =>
-            flower.flowerName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(normalizedQuery)
-          );
-          setFilteredFlowers(filtered);
-        }
-      }
-    } catch (error) {
-      console.error("Search error:", error);
-      if (setFilteredFlowers) {
-        setFilteredFlowers([]);
-      }
+  const handleSubmitSearch = () => {
+    if (searchValue.trim()) {
+      navigate(`/search?query=${encodeURIComponent(searchValue)}`);
+      setSearchVisible(false);
     }
   };
 
-  
+  const handleSearch = (event) => {
+    setSearchValue(event.target.value);
+  };
+
+  const handleClear = () => {
+    setSearchValue('');
+    if (setFilteredFlowers) {
+      api.get(`/Flowers`).then(response => {
+        setFilteredFlowers(response.data);
+      }).catch(error => {
+        console.error("Error resetting flower list:", error);
+      });
+    }
+  };
 
   const handleFilterByCategory = async (categoryId) => {
     navigate('/products', { state: { categoryId } });
@@ -107,8 +89,6 @@ function Header({ setFilteredFlowers }) {
     }
   };
 
-  
-
   const handleNotificationClick = () => {
     setShowNotifications(!showNotifications);
   };
@@ -132,10 +112,16 @@ function Header({ setFilteredFlowers }) {
     setSearchVisible(!searchVisible);
   };
 
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      handleSubmitSearch();
+    }
+  };
+
   useEffect(() => {
     if (searchVisible) {
       setTimeout(() => {
-        document.querySelector('input[type="text"]').focus();
+        document.querySelector('input[type="text"]');
       }, 1000);
     }
   }, [searchVisible]);
@@ -228,9 +214,10 @@ function Header({ setFilteredFlowers }) {
         </Tippy>
 
         {searchVisible && (
-          <div className="absolute right-10 mt-9 w-80 bg-white border-2 rounded-md shadow-lg"
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
+          <div
+            className="absolute right-16 mt-9 w-72 bg-white border-2 rounded-md shadow-lg"
+            onMouseEnter={() => setSearchVisible(true)}
+            onMouseLeave={() => setSearchVisible(false)}
           >
             <div className="relative flex w-full h-12 bg-white rounded-lg shadow-lg">
               <input
@@ -238,30 +225,37 @@ function Header({ setFilteredFlowers }) {
                 value={searchValue}
                 spellCheck={false}
                 onChange={handleSearch}
+                onKeyDown={handleKeyDown}
                 placeholder="Search flowers"
-                className="pl-4 rounded-lg w-full text-black outline-none flex-1"
+                className="pl-4 pr-10 rounded-lg w-full text-black outline-none flex-1"
               />
-              <button className="text-black outline-none absolute right-16 top-1/2 -translate-y-1/2 text-gray-400">
-                <FontAwesomeIcon icon={faCircleXmark} />
-              </button>
-              <button className="text-black outline-none absolute right-16 top-1/2 -translate-y-1/2 text-gray-400">
-                <FontAwesomeIcon icon={faSpinner} />
-              </button>
-              <button className="text-gray-400 outline-none w-12 h-full hover:bg-gray-100 rounded-e-lg cursor-pointer text-lg">
+              {searchValue && (
+                <button
+                  className="text-black outline-none absolute right-14 top-1/2 -translate-y-1/2 text-gray-400"
+                  onClick={handleClear}
+                >
+                  <FontAwesomeIcon icon={faCircleXmark} />
+                </button>
+              )}
+              <button
+                className="text-gray-400 outline-none w-12 h-full hover:bg-gray-100 rounded-r-lg cursor-pointer text-lg"
+                onClick={handleSubmitSearch}
+              >
                 <FontAwesomeIcon icon={faMagnifyingGlass} />
               </button>
             </div>
           </div>
         )}
+        {currentUser && (
           <Tippy content="Thông báo" placement="top">
-            <div className="relative flex items-center justify-center">
+            <div className="relative flex items-center justify-center cursor-pointer" onClick={handleNotificationClick}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
                 strokeWidth={1.5}
                 stroke="currentColor"
-                className="size-6 w-6 h-6 cursor-pointer"
+                className="size-6 w-6 h-6"
               >
                 <path
                   strokeLinecap="round"
@@ -269,7 +263,6 @@ function Header({ setFilteredFlowers }) {
                   d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
                 />
               </svg>
-
               {Array.isArray(notifications) && notifications.filter(n => !n.isRead).length > 0 && (
                 <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5">
                   {notifications.filter(n => !n.isRead).length}
@@ -277,30 +270,31 @@ function Header({ setFilteredFlowers }) {
               )}
             </div>
           </Tippy>
-          {showNotifications && (
-            <div className="absolute right-10 mt-4 w-80 bg-white border-2 rounded-md shadow-lg overflow-hidden z-20">
-              <div className="py-2">
-                {Array.isArray(notifications) && notifications.length > 0 ? (
-                  notifications.map((notification) => (
-                    <div key={notification.notificationId} className={`px-2 py-2 hover:bg-gray-100 ${notification.isRead ? 'opacity-50' : ''}`}>
-                      <p className="text-sm">{notification.message}</p>
-                      <p className="text-xs text-gray-500">
-                        {new Date(notification.notificationDate).toLocaleString()}
-                        - Created by: {notification.sellerName}
-                      </p>
-                      {!notification.isRead && (
-                        <button onClick={() => markAsRead(notification.notificationId)} className="text-xs text-blue-500 mt-1">
-                          Đánh dấu đã đọc
-                        </button>
-                      )}
-                    </div>
-                  ))
-                ) : (
-                  <p className="px-4 py-2 text-sm text-gray-500">Không có thông báo mới</p>
-                )}
-              </div>
+        )}
+        {showNotifications && (
+          <div className="absolute right-10 mt-8 w-80 bg-white border-2 rounded-md shadow-lg overflow-hidden z-20">
+            <div className="py-2">
+              {Array.isArray(notifications) && notifications.length > 0 ? (
+                notifications.map((notification) => (
+                  <div key={notification.notificationId} className={`px-2 py-2 hover:bg-gray-100 ${notification.isRead ? 'opacity-50' : ''}`}>
+                    <p className="text-sm">{notification.message}</p>
+                    <p className="text-xs text-gray-500">
+                      {new Date(notification.notificationDate).toLocaleString()}
+                      - Created by: {notification.sellerName}
+                    </p>
+                    {!notification.isRead && (
+                      <button onClick={() => markAsRead(notification.notificationId)} className="text-xs text-blue-500 mt-1">
+                        Đánh dấu đã đọc
+                      </button>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <p className="px-4 py-2 text-sm text-gray-500">Không có thông báo mới</p>
+              )}
             </div>
-          )}
+          </div>
+        )}
         {currentUser ? (
           <Tippy content={`Hi, ${userData ? userData.name : 'User'}`} placement="bottom">
             <Link to={"/profile"}>

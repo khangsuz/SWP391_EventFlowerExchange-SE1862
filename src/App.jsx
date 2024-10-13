@@ -22,6 +22,7 @@ import PaymentResult from "./page/payment/paymentResult";
 import CheckoutPage from './page/payment/checkOutPage'; 
 import PersonalProduct from "./page/personalProduct";
 import Events from "./page/events";
+import SearchResult from "./page/searchResult";
 
 const App = () => {
   const router = createBrowserRouter([
@@ -64,6 +65,10 @@ const App = () => {
     {
       path: "personal-product/:userId", 
       element: <PersonalProduct />, 
+    },
+    {
+      path: "/search", 
+      element: <SearchResult />, 
     },
     {
       path: "/payment-result",

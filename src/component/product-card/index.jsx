@@ -7,7 +7,7 @@ import { useCart } from "../../contexts/CartContext";
 import { getFullImageUrl } from '../../utils/imageHelpers';
 import { Notification, notifySuccess, notifyError } from "../../component/alert";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faStar } from '@fortawesome/free-solid-svg-icons';
+import { faStar, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 function ProductCard({ flower }) {
   const navigate = useNavigate();
@@ -80,7 +80,9 @@ function ProductCard({ flower }) {
 
   const imageUrl = getFullImageUrl(flower.imageUrl);
 
-  const averageRating = flower.rating ? (flower.rating.reduce((acc, curr) => acc + curr, 0) / flower.rating.length).toFixed(1) : 0;
+  const averageRating = flower.rating && flower.rating.length > 0
+    ? (flower.rating.reduce((acc, curr) => acc + curr, 0) / flower.rating.length).toFixed(1)
+    : 0;
   const fullStars = Math.floor(averageRating);
   const halfStar = averageRating % 1 >= 0.5 ? 1 : 0;
 
@@ -92,7 +94,7 @@ function ProductCard({ flower }) {
         <img
           src={imageUrl || "https://i.postimg.cc/Jz0MW07g/top-view-roses-flowers-Photoroom.png"}
           alt={flower.flowerName}
-          className="w-full h-auto object-cover rounded-md transition-transform duration-300 ease-in-out hover:scale-105" // Thêm hiệu ứng hover
+          className="w-full h-auto object-cover rounded-md transition-transform duration-300 ease-in-out hover:scale-105"
         />
         <p className="name text-center mt-3 text-lg font-medium">
           {flower.flowerName} ({flower.quantity})
@@ -100,7 +102,7 @@ function ProductCard({ flower }) {
         <p className="price text-center text-red-500 font-bold">
           {Number(flower.price).toLocaleString()}₫
         </p>
-        <div className="rating flex justify-center items-center space-x-1 mt-2">
+        <div className="rating justify-center items-center space-x-1 mt-2">
           {[...Array(fullStars)].map((_, index) => (
             <FontAwesomeIcon key={index} icon={faStar} className="text-yellow-400" />
           ))}
@@ -108,15 +110,20 @@ function ProductCard({ flower }) {
           {[...Array(5 - fullStars - halfStar)].map((_, index) => (
             <FontAwesomeIcon key={index + fullStars + halfStar} icon={faStar} className="text-gray-300" />
           ))}
+          {averageRating === 0 && <p className="text-gray-500 text-sm mt-1">Chưa có đánh giá</p>}
         </div>
-
         <div className="text-center pb-4">
-          <button
-            onClick={handleAddToCart}
-            className=""
-          >
-            Thêm vào giỏ hàng
-          </button>
+          {flower.quantity > 0 ? (
+            <button onClick={handleAddToCart} disabled={loading}>
+              {loading ? (
+                <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
+              ) : (
+                <p className="">Thêm vào giỏ hàng</p>
+              )}
+            </button>
+          ) : (
+            <p className="text-red-500 mt-5">Hết hàng</p>
+          )}
         </div>
       </div>
     </div>
