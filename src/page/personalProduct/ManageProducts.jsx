@@ -5,6 +5,7 @@ import Footer from "../../component/footer";
 import api from "../../config/axios";
 import { Modal, Input, Button, Select, notification } from "antd";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const { Option } = Select;
 
@@ -20,6 +21,7 @@ const ManageProducts = () => {
     flowerName: '',
     price: '',
     quantity: '',
+    condition: '',
     status: '',
     category: '',
     imageUrl: null, // Đảm bảo giá trị là null cho hình ảnh
@@ -62,6 +64,7 @@ const ManageProducts = () => {
       flowerName: product.flowerName,
       price: product.price,
       quantity: product.quantity,
+      condition: product.condition || '',
       status: product.status,
       category: product.categoryName,
       imageUrl: null, // Đặt lại giá trị hình ảnh
@@ -69,32 +72,62 @@ const ManageProducts = () => {
     setIsModalVisible(true);
   };
 
-  const updateProduct = async () => {
+  const updateProduct = async (productId, productData) => {
     try {
-      const formData = new FormData();
-      formData.append("flowerName", updatedProduct.flowerName);
-      formData.append("price", updatedProduct.price);
-      formData.append("quantity", updatedProduct.quantity);
-      formData.append("status", updatedProduct.status);
-      formData.append("category", updatedProduct.category);
-      if (updatedProduct.imageUrl instanceof File) {
-        formData.append("imageUrl", updatedProduct.imageUrl);
-      }
+        const formData = new FormData();
+        formData.append("flowerName", productData.flowerName);
+        formData.append("price", productData.price);
+        formData.append("quantity", productData.quantity);
+        formData.append("condition", productData.condition || '');
+        formData.append("status", productData.status);
+        formData.append("category", productData.category);
 
-      await api.put(`Flowers/${currentProduct.flowerId}`, formData);
+        if (productData.imageUrl) {
+            formData.append("imageUrl", productData.imageUrl);
+        }
 
-      fetchProducts();
-      setIsModalVisible(false);
-      notification.success({ message: 'Cập nhật sản phẩm thành công!' });
+        const response = await axios.put(`https://localhost:7288/api/Flowers/${productId}`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        console.log('Cập nhật sản phẩm thành công:', response.data);
+        
+        // Hiển thị thông báo thành công
+        notification.success({
+            message: 'Cập nhật thành công!',
+            description: 'Thông tin sản phẩm đã được cập nhật.',
+        });
+        
+        // Cập nhật lại danh sách sản phẩm nếu cần
+        fetchProducts(); // Gọi lại hàm fetchProducts để cập nhật danh sách sản phẩm
     } catch (error) {
-      console.error('Lỗi khi cập nhật sản phẩm:', error);
-      notification.error({ message: 'Cập nhật sản phẩm thất bại!' });
+        console.error('Lỗi khi cập nhật sản phẩm:', error.response?.data || error);
+        notification.error({
+            message: 'Cập nhật thất bại!',
+            description: 'Đã xảy ra lỗi khi cập nhật sản phẩm.',
+        });
     }
-  };
+};
+
+
 
   const handleImageChange = (event) => {
     setUpdatedProduct({ ...updatedProduct, imageUrl: event.target.files[0] });
   };
+  const handleCloseEditModal = () => {
+    setIsModalVisible(false);
+    setCurrentProduct(null); // Đặt lại sản phẩm hiện tại
+    setUpdatedProduct({
+        flowerName: '',
+        price: '',
+        quantity: '',
+        condition: '',
+        status: '',
+        category: '',
+        imageUrl: null, // Đảm bảo giá trị là null cho hình ảnh
+    });
+};
 
   useEffect(() => {
     fetchProducts();
@@ -162,7 +195,13 @@ const ManageProducts = () => {
       <Modal
         title="Chỉnh sửa thông tin hoa"
         visible={isModalVisible}
-        onOk={updateProduct}
+        onOk={async () => {
+          // Gọi hàm updateProduct với productId và updatedProduct
+          if (currentProduct) {
+              await updateProduct(currentProduct.flowerId, updatedProduct); // Truyền đúng tham số
+          }
+          handleCloseEditModal(); // Đóng modal sau khi cập nhật
+      }}
         onCancel={() => setIsModalVisible(false)}
       >
         <Input
@@ -176,6 +215,12 @@ const ManageProducts = () => {
           type="number"
           value={updatedProduct.price}
           onChange={(e) => setUpdatedProduct({ ...updatedProduct, price: e.target.value })}
+          style={{ marginBottom: 10 }}
+        />
+        <Input
+          placeholder="Condition" // Nhập điều kiện
+          value={updatedProduct.condition}
+          onChange={(e) => setUpdatedProduct({ ...updatedProduct, condition: e.target.value })}
           style={{ marginBottom: 10 }}
         />
         <Input
