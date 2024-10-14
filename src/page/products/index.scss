@@ -118,3 +118,18 @@
     }
   }
 }
+.home__main-content {
+  padding: 20px 100px;
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); 
+  gap: 20px; 
+}
+
+.product-grid-item {
+  width: 300%;
+}
+
+

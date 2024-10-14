@@ -18,7 +18,11 @@ const Login = () => {
 
   const handleLogin = async (values) => {
     try {
-      const response = await api.post("Users/login", values);
+      console.log("Login data being sent:", values); // Log dữ liệu gửi đi
+      const response = await api.post("Users/login", {
+        name: values.name,
+        password: values.password
+      });
       console.log("Login response data:", response.data);
   
       const { token, userType, userId } = response.data;
@@ -32,17 +36,18 @@ const Login = () => {
       localStorage.setItem("user", JSON.stringify(userData));
   
       console.log("Stored user data:", userData);
+      console.log("Login successful - UserId:", userId, "Token:", token);
+  
       if (userType === "Admin") {
         navigate("/admin/dashboard");
       } else {
         navigate("/");
       }
     } catch (error) {
-      console.error("Login error:", error);
-      alert("Sai tên đăng nhập hoặc mật khẩu");
+      console.error("Login error:", error.response?.data || error.message);
+      alert("Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin đăng nhập.");
     }
   };
-
   const loginGoogle = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       console.log("Google login response:", tokenResponse);

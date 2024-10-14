@@ -15,8 +15,8 @@ const Profile = () => {
     const [editedData, setEditedData] = useState({});
     const [success, setSuccess] = useState(null);
     const { updateCartItemCount } = useCart();
-    const [profileImage, setProfileImage] = useState(null); 
-    
+    const [profileImage, setProfileImage] = useState(null);
+
 
     const fetchUserData = async () => {
         try {
@@ -75,7 +75,7 @@ const Profile = () => {
         const file = e.target.files[0];
         if (file) {
             setProfileImage(file);
-            setEditedData({ ...editedData, profileImageUrl: URL.createObjectURL(file) }); 
+            setEditedData({ ...editedData, profileImageUrl: URL.createObjectURL(file) });
             localStorage.setItem('profileImage', imageUrl);
         }
     };
@@ -112,7 +112,7 @@ const Profile = () => {
                 formData.append(key, editedData[key]);
             });
             if (profileImage) {
-                formData.append("profileImage", profileImage); 
+                formData.append("profileImage", profileImage);
             }
             try {
                 const response = await api.put('/Users/profile', editedData);
@@ -149,24 +149,24 @@ const Profile = () => {
                 )}
                 <div className="flex max-w-6xl mx-auto">
                     <div className="w-1/4 bg-white shadow-md rounded-lg p-5">
-                    <div className="text-center mb-5">
-                        <img 
-                            src={isEditing && profileImage ? URL.createObjectURL(profileImage) : userData.profileImageUrl} 
-                            alt={userData.name} 
-                            className="w-24 h-24 rounded-full mx-auto mb-2" 
-                        />
-                        {isEditing && (
-                            <input 
-                                type="file" 
-                                accept="image/*" 
-                                onChange={handleImageChange}
-                                className="mt-3 p-2 border rounded"
+                        <div className="text-center mb-5">
+                            <img
+                                src={isEditing && profileImage ? URL.createObjectURL(profileImage) : userData.profileImageUrl}
+                                alt={userData.name}
+                                className="w-24 h-24 rounded-full mx-auto mb-2"
                             />
-                        )}
-                        <h2 className="text-xl font-semibold mt-2">{userData.name}</h2>
-                        <p className="text-gray-600">{userData.email}</p>
-                        
-                    </div>
+                            {isEditing && (
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageChange}
+                                    className="mt-3 p-2 border rounded"
+                                />
+                            )}
+                            <h2 className="text-xl font-semibold mt-2">{userData.name}</h2>
+                            <p className="text-gray-600">{userData.email}</p>
+
+                        </div>
                         <nav class="space-y-2">
                             <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded">Thông tin</Link>
                             <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded">Danh sách đơn hàng</Link>
@@ -177,6 +177,14 @@ const Profile = () => {
                                     className="block text-gray-700 hover:bg-gray-200 p-2 rounded"
                                 >
                                     Quản lí Shop
+                                </Link>
+                            )}
+                            {userType === 'Buyer' && (
+                                <Link
+                                    to="/register-seller"
+                                    className="block text-gray-700 hover:bg-gray-200 p-2 rounded"
+                                >
+                                    Đăng ký làm người bán
                                 </Link>
                             )}
                             <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded" onClick={handleLogout}>Đăng xuất</Link>

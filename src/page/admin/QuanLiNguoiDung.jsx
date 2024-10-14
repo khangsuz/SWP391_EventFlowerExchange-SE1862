@@ -18,7 +18,7 @@ const QuanLiNguoiDung = () => {
     phone: '',
     address: '',
     userType: '',
-    password: '', // Thêm trường mật khẩu
+    password: '',
   });
 
   // Fetch users on component mount
@@ -130,7 +130,7 @@ const QuanLiNguoiDung = () => {
       {/* Edit User Modal */}
       <Modal
         title="Chỉnh sửa thông tin người dùng"
-        visible={isModalVisible}
+        open={isModalVisible}
         onOk={updateUser}
         onCancel={() => setIsModalVisible(false)}
       >

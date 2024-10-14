@@ -16,14 +16,16 @@ import ForgotPassword from './page/login/forgetPassword';
 import AdminLayout from "./page/admin/AdminLayout";
 import QuanLiSanPham from "./page/admin/QuanLiSanPham";
 import QuanLiNguoiDung from "./page/admin/QuanLiNguoiDung";
+import QuanLiNguoiBan from "./page/admin/QuanLiNguoiBan";
 import QuanLiDonHang from "./page/admin/QuanLiDonHang";
 import PaymentButton from "./component/button/PaymentButton";
 import PaymentResult from "./page/payment/paymentResult";
 import CheckoutPage from './page/payment/checkOutPage'; 
-// import PaymentResult from "./page/payment";
-// import Chat from "./page/chat";
 import PersonalProduct from "./page/personalProduct";
 import ManageProducts from "./page/personalProduct/ManageProducts";
+import RegisterSeller from "./page/seller/registerSeller";
+import ChatBox from "./page/chat";
+import ChatPage from "./page/chat/chatPage";
 
 
 const App = () => {
@@ -73,8 +75,20 @@ const App = () => {
       element: <PaymentResult />
     },
     {
+      path: "/register-seller",
+      element: <RegisterSeller />
+    },
+    {
       path: "/checkout",
       element: <CheckoutPage />
+    },
+    // {
+    //    path: "chat/:conversationId",
+    //   element: <ChatBox />,
+    // },
+    {
+      path: "/chat/:conversationId",
+      element: <ChatPage />,
     },
     {
       path: "forgot-password",
@@ -86,10 +100,6 @@ const App = () => {
         <CreateProduct />
       </PrivateRoute>
     },
-    // {
-    //   path: "chat",
-    //   element: <Chat />,
-    // },
     {
       path: "admin",
       element: (
@@ -110,6 +120,11 @@ const App = () => {
           path: "quanlinguoidung",
           element: <QuanLiNguoiDung />,
         },
+        {
+          path: "quanlinguoiban",
+          element: <QuanLiNguoiBan />,
+        },
+       
         {
           path: "quanlisanpham",
           element: <QuanLiSanPham />, 
