@@ -105,7 +105,7 @@ const ProductDetail = () => {
   useEffect(() => {
     fetchFlowerDetails();
     fetchReviews().then(fetchedReviews => {
-    setReviews(sortReviews(fetchedReviews));
+      setReviews(sortReviews(fetchedReviews));
     });
     checkCanReview();
   }, [id]);
@@ -178,7 +178,7 @@ const ProductDetail = () => {
         flowerId: flower.flowerId,
         userId: userId,
       };
-      
+
       let response;
       if (reviewId) {
         response = await api.put(`Reviews/${reviewId}`, reviewData, {
@@ -189,7 +189,7 @@ const ProductDetail = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
       }
-      
+
       if (response.status === 204 || response.data) {
         notifySuccess(reviewId ? "Đánh giá đã được cập nhật thành công!" : "Đánh giá đã được gửi thành công!");
         fetchReviews();
@@ -208,7 +208,7 @@ const ProductDetail = () => {
 
   return (
     <>
-    <Notification />
+      <Notification />
       <Header />
       <div className="text-gray-700 body-font overflow-hidden bg-white product-detail">
         <div className="container px-5 py-24 mx-auto">
@@ -217,6 +217,10 @@ const ProductDetail = () => {
             <div className="lg:w-1/2 w-full lg:pl-10 lg:py-6 mt-3 lg:mt-0">
               <h1 className="text-gray-900 text-3xl title-font font-medium mb-1 mt-3">{flower.flowerName}</h1>
               <span className="title-font font-medium text-xl text-[#bc0000]">{flower.price.toLocaleString()}₫</span>
+              <div className="flex items-center mt-2">
+                <span className="text-yellow-500 text-lg font-semibold">{averageRating.toFixed(1)} sao</span>
+                <span className="ml-2 text-gray-500">({reviews.length} đánh giá)</span>
+              </div>
               <div className="flex mb-4"></div>
               <p className="leading-relaxed">Lưu ý : Sản phẩm thực tế có thể sẽ khác đôi chút so với sản phẩm mẫu do đặc tính cắm, gói hoa thủ công. Các loại hoa không có sẵn, hoặc hết mùa sẽ được thay thế bằng các loại hoa khác, nhưng vẫn đảm bảo về định lượng hoa, tone màu, kiểu dáng và độ thẩm mỹ như sản phẩm mẫu.</p>
               <div className="flex mt-6 items-center pb-5 border-b-2 border-gray-200 mb-5">
@@ -379,15 +383,15 @@ const ProductDetail = () => {
           <div className="related-products-grid overflow-x-auto">
             <div className="flex space-x-6">
               {relatedFlowers.map((relatedFlower) => (
-                <Link 
-                  key={relatedFlower.flowerId} 
-                  to={`/product/${relatedFlower.flowerId}`} 
+                <Link
+                  key={relatedFlower.flowerId}
+                  to={`/product/${relatedFlower.flowerId}`}
                   className="related-product-item mb-2 bg-white shadow-lg rounded-lg overflow-hidden transition-transform transform w-1/4 min-w-[200px]"
                 >
-                  <img 
-                    src={relatedFlower.imageUrl} 
-                    alt={relatedFlower.flowerName} 
-                    className="w-full h-48 object-cover" 
+                  <img
+                    src={relatedFlower.imageUrl}
+                    alt={relatedFlower.flowerName}
+                    className="w-full h-48 object-cover"
                   />
                   <div className="p-4">
                     <h3 className="text-sm font-semibold mb-2">{relatedFlower.flowerName}</h3>
@@ -402,6 +406,6 @@ const ProductDetail = () => {
       <Footer />
     </>
   );
-};
+}
 
 export default ProductDetail;
