@@ -1,32 +1,92 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback  } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../component/header';
 import Footer from '../../component/footer';
 import api from '../../config/axios';
+import { Notification, notifySuccess, notifyError } from "../../component/alert";
 
 function CheckoutPage() {
     const navigate = useNavigate();
+    const [districts, setDistricts] = useState([]);
+    const [wards, setWards] = useState([]);
+    const [selectedDistrict, setSelectedDistrict] = useState('');
+    const [selectedWard, setSelectedWard] = useState('');
+    const [shippingFee, setShippingFee] = useState(0);
     const [cartItems, setCartItems] = useState([]);
     const [userInfo, setUserInfo] = useState({
         fullName: '',
         phone: '',
         email: '',
-        city: '',
-        district: '',
         address: '',
     });
+    const [paymentMethod, setPaymentMethod] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
 
     useEffect(() => {
         const storedCart = JSON.parse(localStorage.getItem('cart')) || [];
         setCartItems(storedCart);
         fetchUserInfo();
+        fetchDistricts();
     }, []);
+
+    useEffect(() => {
+        if (selectedDistrict) {
+            fetchWards(selectedDistrict);
+            setSelectedWard('');
+            setShippingFee(0);
+        }
+    }, [selectedDistrict]);
+
+    const handleShippingFeeCalculation = useCallback(async () => {
+        if (!selectedDistrict || !selectedWard) {
+            setShippingFee(0);
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            notifyError('Vui lòng đăng nhập trước khi thanh toán');
+            navigate('/login');
+            return;
+        }
+
+        try {
+            const shippingRequest = {
+                from_district_id: 1442,
+                to_district_id: selectedDistrict,
+                to_ward_code: selectedWard,
+                weight: 10000 * cartItems.length,
+                length: 30,
+                width: 30,
+                height: 30
+            };
+            const response = await api.post('Shipping/calculate-shipping-fee', shippingRequest, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.data && response.data.data) {
+                setShippingFee(response.data.data.total);
+            } else {
+                console.error('Unexpected response structure:', response);
+                notifyError('Shop chưa hỗ trợ giao hàng đến địa chỉ này.');
+            }
+        } catch (error) {
+            console.error('Error calculating shipping fee:', error);
+            notifyError('Shop chưa hỗ trợ giao hàng đến địa chỉ này.');
+        }
+    }, [selectedDistrict, selectedWard, cartItems, navigate]);
+
+    useEffect(() => {
+        handleShippingFeeCalculation();
+    }, [handleShippingFeeCalculation]);
 
     const fetchUserInfo = async () => {
         const token = localStorage.getItem('token');
         if (!token) {
-            alert('Vui lòng đăng nhập trước khi thanh toán');
+            notifyError('Vui lòng đăng nhập trước khi thanh toán');
             navigate('/login');
             return;
         }
@@ -40,38 +100,68 @@ function CheckoutPage() {
             setUserInfo(response.data);
         } catch (error) {
             console.error('Error fetching user info:', error);
-            alert('Không thể lấy thông tin người dùng. Vui lòng thử lại sau.');
+            notifyError('Không thể lấy thông tin người dùng. Vui lòng thử lại sau.');
+        }
+    };
+
+    const fetchDistricts = async () => {
+        try {
+            const response = await api.get('Shipping/districts?provinceId=202');
+            setDistricts(response.data);
+        } catch (error) {
+            console.error('Error fetching districts:', error);
+        }
+    };
+
+    const fetchWards = async (districtId) => {
+        try {
+            const response = await api.get(`Shipping/wards?district_id=${districtId}`);
+            setWards(response.data);
+        } catch (error) {
+            console.error('Error fetching wards:', error);
         }
     };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setUserInfo(prev => ({ ...prev, [name]: value }));
+        setUserInfo((prev) => ({ ...prev, [name]: value }));
     };
 
     const calculateTotal = () => {
-        return cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+        const total = cartItems.reduce((total, item) => total + item.price * item.quantity, 0) + shippingFee;
+        return total >= 0 ? total : 0;
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         const token = localStorage.getItem('token');
         if (!token) {
-            alert('Vui lòng đăng nhập trước khi thanh toán');
+            notifyError('Vui lòng đăng nhập trước khi thanh toán');
             navigate('/login');
             return;
         }
-    
+
+        if (!selectedDistrict || !selectedWard) {
+            notifyError('Vui lòng chọn quận/huyện và phường/xã trong TP. Hồ Chí Minh.');
+            return;
+        }
+
+        if (!paymentMethod) {
+            notifyError('Vui lòng chọn phương thức thanh toán.');
+            return;
+        }
+
         setIsProcessing(true);
         try {
-            // Thực hiện checkout
-            const cartItemsToSend = cartItems.map(item => ({
+            await handleShippingFeeCalculation();
+
+            const cartItemsToSend = cartItems.map((item) => ({
                 flowerId: item.flowerId,
                 quantity: item.quantity
             }));
-    
+
             const checkoutResponse = await api.post(
-                'Orders/checkout', 
+                'Orders/checkout',
                 cartItemsToSend,
                 {
                     headers: {
@@ -80,13 +170,10 @@ function CheckoutPage() {
                     }
                 }
             );
-    
-            console.log('Checkout successful:', checkoutResponse.data);
-    
-            // Tạo yêu cầu thanh toán VNPay
+
             const paymentResponse = await api.post(
                 'Payments/createVnpPayment',
-                { 
+                {
                     Amount: calculateTotal(),
                     ...userInfo
                 },
@@ -97,126 +184,183 @@ function CheckoutPage() {
                     }
                 }
             );
-    
-            // Lưu orderId vào localStorage để sử dụng sau khi thanh toán
+            notifySuccess('Đặt hàng thành công. Chuyển đến trang thanh toán');
             localStorage.setItem('pendingOrderId', checkoutResponse.data.orderId);
-    
-            // Chuyển hướng đến URL thanh toán VNPay
             window.location.href = paymentResponse.data.paymentUrl;
-    
+            
         } catch (error) {
-            console.error('Payment error:', error);
+            notifyError('Thanh toán thất bại');
             if (error.response) {
-                alert(`Payment failed: ${error.response.data}`);
+                notifyError(`Thanh toán thất bại: ${error.response.data}`);
             } else if (error.request) {
-                alert('Network error. Please check your connection and try again.');
+                notifyError('Lỗi mạng. Vui lòng kiểm tra kết nối và thử lại.');
             } else {
-                alert('An unexpected error occurred. Please try again.');
+                notifyError('Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.');
             }
         } finally {
             setIsProcessing(false);
         }
     };
 
+    const handleDistrictChange = (e) => {
+        setSelectedDistrict(e.target.value);
+        setSelectedWard('');
+        setShippingFee(0);
+    };
+
+    const handleWardChange = (e) => {
+        setSelectedWard(e.target.value);
+    };
+
     return (
         <>
-            <Header />
-            <div className="container mx-auto px-4 py-8">
-                <h1 className="text-3xl font-bold mb-6 text-center">Thanh toán</h1>
-                <div className="flex flex-wrap -mx-4">
-                    <div className="w-full md:w-1/2 px-4 mb-4">
-                        <h2 className="text-2xl font-bold mb-4">Thông tin thanh toán</h2>
-                        <form onSubmit={handleSubmit}>
-                            <div className="mb-4">
-                                <label className="block mb-2">Họ và tên</label>
-                                <input
-                                    type="text"
-                                    name="fullName"
-                                    value={userInfo.fullName}
-                                    onChange={handleInputChange}
-                                    className="w-full p-2 border rounded"
-                                    required
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block mb-2">Số điện thoại</label>
-                                <input
-                                    type="tel"
-                                    name="phone"
-                                    value={userInfo.phone}
-                                    onChange={handleInputChange}
-                                    className="w-full p-2 border rounded"
-                                    required
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block mb-2">Email</label>
-                                <input
-                                    type="email"
-                                    name="email"
-                                    value={userInfo.email}
-                                    onChange={handleInputChange}
-                                    className="w-full p-2 border rounded"
-                                    required
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block mb-2">Tỉnh/Thành phố</label>
-                                <input
-                                    type="text"
-                                    name="city"
-                                    value={userInfo.city}
-                                    onChange={handleInputChange}
-                                    className="w-full p-2 border rounded"
-                                    required
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block mb-2">Quận/Huyện</label>
-                                <input
-                                    type="text"
-                                    name="district"
-                                    value={userInfo.district}
-                                    onChange={handleInputChange}
-                                    className="w-full p-2 border rounded"
-                                    required
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block mb-2">Địa chỉ</label>
-                                <input
-                                    type="text"
-                                    name="address"
-                                    value={userInfo.address}
-                                    onChange={handleInputChange}
-                                    className="w-full p-2 border rounded"
-                                    required
-                                />
-                            </div>
-                            <button
-                                type="submit"
-                                disabled={isProcessing}
-                                className="w-full bg-blue-500 text-white p-3 rounded-full hover:bg-blue-600 transition duration-300 mt-4"
+        <Notification />
+        <Header />
+            <div className="container mx-auto px-4 py-8 flex">
+                <div className="w-full md:w-2/3 px-4">
+                    <h2 className="text-2xl text-amber-500 font-bold mb-4">Thông tin thanh toán</h2>
+                    <form onSubmit={handleSubmit}>
+                        {/* Form Thông Tin Thanh Toán */}
+                        <div className="mb-4">
+                            <label className="block font-bold mb-2">Họ và tên *</label>
+                            <input
+                                type="text"
+                                name="fullName"
+                                value={userInfo.fullName}
+                                onChange={handleInputChange}
+                                className="w-full p-2 border rounded"
+                                required
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block font-bold mb-2">Số điện thoại *</label>
+                            <input
+                                type="tel"
+                                name="phone"
+                                value={userInfo.phone}
+                                onChange={handleInputChange}
+                                className="w-full p-2 border rounded"
+                                required
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block font-bold mb-2">Địa chỉ email *</label>
+                            <input
+                                type="email"
+                                name="email"
+                                value={userInfo.email}
+                                onChange={handleInputChange}
+                                className="w-full p-2 border rounded"
+                                required
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block font-bold mb-2">Thành phố *</label>
+                            <select
+                                name="province"
+                                className="w-full p-2 border rounded"
+                                value="202"
+                                disabled
                             >
-                                {isProcessing ? 'Đang xử lý...' : 'Thanh toán qua VNPay'}
-                            </button>
-                        </form>
-                    </div>
-                    <div className="w-full md:w-1/2 px-4">
-                        <h2 className="text-2xl font-bold mb-4">Đơn hàng của bạn</h2>
+                                <option value="202">TP. Hồ Chí Minh</option>
+                            </select>
+                        </div>
+                        <div className="mb-4">
+                            <label className="block font-bold mb-2">Quận/Huyện *</label>
+                            <select
+                                name="district"
+                                value={selectedDistrict}
+                                onChange={handleDistrictChange}
+                                className="w-full p-2 border rounded"
+                                required
+                            >   
+                                <option value="">Chọn quận/huyện</option>
+                                {districts.map((district) => (
+                                    <option key={district.districtId} value={district.districtId}>
+                                        {district.districtName}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="mb-4">
+                            <label className="block font-bold mb-2">Phường/Xã *</label>
+                            <select
+                                name="ward"
+                                value={selectedWard}
+                                onChange={handleWardChange}
+                                className="w-full p-2 border rounded"
+                                required
+                            >
+                                <option value="">Chọn phường/xã</option>
+                                {wards.map((ward) => (
+                                    <option key={ward.wardCode} value={ward.wardCode}>
+                                        {ward.wardName}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="mb-4">
+                            <label className="block font-bold mb-2">Địa chỉ *</label>
+                            <input
+                                type="text"
+                                name="address"
+                                value={userInfo.address}
+                                onChange={handleInputChange}
+                                className="w-full p-2 border rounded"
+                                placeholder="Ví dụ: Số 20 đường Cầu Giấy"
+                                required
+                            />
+                        </div>
+                    </form>
+                </div>
+                <div className="w-full md:w-2/4 px-4">
+
+                    {/* Đơn Hàng Của Bạn */}
+                    <h2 className="text-2xl text-amber-500 font-bold mb-4">Đơn hàng của bạn</h2>
+                    <div className="border p-4 rounded">
+                        <div className="flex justify-between">
+                            <span className="text-lg font-bold">SẢN PHẨM</span>
+                            <span className="text-lg font-bold">TẠM TÍNH</span>
+                        </div>
                         {cartItems.map((item) => (
-                            <div key={item.flowerId} className="flex justify-between mb-2">
+                            <div key={item.flowerId} className="mb-2 flex border-t pt-2 mt-2 justify-between">
                                 <span>{item.flowerName} x {item.quantity}</span>
-                                <span>{(item.price * item.quantity).toLocaleString()}₫</span>
+                                <span className="text-red-500 font-bold">{(item.price * item.quantity).toLocaleString()}₫</span>
                             </div>
                         ))}
-                        <div className="border-t pt-2 mt-2">
-                            <div className="flex justify-between font-bold">
-                                <span>Tổng cộng</span>
-                                <span>{calculateTotal().toLocaleString()}₫</span>
-                            </div>
+                        <div className="flex justify-between border-t pt-2 mt-2">
+                            <span className="font-bold">Tạm tính</span>
+                            <span className="text-red-500 font-bold">{cartItems.reduce((total, item) => total + item.price * item.quantity, 0).toLocaleString()}₫</span>
+                        </div>
+                        <div className="flex justify-between mt-2">
+                            <span>Phí giao hàng</span>
+                            <span>{shippingFee > 0 ? `${shippingFee.toLocaleString()}₫` : 'Nhập địa chỉ để xem các tùy chọn vận chuyển'}</span>
+                        </div>
+                        <div className="flex justify-between border-t pt-2 mt-2 font-bold">
+                            <span>Tổng</span>
+                            <span>{calculateTotal().toLocaleString()}₫</span>
                         </div>
                     </div>
+
+                    {/* Phương Thức Thanh Toán */}
+                    <h3 className="text-xl font-bold mt-6 mb-4">Thanh toán</h3>
+                    <div className="flex mb-4">
+                        <input
+                            type="radio"
+                            name="paymentMethod"
+                            value="VnPay"
+                            onChange={(e) => setPaymentMethod(e.target.value)}
+                        /> 
+                        <label className="mt-5 ml-4">Thanh toán VnPay</label>
+                        <img className="h-16 ml-auto" src="https://vinadesign.vn/uploads/images/2023/05/vnpay-logo-vinadesign-25-12-57-55.jpg" alt="VnPay" />
+                    </div>
+                    <button
+                        onClick={handleSubmit}
+                        className="w-full bg-green-500 text-white p-4 rounded"
+                        disabled={isProcessing && !paymentMethod}
+                    >
+                        {isProcessing ? 'Đang xử lý...' : 'Đặt hàng'}
+                    </button>
                 </div>
             </div>
             <Footer />

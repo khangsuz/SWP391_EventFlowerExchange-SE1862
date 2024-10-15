@@ -24,6 +24,10 @@ import CheckoutPage from './page/payment/checkOutPage';
 // import Chat from "./page/chat";
 import PersonalProduct from "./page/personalProduct";
 import ManageProducts from "./page/personalProduct/ManageProducts";
+import Events from "./page/events";
+import SearchResult from "./page/searchResult";
+import ManageRevenue from "./page/personalProduct/ManageRevenue"; 
+import ManageOrders from "./page/personalProduct/ManageOrders"; 
 
 
 const App = () => {
@@ -61,12 +65,32 @@ const App = () => {
       element: <PersonalProduct />, 
     },
     {
-      path: "manage-products/:userId", // Đường dẫn quản lý sản phẩm
+      path: "manage-products/:userId", 
       element: <ManageProducts />,
+    },
+    {
+      path: "manage-revenue/:userId", // Đường dẫn quản lý doanh thu
+      element: <ManageRevenue />,
+    },
+    {
+      path: "manage-orders/:userId", // Đường dẫn quản lý đơn hàng
+      element: <ManageOrders />,
     },
     {
       path: "products",
       element: <Products />,
+    },
+    {
+      path: "events",
+      element: <Events />
+    },
+    {
+      path: "personal-product/:userId", 
+      element: <PersonalProduct />, 
+    },
+    {
+      path: "/search", 
+      element: <SearchResult />, 
     },
     {
       path: "/payment-result",
@@ -101,6 +125,10 @@ const App = () => {
         {
           path: "dashboard",
           element: <Dashboard />,
+        },
+        {
+          path: "personal-product/:userId", 
+          element: <PersonalProduct />, 
         },
         {
           path: "quanlinguoidung",

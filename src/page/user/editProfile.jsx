@@ -5,7 +5,7 @@ import api from "../../config/axios";
 import Footer from "../../component/footer";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../../contexts/CartContext";
-
+import { Notification, notifySuccess, notifyError } from '../../component/alert';
 const Profile = () => {
     const navigate = useNavigate();
     const [userData, setUserData] = useState(null);
@@ -16,14 +16,14 @@ const Profile = () => {
     const [success, setSuccess] = useState(null);
     const { updateCartItemCount } = useCart();
     const [profileImage, setProfileImage] = useState(null); 
-    
+    const [imageUrl, setImageUrl] = useState(''); 
 
     const fetchUserData = async () => {
         try {
             const response = await api.get('/Users/profile');
             setUserData(response.data);
             setEditedData(response.data);
-            const storedImage = localStorage.getItem('profileImage');
+            setImageUrl(response.data.profileImageUrl);
         } catch (error) {
             console.error("Error fetching user data:", error);
             setError("Failed to load user data. Please try again later.");
@@ -51,6 +51,7 @@ const Profile = () => {
         localStorage.removeItem('user');
         localStorage.removeItem('cart');
         clearCart();
+        notifySuccess("Đăng xuất thành công!");
         navigate('/login');
     }
 
@@ -75,8 +76,9 @@ const Profile = () => {
         const file = e.target.files[0];
         if (file) {
             setProfileImage(file);
-            setEditedData({ ...editedData, profileImageUrl: URL.createObjectURL(file) }); 
-            localStorage.setItem('profileImage', imageUrl);
+            const imageUrl = URL.createObjectURL(file);
+            setEditedData({ ...editedData, profileImageUrl: imageUrl });
+            setImageUrl(imageUrl); // Cập nhật URL tạm thời chỉ để xem trước
         }
     };
 
@@ -93,7 +95,7 @@ const Profile = () => {
         if (editedData.email !== userData.email) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(editedData.email)) {
-                alert("Email không hợp lệ.");
+                notifyError("Email không hợp lệ.");
                 isValid = false;
             }
         }
@@ -101,13 +103,19 @@ const Profile = () => {
         if (editedData.phone !== userData.phone) {
             const phoneRegex = /^\d{10,11}$/;
             if (!phoneRegex.test(editedData.phone)) {
-                alert("Số điện thoại phải có từ 10 đến 11 số.");
+                notifyError("Số điện thoại phải có từ 10 đến 11 số.");
                 isValid = false;
             }
         }
 
         if (isValid) {
             const formData = new FormData();
+            formData.append("profileImage", profileImage); // Thêm hình ảnh vào form data
+            formData.append("name", editedData.name);
+            formData.append("email", editedData.email);
+            formData.append("fullName", editedData.fullName);
+            formData.append("phone", editedData.phone);
+            formData.append("address", editedData.address);
             Object.keys(editedData).forEach(key => {
                 formData.append(key, editedData[key]);
             });
@@ -115,26 +123,34 @@ const Profile = () => {
                 formData.append("profileImage", profileImage); 
             }
             try {
-                const response = await api.put('/Users/profile', editedData);
+                const response = await api.put('/Users/profile', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                });
                 setUserData(response.data);
+                setImageUrl(response.data.profileImageUrl);
                 setIsEditing(false);
-                setSuccess("Profile updated successfully!");
+                setSuccess("Cập nhật thành công!");
                 setError(null);
                 setTimeout(() => setSuccess(null), 3000);
             } catch (error) {
                 console.error("Error updating user data:", error);
-                setError("Failed to update user data. Please try again.");
+                setError("Cập nhật thất bại! Vui lòng thử lại sau.");
                 setSuccess(null);
             }
         }
     };
 
     if (!userData) {
-        return <div>Loading...</div>;
+        return (
+        <div>Loading...</div>
+        );
     }
     const userId = userData.userId;
     return (
         <>
+        <Notification />
             <Header />
             <div className="bg-slate-100 p-20">
                 {error && (
@@ -151,7 +167,7 @@ const Profile = () => {
                     <div className="w-1/4 bg-white shadow-md rounded-lg p-5">
                     <div className="text-center mb-5">
                         <img 
-                            src={isEditing && profileImage ? URL.createObjectURL(profileImage) : userData.profileImageUrl} 
+                             src={isEditing && profileImage ? URL.createObjectURL(profileImage) : imageUrl}
                             alt={userData.name} 
                             className="w-24 h-24 rounded-full mx-auto mb-2" 
                         />

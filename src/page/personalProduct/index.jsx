@@ -58,10 +58,16 @@ const PersonalProduct = () => {
   };
 
   const handleManageProducts = () => {
-    navigate(`/manage-products/${userId}`); // Đường dẫn tới trang quản lý sản phẩm
+    navigate(`/manage-products/${userId}`);
   };
-  
 
+  const handleRevenue = () => {
+    navigate(`/manage-revenue/${userId}`);
+  };
+
+  const handleOrders = () => {
+    navigate(`/manage-orders/${userId}`);
+  };
 
   if (loading) return <div>Loading...</div>;
 
@@ -70,48 +76,73 @@ const PersonalProduct = () => {
       <Header />
       <div className="container mx-auto py-24">
         {sellerProfile && (
-          <div className="mb-6 p-4 border border-gray-200 rounded">
-            <div className="flex items-center">
-              <img src={sellerProfile.profileImageUrl} alt={sellerProfile.name} className="w-10 h-10 rounded-full mr-2" />
-              <div className="ml-2">
-                <h2 className="text-xl font-bold">{sellerProfile.name}</h2>
-                <div className="flex mt-2">
-                  <div className="mr-6">
-                    <span>Đánh Giá: </span><strong>{sellerProfile.rating || 0}</strong>
-                  </div>
-                  <div className="mr-6">
-                    <span>Sản Phẩm: </span><strong>{sellerProfile.productCount || 0}</strong>
-                  </div>
-                  <div>
-                    <span>Người Theo Dõi: </span><strong>{sellerProfile.followers || 0}</strong>
-                  </div>
+          <div className="mb-6 p-6 border border-gray-300 rounded-lg shadow-lg bg-white transition-transform transform hover:scale-105">
+          <div className="flex items-start">
+            <img
+              src={sellerProfile.profileImageUrl}
+              alt={sellerProfile.name}
+              className="w-24 h-24 rounded-full border-4 border-blue-500 shadow-md transition-transform transform hover:scale-105"
+            />
+            <div className="ml-5">
+              <h2 className="text-4xl font-bold text-gray-800 hover:text-blue-500 transition duration-300">{sellerProfile.name}</h2>
+              <div className="flex mt-3 space-x-8 text-gray-600 text-lg">
+                <div className="flex items-center">
+                  <span className="font-semibold text-gray-700">Đánh Giá:</span>
+                  <strong className="text-blue-600 ml-1">{sellerProfile.rating || 0}</strong>
                 </div>
-                <div className="flex mt-2">
-                  <button className="chat-button text-sm border border-gray-300 rounded py-1 px-2 mr-2" onClick={handleChat}>
-                    Chat Ngay
-                  </button>
-                  <button className="text-sm border border-gray-300 rounded py-1 px-2" onClick={() => {}}>
-                    Yêu Thích
-                  </button>
-                  {currentUserId === parseInt(userId) && ( // Kiểm tra nếu người dùng hiện tại là người bán
+                <div className="flex items-center">
+                  <span className="font-semibold text-gray-700">Sản Phẩm:</span>
+                  <strong className="text-blue-600 ml-1">{sellerProfile.productCount || 0}</strong>
+                </div>
+                <div className="flex items-center">
+                  <span className="font-semibold text-gray-700">Người Theo Dõi:</span>
+                  <strong className="text-blue-600 ml-1">{sellerProfile.followers || 0}</strong>
+                </div>
+              </div>
+              <div className="flex mt-5 space-x-3">
+                <button
+                  className="chat-button text-sm bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg py-2 px-5 shadow hover:bg-gradient-to-l transition duration-300 transform hover:scale-105"
+                  onClick={handleChat}
+                >
+                  Chat Ngay
+                </button>
+                <button className="text-sm text-blue-600 border-2 border-blue-600 rounded-lg py-2 px-5 hover:bg-blue-600 hover:text-white transition duration-300 transform hover:scale-105">
+                  Yêu Thích
+                </button>
+                {currentUserId === parseInt(userId) && (
+                  <div className="flex space-x-3">
                     <button
-                      className="text-sm border border-gray-300 rounded py-1 px-2 ml-2"
+                      className="text-sm border border-gray-300 rounded-lg py-2 px-5 hover:bg-gray-100 transition duration-300 transform hover:scale-105"
                       onClick={handleManageProducts}
                     >
                       Quản lý sản phẩm
                     </button>
-                  )}
-                </div>
+                    <button
+                      className="text-sm border border-gray-300 rounded-lg py-2 px-5 hover:bg-gray-100 transition duration-300 transform hover:scale-105"
+                      onClick={handleRevenue}
+                    >
+                      Xem Doanh Thu
+                    </button>
+                    <button
+                      className="text-sm border border-gray-300 rounded-lg py-2 px-5 hover:bg-gray-100 transition duration-300 transform hover:scale-105"
+                      onClick={handleOrders}
+                    >
+                      Xem Đơn Hàng
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
+        </div>
+        
+        
         )}
-
         <h1 className="text-2xl font-bold mb-6">Sản phẩm của người bán</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="product-grid">
           {sellerProducts.length > 0 ? (
             sellerProducts.map((product) => (
-              <div key={product.flowerId} className="relative">
+              <div key={product.flowerId} className="product-grid-item">
                 <ProductCard flower={product} />
               </div>
             ))

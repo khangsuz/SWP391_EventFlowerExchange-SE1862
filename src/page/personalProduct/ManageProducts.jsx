@@ -26,6 +26,7 @@ const ManageProducts = () => {
     category: '',
     imageUrl: null, // Đảm bảo giá trị là null cho hình ảnh
   });
+  
 
   const fetchProducts = async () => {
     try {

@@ -17,7 +17,9 @@ function PaymentResult() {
                 
                 if (response.data.status === 'success') {
                     setPaymentStatus('Giao dịch thành công!');
-                    localStorage.removeItem('cart');
+                    // setCartItems([]);
+                    localStorage.setItem('cart', JSON.stringify([]));
+                    // updateCartItemCount();
                 } else {
                     setPaymentStatus(response.data.message || 'Giao dịch không thành công. Vui lòng thử lại sau.');
                 }
