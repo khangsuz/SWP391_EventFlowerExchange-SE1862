@@ -24,8 +24,11 @@ import CheckoutPage from './page/payment/checkOutPage';
 import PersonalProduct from "./page/personalProduct";
 import ManageProducts from "./page/personalProduct/ManageProducts";
 import RegisterSeller from "./page/seller/registerSeller";
-import ChatBox from "./page/chat";
 import ChatPage from "./page/chat/chatPage";
+import Events from "./page/events";
+import SearchResult from "./page/searchResult";
+import ChangePassword from "./page/user/changePassword";
+import OrderHistory from "./page/user/OrderHistory";
 
 
 const App = () => {
@@ -59,6 +62,14 @@ const App = () => {
       element: <ProductDetail />,
     },
     {
+      path: "events",
+      element: <Events />
+    },
+    {
+      path: "/search", 
+      element: <SearchResult />, 
+    },
+    {
       path: "personal-product/:userId", 
       element: <PersonalProduct />, 
     },
@@ -81,18 +92,19 @@ const App = () => {
     {
       path: "/checkout",
       element: <CheckoutPage />
-    },
-    // {
-    //    path: "chat/:conversationId",
-    //   element: <ChatBox />,
-    // },
+    },  
+
     {
       path: "/chat/:conversationId",
       element: <ChatPage />,
     },
     {
-      path: "forgot-password",
+      path: "/forgot-password",
       element: <ForgotPassword />,
+    },
+    {
+      path: "/order-history",
+      element: <OrderHistory />,
     },
     {
       path: "manage-product", 
@@ -142,6 +154,10 @@ const App = () => {
     {
       path: "payment-result", 
       element: <PaymentResult />,
+    },
+    {
+      path: "change-password", 
+      element: <ChangePassword />,
     },
     
   ]);

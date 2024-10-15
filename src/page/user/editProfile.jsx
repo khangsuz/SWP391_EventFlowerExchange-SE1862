@@ -17,7 +17,6 @@ const Profile = () => {
     const { updateCartItemCount } = useCart();
     const [profileImage, setProfileImage] = useState(null);
 
-
     const fetchUserData = async () => {
         try {
             const response = await api.get('/Users/profile');
@@ -41,7 +40,6 @@ const Profile = () => {
     }, [navigate]);
 
     const clearCart = () => {
-        setCartItems([]);
         localStorage.setItem('cart', JSON.stringify([]));
         updateCartItemCount();
     };
@@ -71,12 +69,13 @@ const Profile = () => {
     const handleChange = (e) => {
         setEditedData({ ...editedData, [e.target.name]: e.target.value });
     };
+
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
             setProfileImage(file);
             setEditedData({ ...editedData, profileImageUrl: URL.createObjectURL(file) });
-            localStorage.setItem('profileImage', imageUrl);
+            localStorage.setItem('profileImage', URL.createObjectURL(file));
         }
     };
 
@@ -165,12 +164,11 @@ const Profile = () => {
                             )}
                             <h2 className="text-xl font-semibold mt-2">{userData.name}</h2>
                             <p className="text-gray-600">{userData.email}</p>
-
                         </div>
-                        <nav class="space-y-2">
-                            <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded">Thông tin</Link>
-                            <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded">Danh sách đơn hàng</Link>
-                            <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded">Đổi mật khẩu</Link>
+                        <nav className="space-y-2">
+                            <Link to="#" className="block text-gray-700 hover:bg-gray-200 p-2 rounded">Thông tin</Link>
+                            <Link to="/order-history" className="block text-gray-700 hover:bg-gray-200 p-2 rounded">Danh sách đơn hàng</Link>
+                            <Link to="/change-password" className="block text-gray-700 hover:bg-gray-200 p-2 rounded">Đổi mật khẩu</Link>
                             {userType === 'Seller' && (
                                 <Link
                                     to={`/personal-product/${userId}`}
@@ -187,7 +185,7 @@ const Profile = () => {
                                     Đăng ký làm người bán
                                 </Link>
                             )}
-                            <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded" onClick={handleLogout}>Đăng xuất</Link>
+                            <button className="block text-gray-700 hover:bg-gray-200 p-2 rounded w-full text-left" onClick={handleLogout}>Đăng xuất</button>
                         </nav>
                     </div>
                     <div className="flex-1 bg-white shadow-md rounded-lg p-5 ml-5">
@@ -198,7 +196,7 @@ const Profile = () => {
                         </div>
                         <div className="flex mb-3 gap-10">
                             <h2 className="text-2xl p-2">Tên đầy đủ:</h2>
-                            <p className="text-lg">{isEditing ? (
+                            {isEditing ? (
                                 <input
                                     type="text"
                                     name="fullName"
@@ -208,12 +206,11 @@ const Profile = () => {
                                 />
                             ) : (
                                 <p className="text-2xl p-2">{userData.fullName}</p>
-                            )}</p>
+                            )}
                         </div>
-
                         <div className="flex mb-3 gap-10">
                             <h2 className="text-2xl p-2">Email:</h2>
-                            <p className="text-lg">{isEditing ? (
+                            {isEditing ? (
                                 <input
                                     type="email"
                                     name="email"
@@ -223,11 +220,11 @@ const Profile = () => {
                                 />
                             ) : (
                                 <p className="p-2 text-2xl">{userData.email}</p>
-                            )}</p>
+                            )}
                         </div>
                         <div className="flex mb-3 gap-10">
                             <h2 className="text-2xl p-2">Số điện thoại:</h2>
-                            <p className="text-lg">{isEditing ? (
+                            {isEditing ? (
                                 <input
                                     type="tel"
                                     name="phone"
@@ -237,11 +234,11 @@ const Profile = () => {
                                 />
                             ) : (
                                 <p className="p-2 text-2xl">{userData.phone}</p>
-                            )}</p>
+                            )}
                         </div>
                         <div className="flex mb-3 gap-10">
                             <h2 className="text-2xl p-2">Địa chỉ:</h2>
-                            <p className="text-lg">{isEditing ? (
+                            {isEditing ? (
                                 <input
                                     type="text"
                                     name="address"
@@ -251,7 +248,7 @@ const Profile = () => {
                                 />
                             ) : (
                                 <p className="p-2 text-2xl">{userData.address}</p>
-                            )}</p>
+                            )}
                         </div>
                         <div className="">
                             {isEditing ? (

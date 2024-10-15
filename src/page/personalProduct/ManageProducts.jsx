@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Header from "../../component/header";
 import Footer from "../../component/footer";
@@ -24,33 +24,37 @@ const ManageProducts = () => {
     imageUrl: '',
   });
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       const response = await api.get(`Flowers/seller/${userId}`);
       setProducts(response.data);
-      setLoading(false);
     } catch (err) {
       console.error("Error fetching products:", err);
+      notification.error({ message: 'Không thể tải danh sách sản phẩm' });
+    } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       const response = await api.get('Flowers/categories');
       setCategories(response.data);
     } catch (err) {
       console.error("Error fetching categories:", err);
+      notification.error({ message: 'Không thể tải danh sách danh mục' });
     }
-  };
+  }, []);
 
   const handleDelete = async (flowerId) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) {
       try {
         await api.delete(`Flowers/${flowerId}`);
         setProducts(products.filter((product) => product.flowerId !== flowerId));
+        notification.success({ message: 'Xóa sản phẩm thành công' });
       } catch (err) {
         console.error("Error deleting product:", err);
+        notification.error({ message: 'Xóa sản phẩm thất bại' });
       }
     }
   };
@@ -71,18 +75,16 @@ const ManageProducts = () => {
   const updateProduct = async () => {
     try {
       const formData = new FormData();
-      formData.append("flowerName", updatedProduct.flowerName);
-      formData.append("price", updatedProduct.price);
-      formData.append("quantity", updatedProduct.quantity);
-      formData.append("status", updatedProduct.status);
-      formData.append("category", updatedProduct.category);
-      if (updatedProduct.imageUrl instanceof File) {
-        formData.append("imageUrl", updatedProduct.imageUrl);
-      }
+      Object.keys(updatedProduct).forEach(key => {
+        if (key === 'imageUrl' && updatedProduct[key] instanceof File) {
+          formData.append(key, updatedProduct[key]);
+        } else if (key !== 'imageUrl') {
+          formData.append(key, updatedProduct[key]);
+        }
+      });
 
       await api.put(`Flowers/${currentProduct.flowerId}`, formData);
-
-      fetchProducts();
+      await fetchProducts();
       setIsModalVisible(false);
       notification.success({ message: 'Cập nhật sản phẩm thành công!' });
     } catch (error) {
@@ -96,7 +98,7 @@ const ManageProducts = () => {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setUpdatedProduct({ ...updatedProduct, imageUrl: reader.result });
+        setUpdatedProduct({ ...updatedProduct, imageUrl: file });
       };
       reader.readAsDataURL(file);
     }
@@ -105,7 +107,7 @@ const ManageProducts = () => {
   useEffect(() => {
     fetchProducts();
     fetchCategories();
-  }, [userId]);
+  }, [fetchProducts, fetchCategories]);
 
   if (loading) return <div>Loading...</div>;
 
@@ -116,7 +118,7 @@ const ManageProducts = () => {
         <h1 className="text-2xl font-bold mb-6">Quản lý sản phẩm của bạn</h1>
         <button
           onClick={() => navigate(`/personal-product/${userId}`)}
-          className="bg-blue-500 text-white px-4 py-2 rounded mb-4"
+          className="bg-blue-500 text-white px-4 py-2 rounded mb-4 mr-2"
         >
           Quay về xem shop
         </button>
@@ -214,7 +216,7 @@ const ManageProducts = () => {
         />
         {updatedProduct.imageUrl && (
           <img
-            src={updatedProduct.imageUrl}
+            src={typeof updatedProduct.imageUrl === 'string' ? updatedProduct.imageUrl : URL.createObjectURL(updatedProduct.imageUrl)}
             alt="Preview"
             style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', marginTop: '10px' }}
           />

@@ -7,16 +7,18 @@ import api from "../../config/axios";
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import "./index.scss";
+import { Notification, notifySuccess, notifyError } from "../../component/alert";
+import { faL } from "@fortawesome/free-solid-svg-icons";
 
 const Products = () => {
   const [flowers, setFlowers] = useState([]);
   const [filteredFlowers, setFilteredFlowers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [flowersPerPage] = useState(12);
-  const [priceRange, setPriceRange] = useState([0, 10000000]); // Giả sử giá tối đa là 10 triệu
+  const [priceRange, setPriceRange] = useState([0, 10000000]);
   const [sortOption, setSortOption] = useState("default");
-  const [isFilterOpen, setIsFilterOpen] = useState(true);
-  
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
   const location = useLocation();
   const categoryId = location.state?.categoryId;
 
@@ -89,9 +91,9 @@ const Products = () => {
 
   return (
     <div className="products__main">
+      <Notification />
       <Header setFilteredFlowers={setFilteredFlowers} />
       <div className="filters-container">
-        
         <button className="filter-toggle" onClick={() => setIsFilterOpen(!isFilterOpen)}>
           Lọc & Sắp xếp {isFilterOpen ? '▲' : '▼'}
         </button>
@@ -129,18 +131,18 @@ const Products = () => {
         )}
       </div>
       <div className="home__main-content">
-  {currentFlowers.length > 0 ? (
-    <div className="product-grid">
-      {currentFlowers.map((flower) => (
-        <div key={flower.flowerId} className="product-grid-item">
-          <ProductCard flower={flower} />
-        </div>
-      ))}
-    </div>
-  ) : (
-    <p>Không có sản phẩm nào</p>
-  )}
-</div>
+        {currentFlowers.length > 0 ? (
+          <div className="product-grid">
+            {currentFlowers.map((flower) => (
+              <div key={flower.flowerId} className="product-grid-item">
+                <ProductCard flower={flower} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p>Không có sản phẩm nào</p>
+        )}
+      </div>
       {filteredFlowers.length > flowersPerPage && (
         <div className="pagination">
           {pageNumbers.map(number => (

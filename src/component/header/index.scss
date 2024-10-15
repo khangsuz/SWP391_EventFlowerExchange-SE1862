@@ -9,3 +9,17 @@
   position: relative;
   z-index: 10;
 }
+
+.search::after {
+  content: '';
+  position: absolute;
+  top: 9px;
+  right: 52px;
+  width: 1px;
+  height: 28px;
+  background-color: rgba(22, 24, 35, 0.12);
+}
+
+.search:focus-within{
+  border-color: rgba(22, 24, 35, 0.12);
+}
