@@ -10,7 +10,7 @@ import Products from "./page/products";
 import ProductDetail from "./page/productDetail";
 import PrivateRoute from "./component/private-route";
 import About from "./page/about";
-import Profile from "./page/user/EditProfile";
+import Profile from "./page/user/editProfile";
 import CreateProduct from "./page/seller";
 import ForgotPassword from './page/login/forgetPassword';
 import AdminLayout from "./page/admin/AdminLayout";
