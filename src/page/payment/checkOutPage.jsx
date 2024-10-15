@@ -21,6 +21,7 @@ function CheckoutPage() {
     });
     const [paymentMethod, setPaymentMethod] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
+    const [selectedWardName, setSelectedWardName] = useState(''); // Thêm state để lưu tên phường
 
     useEffect(() => {
         const storedCart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -28,6 +29,7 @@ function CheckoutPage() {
         fetchUserInfo();
         fetchDistricts();
     }, []);
+
 
     useEffect(() => {
         if (selectedDistrict) {
@@ -55,7 +57,7 @@ function CheckoutPage() {
                 from_district_id: 1442,
                 to_district_id: selectedDistrict,
                 to_ward_code: selectedWard,
-                weight: 10000 * cartItems.length,
+                weight: 5000 * cartItems.length,
                 length: 30,
                 width: 30,
                 height: 30
@@ -117,6 +119,9 @@ function CheckoutPage() {
         try {
             const response = await api.get(`Shipping/wards?district_id=${districtId}`);
             setWards(response.data);
+            if (response.data.length > 0) {
+                setSelectedWardName(response.data[0].wardName);
+            }
         } catch (error) {
             console.error('Error fetching wards:', error);
         }
@@ -130,6 +135,55 @@ function CheckoutPage() {
     const calculateTotal = () => {
         const total = cartItems.reduce((total, item) => total + item.price * item.quantity, 0) + shippingFee;
         return total >= 0 ? total : 0;
+    };
+
+
+    const createShippingOrder = async () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            notifyError('Vui lòng đăng nhập trước khi thanh toán');
+            navigate('/login');
+            return;
+        }
+
+        const shippingOrder = {
+            from_name: 'Shop Hoa ABC',
+            from_phone: '0901234567',
+            from_address: '72 Lê Thánh Tôn, Phường Bến Nghé',
+            from_ward_name: 'Phường Bến Nghé',
+            from_district_name: 'Quận 1',
+            from_province_name: 'TP Hồ Chí Minh',
+            to_name: userInfo.fullName,
+            to_phone: userInfo.phone,
+            to_address: userInfo.address,
+            to_ward_name: selectedWardName,
+            to_ward_code: selectedWard,
+            to_district_id: selectedDistrict,
+            weight: 500 * cartItems.length,
+            length: 30,
+            width: 20,
+            height: 10,
+            required_note: "CHOXEMHANGKHONGTHU",
+            items: cartItems.map(item => ({
+                name: item.flowerName,
+                code: String(item.flowerId),
+                quantity: item.quantity,
+                price: item.price
+            }))
+        };
+
+        try {
+            const response = await api.post('Shipping/create-order', shippingOrder, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error creating shipping order:', error.response ? error.response.data : error.message);
+            notifyError('Không thể tạo đơn hàng giao hàng. Vui lòng thử lại sau.');
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -171,22 +225,25 @@ function CheckoutPage() {
                 }
             );
 
-            const paymentResponse = await api.post(
-                'Payments/createVnpPayment',
-                {
-                    Amount: calculateTotal(),
-                    ...userInfo
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Content-Type': 'application/json'
+            const shippingOrderResponse = await createShippingOrder();
+            if (shippingOrderResponse) {
+                const paymentResponse = await api.post(
+                    'Payments/createVnpPayment',
+                    {
+                        Amount: calculateTotal(),
+                        ...userInfo
+                    },
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
                     }
-                }
-            );
-            notifySuccess('Đặt hàng thành công. Chuyển đến trang thanh toán');
-            localStorage.setItem('pendingOrderId', checkoutResponse.data.orderId);
-            window.location.href = paymentResponse.data.paymentUrl;
+                );
+                notifySuccess('Đặt hàng thành công. Chuyển đến trang thanh toán');
+                localStorage.setItem('pendingOrderId', checkoutResponse.data.orderId);
+                window.location.href = paymentResponse.data.paymentUrl;
+            }
             
         } catch (error) {
             notifyError('Thanh toán thất bại');
@@ -209,7 +266,12 @@ function CheckoutPage() {
     };
 
     const handleWardChange = (e) => {
-        setSelectedWard(e.target.value);
+        const selectedWardCode = e.target.value;
+        setSelectedWard(selectedWardCode);
+        const selectedWardData = wards.find(ward => ward.wardCode === selectedWardCode);
+        if (selectedWardData) {
+            setSelectedWardName(selectedWardData.wardName);
+        }
     };
 
     return (
