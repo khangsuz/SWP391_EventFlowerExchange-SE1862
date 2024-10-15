@@ -5,7 +5,7 @@ import "../../index.css";
 import api from "../../config/axios";
 import Footer from "../../component/footer";
 import { useCart } from "../../contexts/CartContext";
-import RegisterSeller from "../seller/registerSeller";
+import RegisterSeller from "./RegisterSeller";
 import OrderHistory from "./OrderHistory";
 
 const Profile = () => {

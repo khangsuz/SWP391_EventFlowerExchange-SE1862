@@ -23,7 +23,7 @@ import PaymentResult from "./page/payment/paymentResult";
 import CheckoutPage from './page/payment/checkOutPage';
 import PersonalProduct from "./page/personalProduct";
 import ManageProducts from "./page/personalProduct/ManageProducts";
-import RegisterSeller from "./page/seller/registerSeller";
+import RegisterSeller from "./page/user/RegisterSeller";
 import ChatPage from "./page/chat/chatPage";
 import Events from "./page/events";
 import SearchResult from "./page/searchResult";
