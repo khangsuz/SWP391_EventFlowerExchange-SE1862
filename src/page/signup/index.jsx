@@ -22,9 +22,9 @@ const SignUp = () => {
       navigate("/");
     } catch (err) {
       console.log(err);
-
       if (err.response && err.response.data) {
         alert(err.response.data);
+        navigate("/login")
       } else {
         alert("An error occurred. Please try again.");
       }

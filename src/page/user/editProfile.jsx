@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
+import { Routes, Route, Link, useNavigate, useLocation } from "react-router-dom";
 import Header from "../../component/header";
 import "../../index.css";
 import api from "../../config/axios";
 import Footer from "../../component/footer";
-import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../../contexts/CartContext";
+import RegisterSeller from "../seller/registerSeller";
+import OrderHistory from "./OrderHistory";
 
 const Profile = () => {
     const navigate = useNavigate();
@@ -16,7 +18,8 @@ const Profile = () => {
     const [success, setSuccess] = useState(null);
     const { updateCartItemCount } = useCart();
     const [profileImage, setProfileImage] = useState(null);
-
+    const location = useLocation();
+    
     const fetchUserData = async () => {
         try {
             const response = await api.get('/Users/profile');
@@ -166,100 +169,124 @@ const Profile = () => {
                             <p className="text-gray-600">{userData.email}</p>
                         </div>
                         <nav className="space-y-2">
-                            <Link to="#" className="block text-gray-700 hover:bg-gray-200 p-2 rounded">Thông tin</Link>
-                            <Link to="/order-history" className="block text-gray-700 hover:bg-gray-200 p-2 rounded">Danh sách đơn hàng</Link>
-                            <Link to="/change-password" className="block text-gray-700 hover:bg-gray-200 p-2 rounded">Đổi mật khẩu</Link>
+                            <Link
+                                to="/profile"
+                                className={`block p-2 rounded ${location.pathname === '/profile' ? 'bg-gray-200' : 'text-gray-700 hover:bg-gray-200'}`}
+                            >
+                                Thông tin
+                            </Link>
+                            <Link
+                                to="/profile/order-history"
+                                className={`block p-2 rounded ${location.pathname === '/profile/order-history' ? 'bg-gray-200' : 'text-gray-700 hover:bg-gray-200'}`}
+                            >
+                                Danh sách đơn hàng
+                            </Link>
+                            <Link
+                                to="/profile/change-password"
+                                className={`block p-2 rounded ${location.pathname === '/profile/change-password' ? 'bg-gray-200' : 'text-gray-700 hover:bg-gray-200'}`}
+                            >
+                                Đổi mật khẩu
+                            </Link>
                             {userType === 'Seller' && (
                                 <Link
                                     to={`/personal-product/${userId}`}
-                                    className="block text-gray-700 hover:bg-gray-200 p-2 rounded"
+                                    className={`block p-2 rounded ${location.pathname === `/personal-product/${userId}` ? 'bg-gray-200' : 'text-gray-700 hover:bg-gray-200'}`}
                                 >
                                     Quản lí Shop
                                 </Link>
                             )}
                             {userType === 'Buyer' && (
                                 <Link
-                                    to="/register-seller"
-                                    className="block text-gray-700 hover:bg-gray-200 p-2 rounded"
+                                    to="/profile/register-seller"
+                                    className={`block p-2 rounded ${location.pathname === '/profile/register-seller' ? 'bg-gray-200' : 'text-gray-700 hover:bg-gray-200'}`}
                                 >
                                     Đăng ký làm người bán
                                 </Link>
                             )}
-                            <button className="block text-gray-700 hover:bg-gray-200 p-2 rounded w-full text-left" onClick={handleLogout}>Đăng xuất</button>
+                            <button
+                                className="block text-gray-700 hover:bg-gray-200 p-2 rounded w-full text-left"
+                                onClick={handleLogout}
+                            >
+                                Đăng xuất
+                            </button>
                         </nav>
                     </div>
                     <div className="flex-1 bg-white shadow-md rounded-lg p-5 ml-5">
-                        <h1 className="text-center text-2xl font-bold mb-5">Thông tin tài khoản</h1>
-                        <div className="flex mb-3 gap-4">
-                            <h2 className="text-2xl p-2">Tên đăng nhập:</h2>
-                            <p className="p-2">{userData.name}</p>
-                        </div>
-                        <div className="flex mb-3 gap-10">
-                            <h2 className="text-2xl p-2">Tên đầy đủ:</h2>
-                            {isEditing ? (
-                                <input
-                                    type="text"
-                                    name="fullName"
-                                    value={editedData.fullName}
-                                    onChange={handleChange}
-                                    className="text-2xl w-full p-2 border rounded"
-                                />
-                            ) : (
-                                <p className="text-2xl p-2">{userData.fullName}</p>
-                            )}
-                        </div>
-                        <div className="flex mb-3 gap-10">
-                            <h2 className="text-2xl p-2">Email:</h2>
-                            {isEditing ? (
-                                <input
-                                    type="email"
-                                    name="email"
-                                    value={editedData.email}
-                                    onChange={handleChange}
-                                    className="text-2xl w-full p-2 border rounded"
-                                />
-                            ) : (
-                                <p className="p-2 text-2xl">{userData.email}</p>
-                            )}
-                        </div>
-                        <div className="flex mb-3 gap-10">
-                            <h2 className="text-2xl p-2">Số điện thoại:</h2>
-                            {isEditing ? (
-                                <input
-                                    type="tel"
-                                    name="phone"
-                                    value={editedData.phone}
-                                    onChange={handleChange}
-                                    className="text-2xl w-full p-2 border rounded"
-                                />
-                            ) : (
-                                <p className="p-2 text-2xl">{userData.phone}</p>
-                            )}
-                        </div>
-                        <div className="flex mb-3 gap-10">
-                            <h2 className="text-2xl p-2">Địa chỉ:</h2>
-                            {isEditing ? (
-                                <input
-                                    type="text"
-                                    name="address"
-                                    value={editedData.address}
-                                    onChange={handleChange}
-                                    className="text-2xl w-full p-2 border rounded"
-                                />
-                            ) : (
-                                <p className="p-2 text-2xl">{userData.address}</p>
-                            )}
-                        </div>
-                        <div className="">
-                            {isEditing ? (
+                        <Routes>
+                            <Route path="/" element={
                                 <>
-                                    <button onClick={handleSave} className="bg-blue-500 text-white px-4 py-2 rounded mr-2">Lưu</button>
-                                    <button onClick={handleCancel} className="bg-gray-300 text-black px-4 py-2 rounded">Hủy</button>
+                                    <h1 className="text-center text-2xl font-semibold mb-5 mt-8">Thông tin tài khoản</h1>
+                                    <div className="flex mb-3 gap-10">
+                                        <h2 className="text-2xl p-2">Tên đầy đủ:</h2>
+                                        {isEditing ? (
+                                            <input
+                                                type="text"
+                                                name="fullName"
+                                                value={editedData.fullName}
+                                                onChange={handleChange}
+                                                className="text-2xl w-full p-2 border rounded"
+                                            />
+                                        ) : (
+                                            <p className="text-2xl p-2">{userData.fullName}</p>
+                                        )}
+                                    </div>
+                                    <div className="flex mb-3 gap-10">
+                                        <h2 className="text-2xl p-2">Email:</h2>
+                                        {isEditing ? (
+                                            <input
+                                                type="email"
+                                                name="email"
+                                                value={editedData.email}
+                                                onChange={handleChange}
+                                                className="text-2xl w-full p-2 border rounded"
+                                            />
+                                        ) : (
+                                            <p className="p-2 text-2xl">{userData.email}</p>
+                                        )}
+                                    </div>
+                                    <div className="flex mb-3 gap-10">
+                                        <h2 className="text-2xl p-2">Số điện thoại:</h2>
+                                        {isEditing ? (
+                                            <input
+                                                type="tel"
+                                                name="phone"
+                                                value={editedData.phone}
+                                                onChange={handleChange}
+                                                className="text-2xl w-full p-2 border rounded"
+                                            />
+                                        ) : (
+                                            <p className="p-2 text-2xl">{userData.phone}</p>
+                                        )}
+                                    </div>
+                                    <div className="flex mb-3 gap-10">
+                                        <h2 className="text-2xl p-2">Địa chỉ:</h2>
+                                        {isEditing ? (
+                                            <input
+                                                type="text"
+                                                name="address"
+                                                value={editedData.address}
+                                                onChange={handleChange}
+                                                className="text-2xl w-full p-2 border rounded"
+                                            />
+                                        ) : (
+                                            <p className="p-2 text-2xl">{userData.address}</p>
+                                        )}
+                                    </div>
+                                    <div className="">
+                                        {isEditing ? (
+                                            <>
+                                                <button onClick={handleSave} className="bg-blue-500 text-white px-4 py-2 rounded mr-2">Lưu</button>
+                                                <button onClick={handleCancel} className="bg-gray-300 text-black px-4 py-2 rounded">Hủy</button>
+                                            </>
+                                        ) : (
+                                            <button onClick={handleEdit} className="bg-green-500 text-white px-4 py-2 rounded">Chỉnh sửa hồ sơ</button>
+                                        )}
+                                    </div>
                                 </>
-                            ) : (
-                                <button onClick={handleEdit} className="bg-green-500 text-white px-4 py-2 rounded">Chỉnh sửa hồ sơ</button>
-                            )}
-                        </div>
+                            } />
+                            <Route path="register-seller" element={<RegisterSeller userData={userData} />} />
+                            <Route path="order-history" element={<OrderHistory />} />
+                        </Routes>
                     </div>
                 </div>
             </div>

@@ -11,7 +11,7 @@ import ProductDetail from "./page/productDetail";
 import PrivateRoute from "./component/private-route";
 import About from "./page/about";
 import Profile from "./page/user/editProfile";
-import CreateProduct from "./page/seller"; 
+import CreateProduct from "./page/seller";
 import ForgotPassword from './page/login/forgetPassword';
 import AdminLayout from "./page/admin/AdminLayout";
 import QuanLiSanPham from "./page/admin/QuanLiSanPham";
@@ -20,7 +20,7 @@ import QuanLiNguoiBan from "./page/admin/QuanLiNguoiBan";
 import QuanLiDonHang from "./page/admin/QuanLiDonHang";
 import PaymentButton from "./component/button/PaymentButton";
 import PaymentResult from "./page/payment/paymentResult";
-import CheckoutPage from './page/payment/checkOutPage'; 
+import CheckoutPage from './page/payment/checkOutPage';
 import PersonalProduct from "./page/personalProduct";
 import ManageProducts from "./page/personalProduct/ManageProducts";
 import RegisterSeller from "./page/seller/registerSeller";
@@ -29,7 +29,6 @@ import Events from "./page/events";
 import SearchResult from "./page/searchResult";
 import ChangePassword from "./page/user/changePassword";
 import OrderHistory from "./page/user/OrderHistory";
-
 
 const App = () => {
   const router = createBrowserRouter([
@@ -46,8 +45,26 @@ const App = () => {
       element: <SignUp />,
     },
     {
-      path: "profile",
+      path: "profile/*", // Use wildcard to support nested routes
       element: <Profile />,
+      children: [
+        {
+          path: "",
+          element: <Profile />,
+        },
+        {
+          path: "register-seller",
+          element: <RegisterSeller />,
+        },
+        {
+          path: "order-history",
+          element: <OrderHistory />,
+        },
+        {
+          path: "change-password",
+          element: <ChangePassword />,
+        },
+      ],
     },
     {
       path: "cart",
@@ -74,7 +91,7 @@ const App = () => {
       element: <PersonalProduct />, 
     },
     {
-      path: "manage-products/:userId", // Đường dẫn quản lý sản phẩm
+      path: "manage-products/:userId",
       element: <ManageProducts />,
     },
     {
@@ -86,14 +103,9 @@ const App = () => {
       element: <PaymentResult />
     },
     {
-      path: "/register-seller",
-      element: <RegisterSeller />
-    },
-    {
       path: "/checkout",
       element: <CheckoutPage />
     },  
-
     {
       path: "/chat/:conversationId",
       element: <ChatPage />,
@@ -101,10 +113,6 @@ const App = () => {
     {
       path: "/forgot-password",
       element: <ForgotPassword />,
-    },
-    {
-      path: "/order-history",
-      element: <OrderHistory />,
     },
     {
       path: "manage-product", 
@@ -136,7 +144,6 @@ const App = () => {
           path: "quanlinguoiban",
           element: <QuanLiNguoiBan />,
         },
-       
         {
           path: "quanlisanpham",
           element: <QuanLiSanPham />, 
@@ -155,11 +162,6 @@ const App = () => {
       path: "payment-result", 
       element: <PaymentResult />,
     },
-    {
-      path: "change-password", 
-      element: <ChangePassword />,
-    },
-    
   ]);
 
   return(

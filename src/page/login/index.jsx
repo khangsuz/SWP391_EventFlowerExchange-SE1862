@@ -7,37 +7,35 @@ import { useNavigate, Link } from "react-router-dom";
 import { FaGoogle } from "react-icons/fa";
 import { useGoogleLogin } from "@react-oauth/google";
 import Footer from "../../component/footer";
+import { Notification, notifySuccess, notifyError } from "../../component/alert";
 
 const Login = () => {
   const navigate = useNavigate();
   const [isNewUser, setIsNewUser] = useState(false);
   const [newUserEmail, setNewUserEmail] = useState('');
-  const [newUserFullName, setNewUserFullName] = useState('');
-  const [newUserPhone, setNewUserPhone] = useState('');
-  const [newUserAddress, setNewUserAddress] = useState('');
 
   const handleLogin = async (values) => {
     try {
-      console.log("Login data being sent:", values); // Log dữ liệu gửi đi
+      console.log("Login data being sent:", values);  
       const response = await api.post("Users/login", {
         name: values.name,
         password: values.password
       });
       console.log("Login response data:", response.data);
-  
+
       const { token, userType, userId } = response.data;
-  
+
       if (!token || !userId) {
         throw new Error("Invalid response from server");
       }
-  
+
       const userData = { token, userType, userId };
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(userData));
-  
+
       console.log("Stored user data:", userData);
       console.log("Login successful - UserId:", userId, "Token:", token);
-  
+
       if (userType === "Admin") {
         navigate("/admin/dashboard");
       } else {
@@ -45,7 +43,7 @@ const Login = () => {
       }
     } catch (error) {
       console.error("Login error:", error.response?.data || error.message);
-      alert("Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin đăng nhập.");
+      notifyError("Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin đăng nhập.");
     }
   };
   const loginGoogle = useGoogleLogin({
@@ -73,14 +71,13 @@ const Login = () => {
         }
       } catch (error) {
         console.error("Đăng nhập thất bại:", error.response?.data || error.message);
-        alert("Đăng nhập bằng Google thất bại. Vui lòng thử lại.");
+        notifyError("Đăng nhập bằng Google thất bại. Vui lòng thử lại.");
       }
     },
     flow: 'implicit',
     scope: "email profile",
   });
   
-  // Hàm xử lý hoàn tất đăng ký cho người dùng mới
   const handleCompleteRegistration = async (values) => {
     try {
       const result = await api.post("LoginGoogle/complete-registration", {
@@ -99,11 +96,12 @@ const Login = () => {
       }
     } catch (error) {
       console.error("Đăng ký thất bại:", error.response?.data || error.message);
-      alert("Đăng ký thất bại. Vui lòng thử lại.");
+      notifyError("Đăng ký thất bại. Vui lòng thử lại.");
     }
   };
   return (
     <>
+    <Notification />
       <Header />
       <div className="login">
         <div className="login__image mt-1 mb-1">
@@ -206,4 +204,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Login; 

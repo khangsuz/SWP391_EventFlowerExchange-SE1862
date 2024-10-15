@@ -16,7 +16,7 @@ const CreateProduct = () => {
     Quantity: 0,
     CategoryId: '',
   });
-  const [userId, setUserId] = useState(null); // Khởi tạo state cho userId
+  const [userId, setUserId] = useState(null);
 
   useEffect(() => {
     const fetchCategories = async () => {
