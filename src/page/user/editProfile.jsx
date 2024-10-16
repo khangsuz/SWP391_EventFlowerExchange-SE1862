@@ -12,10 +12,17 @@ const Profile = () => {
     const [error, setError] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [userType, setUserType] = useState(null);
-    const [editedData, setEditedData] = useState({});
+    const [editedData, setEditedData] = useState({
+        fullName: '', 
+        email: '',
+        phone: '',
+        address: '',
+        profileImageUrl: ''
+    });
     const [success, setSuccess] = useState(null);
     const { updateCartItemCount } = useCart();
     const [profileImage, setProfileImage] = useState(null);
+    
 
     const fetchUserData = async () => {
         try {
@@ -200,7 +207,7 @@ const Profile = () => {
                                 <input
                                     type="text"
                                     name="fullName"
-                                    value={editedData.fullName}
+                                    value={editedData.fullName || ''} 
                                     onChange={handleChange}
                                     className="text-2xl w-full p-2 border rounded"
                                 />
@@ -214,7 +221,7 @@ const Profile = () => {
                                 <input
                                     type="email"
                                     name="email"
-                                    value={editedData.email}
+                                    value={editedData.email || ''} 
                                     onChange={handleChange}
                                     className="text-2xl w-full p-2 border rounded"
                                 />
@@ -228,7 +235,7 @@ const Profile = () => {
                                 <input
                                     type="tel"
                                     name="phone"
-                                    value={editedData.phone}
+                                    value={editedData.phone || ''} 
                                     onChange={handleChange}
                                     className="text-2xl w-full p-2 border rounded"
                                 />
@@ -242,7 +249,7 @@ const Profile = () => {
                                 <input
                                     type="text"
                                     name="address"
-                                    value={editedData.address}
+                                    value={editedData.address || ''} 
                                     onChange={handleChange}
                                     className="text-2xl w-full p-2 border rounded"
                                 />

@@ -59,12 +59,9 @@ const Login = () => {
         console.log("Google login result:", result.data);
   
         if (result.data.isNewUser) {
-          // Xử lý người dùng mới
           setIsNewUser(true);
           setNewUserEmail(result.data.email);
-          // Chuyển hướng đến trang hoàn tất đăng ký hoặc hiển thị form đăng ký
         } else if (result.data.token && result.data.user) {
-          // Xử lý người dùng đã tồn tại
           localStorage.setItem("token", result.data.token);
           localStorage.setItem("user", JSON.stringify(result.data.user));
           navigate(result.data.user.userType === "Admin" ? "/admin/dashboard" : "/");
@@ -93,13 +90,14 @@ const Login = () => {
       if (result.data.token && result.data.user) {
         localStorage.setItem("token", result.data.token);
         localStorage.setItem("user", JSON.stringify(result.data.user));
+        console.log("Đăng ký thành công:", result.data.user);
         navigate("/");
       } else {
         throw new Error("Không nhận được thông tin người dùng hợp lệ từ server");
       }
     } catch (error) {
       console.error("Đăng ký thất bại:", error.response?.data || error.message);
-      alert("Đăng ký thất bại. Vui lòng thử lại.");
+      alert("Đăng ký thất bại: " + (error.response?.data?.message || error.message));
     }
   };
   return (
@@ -117,9 +115,6 @@ const Login = () => {
             {isNewUser ? (
               <Form onFinish={handleCompleteRegistration}>
                 <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">Hoàn tất đăng ký</h2>
-                <Form.Item label="Email" name="email">
-                  <Input value={newUserEmail} disabled />
-                </Form.Item>
                 <Form.Item 
                   label="Họ và tên" 
                   name="fullName" 
