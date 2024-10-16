@@ -115,26 +115,29 @@ const Login = () => {
             {isNewUser ? (
               <Form onFinish={handleCompleteRegistration}>
                 <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">Hoàn tất đăng ký</h2>
-                <Form.Item label="Email" name="email">
+                <Form.Item label="Email" name="email" className="font-bold">
                   <Input value={newUserEmail} disabled />
                 </Form.Item>
                 <Form.Item 
                   label="Họ và tên" 
                   name="fullName" 
+                  className="font-bold"
                   rules={[{ required: true, message: 'Vui lòng nhập họ và tên' }]}
                 >
                   <Input />
                 </Form.Item>
                 <Form.Item 
                   label="Số điện thoại" 
-                  name="phone" 
+                  name="phone"
+                  className="font-bold" 
                   rules={[{ required: true, message: 'Vui lòng nhập số điện thoại' }]}
                 >
                   <Input />
                 </Form.Item>
                 <Form.Item 
                   label="Địa chỉ" 
-                  name="address" 
+                  name="address"
+                  className="font-bold"
                   rules={[{ required: true, message: 'Vui lòng nhập địa chỉ' }]}
                 >
                   <Input />

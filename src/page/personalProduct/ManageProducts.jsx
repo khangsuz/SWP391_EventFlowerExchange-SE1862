@@ -4,6 +4,7 @@ import Header from "../../component/header";
 import Footer from "../../component/footer";
 import api from "../../config/axios";
 import { Modal, Input, Button, Select, notification } from "antd";
+import { getFullImageUrl } from '../../utils/imageHelpers';
 
 const { Option } = Select;
 
@@ -134,7 +135,7 @@ const ManageProducts = () => {
             products.map((product) => (
               <div key={product.flowerId} className="flex items-center border p-4 rounded-lg shadow-md">
                 <img
-                  src={product.imageUrl}
+                  src={getFullImageUrl(product.imageUrl)}
                   alt={product.flowerName}
                   className="w-16 h-16 object-cover rounded mr-4"
                 />
