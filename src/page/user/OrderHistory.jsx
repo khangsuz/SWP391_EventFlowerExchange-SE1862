@@ -8,7 +8,7 @@ function OrderHistory() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const [ordersPerPage] = useState(5);
+    const [ordersPerPage] = useState(4);
 
     useEffect(() => {
         fetchOrderHistory();
@@ -18,7 +18,8 @@ function OrderHistory() {
         try {
             const response = await api.get('Orders/history');
             if (Array.isArray(response.data)) {
-                setOrders(response.data);
+                const completedOrders = response.data.filter(order => order.orderStatus === "Completed");
+                setOrders(completedOrders);
             } else {
                 console.error('Data is not an array:', response.data);
                 setError('Invalid data format received');
@@ -41,7 +42,7 @@ function OrderHistory() {
     if (error) return <div>{error}</div>;
 
     return (
-        <div className="container mx-auto px-4 py-8 text-center">
+        <div className="container mx-auto px-4 py-8">
             <h1 className="text-2xl font-bold mb-4">Lịch sử đơn hàng</h1>
             <table className="w-full border-collapse">
                 <thead>
@@ -49,10 +50,9 @@ function OrderHistory() {
                         <th className="border p-4">#</th>
                         <th className="border p-2">Mã đơn hàng</th>
                         <th className="border p-2">Thông tin người nhận</th>
-                        <th className="border p-2">Phương thức</th>
-                        <th className="border p-4">Tổng tiền</th>
-                        <th className="border p-2">Phí vận chuyển</th>
-                        <th className="border p-2">Thao tác</th>
+                        <th className="border p-2">Sản phẩm</th>
+                        <th className="border p-2">Tổng tiền</th>
+                        <th className="border p-2">Trạng thái</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -60,27 +60,31 @@ function OrderHistory() {
                         <tr key={order.orderId} className="border-b">
                             <td className="border p-2 text-center">{indexOfFirstOrder + index + 1}</td>
                             <td className="border p-2">
-                                <div>{order.orderId}</div>
-                                <div className="text-sm text-gray-500">{order.orderStatus}</div>
+                                <div className="text-center text-lg">{order.orderId}</div>
                             </td>
                             <td className="border p-2">
-                                <div>{order.recipient?.fullName}</div>
-                                <div className="text-sm text-gray-500">{order.recipient?.phone}</div>
-                                <div className="text-sm text-gray-500">{order.recipient?.email}</div>
-                                <div className="text-sm text-gray-500">{order.recipient?.address}</div>
-                                <div className="text-sm text-gray-500">Ngày tạo: {new Date(order.orderDate).toLocaleDateString()}</div>
+                                <div><strong>Tên:</strong> {order.recipient?.fullName}</div>
+                                <div><strong>SĐT:</strong> {order.recipient?.phone}</div>
+                                <div><strong>Email:</strong> {order.recipient?.email}</div>
+                                <div><strong>Địa chỉ:</strong> {order.recipient?.address}</div>
+                                <div><strong>Ngày tạo:</strong> {new Date(order.orderDate).toLocaleDateString()}</div>
                             </td>
-                            <td className="border p-2">VnPay</td>
-                            <td className="border p-2 text-red-500">{order.totalAmount?.toLocaleString()}đ</td>
                             <td className="border p-2">
-                                <div>Bên nhận trả phí</div>
-                                <div>Tổng thu: {order.totalAmount?.toLocaleString()} vnđ</div>
-                                <div className="text-sm text-gray-500">(Bao gồm COD)</div>
+                                <ul>
+                                    {order.orderItems && order.orderItems.length > 0 ? (
+                                        order.orderItems.map(item => (
+                                            <li key={item.flowerId}>
+                                                <div>{item.flowerName} x {item.quantity}</div>
+                                                <div className="font-medium">Giá: {item.price.toLocaleString()}đ</div>
+                                            </li>
+                                        ))
+                                    ) : (
+                                        <li>Không có sản phẩm nào.</li>
+                                    )}
+                                </ul>
                             </td>
-                            <td className="border p-">
-                                <button className="bg-blue-500 text-white px-2 py-1 rounded mr-2 mb-1">Chỉnh sửa</button>
-                                <button className="bg-green-500 text-white px-2 py-1 rounded mr-2 mb-1">Tra cứu</button>
-                            </td>
+                            <td className="border p-2 text-red-500 text-center">{order.totalAmount?.toLocaleString()}đ</td>
+                            <td className="border p-2"></td>
                         </tr>
                     ))}
                 </tbody>

@@ -40,6 +40,10 @@ function CheckoutPage() {
         }
     }, [selectedDistrict]);
 
+    const calculateTotalWeight = useCallback(() => {
+        return cartItems.reduce((total, item) => total + 5000 * item.quantity, 0);
+    }, [cartItems]);
+
     const handleShippingFeeCalculation = useCallback(async () => {
         if (!selectedDistrict || !selectedWard) {
             setShippingFee(0);
@@ -54,11 +58,12 @@ function CheckoutPage() {
         }
 
         try {
+            const totalWeight = calculateTotalWeight();
             const shippingRequest = {
                 from_district_id: 1442,
                 to_district_id: selectedDistrict,
                 to_ward_code: selectedWard,
-                weight: 5000 * cartItems.length,
+                weight: totalWeight,
                 length: 30,
                 width: 30,
                 height: 30
@@ -151,6 +156,7 @@ function CheckoutPage() {
             return;
         }
 
+        const totalWeight = calculateTotalWeight();
         const shippingOrder = {
             from_name: 'Shop Hoa ABC',
             from_phone: '0901234567',
@@ -164,7 +170,7 @@ function CheckoutPage() {
             to_ward_name: selectedWardName,
             to_ward_code: selectedWard,
             to_district_id: selectedDistrict,
-            weight: 500 * cartItems.length,
+            weight: totalWeight,
             length: 30,
             width: 20,
             height: 10,
