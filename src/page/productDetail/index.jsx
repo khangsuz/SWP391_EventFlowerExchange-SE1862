@@ -44,6 +44,28 @@ const ProductDetail = () => {
       console.error("Error fetching flower details:", err);
     }
   };
+  const handleChat = async () => {
+    const currentUser = JSON.parse(localStorage.getItem("user"));
+    if (!currentUser) {
+      alert("Vui lòng đăng nhập để chat");
+      return;
+    }
+    if (!seller) {
+      alert("Không thể tìm thấy thông tin người bán");
+      return;
+    }
+    try {
+      const response = await api.post('/api/Conversation/create', {
+        buyerId: parseInt(currentUser.userId),
+        sellerId: parseInt(seller.userId)
+      });
+      const conversationId = response.data.conversationId;
+      navigate(`/chat/${conversationId}`);
+    } catch (error) {
+      console.error("Error creating conversation:", error);
+      alert("Không thể tạo cuộc trò chuyện. Vui lòng thử lại sau.");
+    }
+  };
 
   const fetchRelatedFlowers = async (categoryId) => {
     try {
@@ -260,7 +282,9 @@ const ProductDetail = () => {
             <div className="ml-2 mr-2">
               <p className="text-lg text-center">{seller.name || "Không xác định"}</p>
               <div className="flex mt-2">
-                <button className="chat-button text-sm border border-gray-300 rounded py-2 px-3 mr-2">Chat Ngay</button>
+              <button className="chat-button text-sm border border-gray-300 rounded py-1 px-2 mr-2" onClick={handleChat}>
+                    Chat Ngay
+                  </button>
                 <button className="text-sm border border-gray-300 rounded py-1 px-2" onClick={() => navigate(`/personal-product/${seller.userId}`)}>
                   Xem Shop
                 </button>

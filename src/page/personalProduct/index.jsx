@@ -46,6 +46,7 @@ const PersonalProduct = () => {
     fetchSellerProducts();
     fetchSellerProfile();
   }, [userId]);
+  
 
   useEffect(() => {
     if (sellerProducts.length > 0) {
@@ -147,7 +148,17 @@ const PersonalProduct = () => {
               </div>
             ))
           ) : (
-            <p>Không có sản phẩm nào từ người bán này.</p>
+            <div className="w-full text-center py-8">
+              <p className="text-lg text-gray-600">Người bán này chưa có sản phẩm nào.</p>
+              {currentUserId === parseInt(userId) && (
+                <button
+                  className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+                  onClick={handleManageProducts}
+                >
+                  Thêm sản phẩm mới
+                </button>
+              )}
+            </div>
           )}
         </div>
       </div>

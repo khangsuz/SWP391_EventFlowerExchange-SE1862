@@ -195,6 +195,14 @@ const Profile = () => {
                                     Quản lí Shop
                                 </Link>
                             )}
+                            {userType === 'Buyer' && (
+                                <Link
+                                    to="/register-seller"
+                                    className="block text-gray-700 hover:bg-gray-200 p-2 rounded"
+                                >
+                                    Đăng ký làm người bán
+                                </Link>
+                            )}
                             <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded" onClick={handleLogout}>Đăng xuất</Link>
                         </nav>
                     </div>

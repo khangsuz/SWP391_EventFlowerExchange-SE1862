@@ -91,17 +91,8 @@ function ProductCard({ flower }) {
   return (
     <div className="product-card relative border border-gray-300 p-2 rounded-lg transition-shadow duration-300 ease-in-out hover:shadow-lg">
       <div onClick={handleViewDetails}>
-      <img 
-        src={imageUrl} 
-        alt={flower.flowerName} 
-      />
-      <p className="name">{flower.flowerName} ({flower.quantity})</p>
-      <p className="price">{Number(flower.price).toLocaleString()}₫</p>
-      <center>
-        <button onClick={handleAddToCart}>
-          Thêm vào giỏ hàng
-        </button>
-      </center>
+      
+
         <img
           src={imageUrl || "https://i.postimg.cc/Jz0MW07g/top-view-roses-flowers-Photoroom.png"}
           alt={flower.flowerName}

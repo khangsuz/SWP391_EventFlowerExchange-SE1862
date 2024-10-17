@@ -16,6 +16,7 @@ import ForgotPassword from './page/login/forgetPassword';
 import AdminLayout from "./page/admin/AdminLayout";
 import QuanLiSanPham from "./page/admin/QuanLiSanPham";
 import QuanLiNguoiDung from "./page/admin/QuanLiNguoiDung";
+import QuanLiNguoiBan from "./page/admin/QuanLiNguoiBan";
 import QuanLiDonHang from "./page/admin/QuanLiDonHang";
 import PaymentButton from "./component/button/PaymentButton";
 import PaymentResult from "./page/payment/paymentResult";
@@ -28,6 +29,9 @@ import Events from "./page/events";
 import SearchResult from "./page/searchResult";
 import ManageRevenue from "./page/personalProduct/ManageRevenue"; 
 import ManageOrders from "./page/personalProduct/ManageOrders"; 
+import RegisterSeller from "./page/seller/registerSeller";
+import ChatBox from "./page/chat";
+import ChatPage from "./page/chat/chatPage";
 
 
 const App = () => {
@@ -69,11 +73,11 @@ const App = () => {
       element: <ManageProducts />,
     },
     {
-      path: "manage-revenue/:userId", // Đường dẫn quản lý doanh thu
+      path: "manage-revenue/:userId", 
       element: <ManageRevenue />,
     },
     {
-      path: "manage-orders/:userId", // Đường dẫn quản lý đơn hàng
+      path: "manage-orders/:userId", 
       element: <ManageOrders />,
     },
     {
@@ -95,6 +99,15 @@ const App = () => {
     {
       path: "/payment-result",
       element: <PaymentResult />
+    },
+    {
+      path: "/register-seller",
+      element: <RegisterSeller />
+    },
+    
+    {
+      path: "/chat/:conversationId",
+      element: <ChatPage />,
     },
     {
       path: "/checkout",
@@ -141,6 +154,10 @@ const App = () => {
         {
           path: "quanlidonhang",
           element: <QuanLiDonHang />,
+        },
+        {
+          path: "quanlinguoiban",
+          element: <QuanLiNguoiBan />,
         },
       ],
     },

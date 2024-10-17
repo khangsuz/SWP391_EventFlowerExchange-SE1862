@@ -111,8 +111,9 @@ const QuanLiHoa = () => {
 
       <Modal
         title="Chỉnh sửa thông tin hoa"
-        visible={isModalVisible}
-        onOk={updateFlower} // Không cần truyền tham số
+        // visible={isModalVisible}
+        open={isModalVisible}
+        onOk={updateFlower} 
         onCancel={() => setIsModalVisible(false)}
       >
         <Input

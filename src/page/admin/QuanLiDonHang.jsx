@@ -129,7 +129,8 @@ const QuanLiDonHang = () => {
 
       <Modal
         title="Cập nhật trạng thái đơn hàng"
-        visible={isUpdateStatusModalVisible}
+        // visible={isUpdateStatusModalVisible}
+        open={isUpdateStatusModalVisible}
         onOk={handleUpdateStatus}
         onCancel={handleCancelUpdateStatus}
       >
@@ -148,7 +149,8 @@ const QuanLiDonHang = () => {
         {selectedOrder && (
             <Modal
                 title={`Chi tiết đơn hàng ${selectedOrder.orderId}`}
-                visible={isDetailModalVisible}
+                // visible={isDetailModalVisible}
+                open={isDetailModalVisible}
                 onCancel={handleCancelDetail}
                 footer={null}
             >

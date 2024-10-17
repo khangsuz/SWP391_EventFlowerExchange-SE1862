@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import Header from "../../component/header";
 import Footer from "../../component/footer";
 import api from "../../config/axios";
-import { Modal, Input, Button, Select, notification } from "antd";
+import { Modal, Input, Button, Select, notification  } from "antd";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -13,7 +13,7 @@ const ManageProducts = () => {
   const { userId } = useParams();
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]); // Khai báo state cho categories
+  const [categories, setCategories] = useState([]); 
   const [loading, setLoading] = useState(true);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [currentProduct, setCurrentProduct] = useState(null);
@@ -24,9 +24,10 @@ const ManageProducts = () => {
     condition: '',
     status: '',
     category: '',
-    imageUrl: null, // Đảm bảo giá trị là null cho hình ảnh
+    imageUrl: null, 
   });
   
+
 
   const fetchProducts = async () => {
     try {
@@ -169,6 +170,8 @@ const ManageProducts = () => {
                 <div className="flex-1">
                   <h2 className="font-bold">{product.flowerName}</h2>
                   <p>Giá: {product.price} VNĐ</p>
+                  <p>Số lượng: {product.quantity}</p> 
+                  <p>Trạng thái: {product.status}</p>
                 </div>
                 <div className="ml-4">
                   <button
@@ -190,7 +193,9 @@ const ManageProducts = () => {
             <p>Không có sản phẩm nào để quản lý.</p>
           )}
         </div>
+       
       </div>
+      
 
       {/* Modal Chỉnh sửa sản phẩm */}
       <Modal

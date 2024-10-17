@@ -130,18 +130,18 @@ const Products = () => {
         )}
       </div>
       <div className="home__main-content">
-        {currentFlowers.length > 0 ? (
-          <div className="product-grid">
-            {currentFlowers.map((flower) => (
-              <div key={flower.flowerId} className="product-grid-item">
-                <ProductCard flower={flower} />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p>Không có sản phẩm nào</p>
-        )}
-      </div>
+          {currentFlowers.length > 0 ? (
+        <div className="product-grid">
+          {currentFlowers.map((flower) => (
+            <div key={flower.flowerId} className="product-grid-item">
+              <ProductCard flower={flower} />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p>Không có sản phẩm nào</p>
+      )}
+    </div>
       {filteredFlowers.length > flowersPerPage && (
         <div className="pagination">
           {pageNumbers.map(number => (
