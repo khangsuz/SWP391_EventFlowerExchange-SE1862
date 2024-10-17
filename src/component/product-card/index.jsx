@@ -94,7 +94,7 @@ function ProductCard({ flower }) {
   const imageUrl = getFullImageUrl(flower.imageUrl);
 
   const fullStars = Math.floor(averageRating);
-  const hasHalfStar = averageRating % 1 >= 0.25 && averageRating % 1 < 0.75;
+  const hasHalfStar = averageRating % 1 >= 0.5;
   const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
 
   if (!flower) return null;
@@ -119,7 +119,7 @@ function ProductCard({ flower }) {
           ))}
           {hasHalfStar && <FontAwesomeIcon icon={faStarHalfAlt} className="text-yellow-400" />}
           {[...Array(emptyStars)].map((_, index) => (
-            <FontAwesomeIcon key={index + fullStars + (hasHalfStar ? 1 : 0)} icon={faStar} className="text-gray-300" />
+            <FontAwesomeIcon key={index + fullStars + (hasHalfStar ? 1 : 0)} icon={faStar} className="text-gray-200" />
           ))}
           {averageRating === 0 && <p className="text-gray-500 text-sm mt-1">Chưa có đánh giá</p>}
         </div>

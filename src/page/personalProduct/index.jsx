@@ -12,6 +12,7 @@ const PersonalProduct = () => {
   const [sellerProducts, setSellerProducts] = useState([]);
   const [sellerProfile, setSellerProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isFollowing, setIsFollowing] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(null);
 
   const fetchCurrentUser = async () => {
@@ -41,6 +42,27 @@ const PersonalProduct = () => {
     }
   };
 
+  const fetchIsFollowing = async () => {
+    try {
+      const response = await api.get(`/SellerFollow/is-following`, {
+        params: {
+          userId: currentUserId,
+          sellerId: userId
+        }
+      });
+      setIsFollowing(response.data);
+      console.log(response.data)
+    } catch (err) {
+      console.error("Error checking following status:", err);
+    }
+  };
+  
+  useEffect(() => {
+    if (currentUserId && userId) {
+      fetchIsFollowing();
+    }
+  }, [currentUserId, userId]);
+
   useEffect(() => {
     fetchCurrentUser();
     fetchSellerProducts();
@@ -59,6 +81,19 @@ const PersonalProduct = () => {
     navigate(`/manage-products/${userId}`);
   };
 
+  const handleFollow = async () => {
+    try {
+      if (isFollowing) {
+        await api.post(`/SellerFollow/unfollow`, { userId: currentUserId, sellerId: userId });
+      } else {
+        await api.post(`/SellerFollow/follow`, { userId: currentUserId, sellerId: userId });
+      }
+      setIsFollowing(!isFollowing);
+    } catch (err) {
+      console.error("Error handling follow/unfollow:", err);
+    }
+  };
+
   if (loading) return <div>Loading...</div>;
 
   return (
@@ -71,7 +106,7 @@ const PersonalProduct = () => {
               <img src={sellerProfile.profileImageUrl} alt={sellerProfile.name} className="w-10 h-10 rounded-full mr-2" />
               <div className="ml-2">
                 <h2 className="text-xl font-bold">{sellerProfile.name}</h2>
-                
+
                 <div className="flex mt-2">
                   <div className="mr-6">
                     <span>Đánh Giá: </span><strong>{sellerProfile.rating || 0}</strong>
@@ -87,8 +122,11 @@ const PersonalProduct = () => {
                   <button className="chat-button text-sm border border-gray-300 rounded py-1 px-2 mr-2" onClick={handleChat}>
                     Chat Ngay
                   </button>
-                  <button className="text-sm border border-gray-300 rounded py-1 px-2" onClick={() => {}}>
-                    Yêu Thích
+                  <button
+                    className={`text-sm border border-gray-300 rounded py-1 px-2 ${isFollowing ? 'bg-red-500 text-white' : ''}`}
+                    onClick={handleFollow}
+                  >
+                    {isFollowing ? "Bỏ Yêu Thích" : "Yêu Thích"}
                   </button>
                   {currentUserId === parseInt(userId) && (
                     <button

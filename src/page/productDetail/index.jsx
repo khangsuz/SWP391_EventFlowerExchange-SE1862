@@ -169,7 +169,7 @@ const ProductDetail = () => {
       });
       addToCart(flower);
       updateCartItemCount();
-      alert("Thêm vào giỏ hàng thành công!");
+      notifySuccess("Thêm vào giỏ hàng thành công!");
     } catch (err) {
       console.error("Error adding to cart:", err);
       const errorMessage = err.response?.data?.message || "Thêm vào giỏ hàng thất bại!";

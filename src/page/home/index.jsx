@@ -22,24 +22,12 @@ const Home = () => {
   };
 
   useEffect(() => {
-    const fetchFlower = async () => {
-      try {
-        const response = await api.get("Flowers");
-        setFlowers(response.data);
-        setFilteredFlowers(response.data);
-      } catch (err) {
-        console.log(err);
-        setFlowers([]);
-        setFilteredFlowers([]);
-      }
-    };
-  
     fetchFlower();
   }, []);
 
   return (
     <div className="home">
-      <Header setFilteredFlowers={setFilteredFlowers} />
+      <Header/>
       <div className="landing_img">
         <img src="https://i.postimg.cc/zBvDDdsB/top-view-white-daisies.jpg" alt="" />
         <div className="landing-text">
@@ -122,15 +110,17 @@ const Home = () => {
           </div>
         </div>
       </div>
-
       {/* Title */}
       <div className="section-title text-center mt-10">
         <h1 className="section-title-1">The Most Trendy</h1>
         <h3 className="section-title-3">Featured Product</h3>
-        <div className="ml-10 mr-10 mb-10 flex flex-wrap">
-          {/* {filteredFlowers.map((flower) => (
-            <ProductCard key={flower.flowerId} flower={flower} />
-          ))} */}
+        <div className="flex gap-2 px-8 pb-4">
+          {filteredFlowers
+            .sort((a, b) => b.averageRating - a.averageRating) // Sắp xếp theo đánh giá
+            .slice(0, 4) // Lấy 4 sản phẩm đầu tiên
+            .map((flower) => (
+              <ProductCard key={flower.flowerId} flower={flower} />
+            ))}
         </div>
       </div>
 
