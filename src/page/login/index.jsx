@@ -57,12 +57,9 @@ const Login = () => {
         console.log("Google login result:", result.data);
   
         if (result.data.isNewUser) {
-          // Xử lý người dùng mới
           setIsNewUser(true);
           setNewUserEmail(result.data.email);
-          // Chuyển hướng đến trang hoàn tất đăng ký hoặc hiển thị form đăng ký
         } else if (result.data.token && result.data.user) {
-          // Xử lý người dùng đã tồn tại
           localStorage.setItem("token", result.data.token);
           localStorage.setItem("user", JSON.stringify(result.data.user));
           navigate(result.data.user.userType === "Admin" ? "/admin/dashboard" : "/");

@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback  } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../component/header';
 import Footer from '../../component/footer';
 import api from '../../config/axios';
+import { useCart } from "../../contexts/CartContext";
 import { Notification, notifySuccess, notifyError } from "../../component/alert";
 
 function CheckoutPage() {
@@ -12,6 +13,7 @@ function CheckoutPage() {
     const [selectedDistrict, setSelectedDistrict] = useState('');
     const [selectedWard, setSelectedWard] = useState('');
     const [shippingFee, setShippingFee] = useState(0);
+    const { updateCartItemCount } = useCart();
     const [cartItems, setCartItems] = useState([]);
     const [userInfo, setUserInfo] = useState({
         fullName: '',
@@ -21,7 +23,7 @@ function CheckoutPage() {
     });
     const [paymentMethod, setPaymentMethod] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
-    const [selectedWardName, setSelectedWardName] = useState(''); // Thêm state để lưu tên phường
+    const [selectedWardName, setSelectedWardName] = useState('');
 
     useEffect(() => {
         const storedCart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -29,7 +31,6 @@ function CheckoutPage() {
         fetchUserInfo();
         fetchDistricts();
     }, []);
-
 
     useEffect(() => {
         if (selectedDistrict) {
@@ -99,7 +100,11 @@ function CheckoutPage() {
                     Authorization: `Bearer ${token}`,
                 }
             });
-            setUserInfo(response.data);
+            if (response.data) {
+                setUserInfo(response.data);
+            } else {
+                notifyError('Không thể lấy thông tin người dùng. Vui lòng thử lại sau.');
+            }
         } catch (error) {
             console.error('Error fetching user info:', error);
             notifyError('Không thể lấy thông tin người dùng. Vui lòng thử lại sau.');
@@ -129,7 +134,7 @@ function CheckoutPage() {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setUserInfo((prev) => ({ ...prev, [name]: value }));
+        setUserInfo((prev) => ({ ...prev, [name]: value || '' })); // Đảm bảo không có giá trị null
     };
 
     const calculateTotal = () => {
@@ -206,6 +211,7 @@ function CheckoutPage() {
         }
 
         setIsProcessing(true);
+
         try {
             await handleShippingFeeCalculation();
 
@@ -243,8 +249,11 @@ function CheckoutPage() {
                 notifySuccess('Đặt hàng thành công. Chuyển đến trang thanh toán');
                 localStorage.setItem('pendingOrderId', checkoutResponse.data.orderId);
                 window.location.href = paymentResponse.data.paymentUrl;
+
+                updateCartItemCount(0);
+                localStorage.setItem('cart', JSON.stringify([]));
             }
-            
+
         } catch (error) {
             notifyError('Thanh toán thất bại');
             if (error.response) {
@@ -276,13 +285,12 @@ function CheckoutPage() {
 
     return (
         <>
-        <Notification />
-        <Header />
+            <Notification />
+            <Header />
             <div className="container mx-auto px-4 py-8 flex">
                 <div className="w-full md:w-2/3 px-4">
                     <h2 className="text-2xl text-amber-500 font-bold mb-4">Thông tin thanh toán</h2>
                     <form onSubmit={handleSubmit}>
-                        {/* Form Thông Tin Thanh Toán */}
                         <div className="mb-4">
                             <label className="block font-bold mb-2">Họ và tên *</label>
                             <input
@@ -306,7 +314,7 @@ function CheckoutPage() {
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block font-bold mb-2">Địa chỉ email *</label>
+                            <label className="block font-bold mb-2">Email *</label>
                             <input
                                 type="email"
                                 name="email"
@@ -317,17 +325,6 @@ function CheckoutPage() {
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block font-bold mb-2">Thành phố *</label>
-                            <select
-                                name="province"
-                                className="w-full p-2 border rounded"
-                                value="202"
-                                disabled
-                            >
-                                <option value="202">TP. Hồ Chí Minh</option>
-                            </select>
-                        </div>
-                        <div className="mb-4">
                             <label className="block font-bold mb-2">Quận/Huyện *</label>
                             <select
                                 name="district"
@@ -335,7 +332,7 @@ function CheckoutPage() {
                                 onChange={handleDistrictChange}
                                 className="w-full p-2 border rounded"
                                 required
-                            >   
+                            >
                                 <option value="">Chọn quận/huyện</option>
                                 {districts.map((district) => (
                                     <option key={district.districtId} value={district.districtId}>
@@ -376,8 +373,6 @@ function CheckoutPage() {
                     </form>
                 </div>
                 <div className="w-full md:w-2/4 px-4">
-
-                    {/* Đơn Hàng Của Bạn */}
                     <h2 className="text-2xl text-amber-500 font-bold mb-4">Đơn hàng của bạn</h2>
                     <div className="border p-4 rounded">
                         <div className="flex justify-between">
@@ -403,8 +398,6 @@ function CheckoutPage() {
                             <span>{calculateTotal().toLocaleString()}₫</span>
                         </div>
                     </div>
-
-                    {/* Phương Thức Thanh Toán */}
                     <h3 className="text-xl font-bold mt-6 mb-4">Thanh toán</h3>
                     <div className="flex mb-4">
                         <input
@@ -419,7 +412,7 @@ function CheckoutPage() {
                     <button
                         onClick={handleSubmit}
                         className="w-full bg-green-500 text-white p-4 rounded"
-                        disabled={isProcessing && !paymentMethod}
+                        disabled={isProcessing || !paymentMethod}
                     >
                         {isProcessing ? 'Đang xử lý...' : 'Đặt hàng'}
                     </button>

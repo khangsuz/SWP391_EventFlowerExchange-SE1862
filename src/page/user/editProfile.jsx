@@ -162,7 +162,7 @@ const Profile = () => {
                                     type="file"
                                     accept="image/*"
                                     onChange={handleImageChange}
-                                    className="mt-3 p-2 border rounded"
+                                    className="mt-3 w-ful p-2 border rounded"
                                 />
                             )}
                             <h2 className="text-xl font-semibold mt-2">{userData.name}</h2>
@@ -216,57 +216,57 @@ const Profile = () => {
                             <Route path="/" element={
                                 <>
                                     <h1 className="text-center text-2xl font-semibold mb-5 mt-8">Thông tin tài khoản</h1>
-                                    <div className="flex mb-3 gap-10">
-                                        <h2 className="text-2xl p-2">Tên đầy đủ:</h2>
+                                    <div className="flex mb-3">
+                                        <h2 className="text-2xl p-2 w-56">Tên đầy đủ:</h2>
                                         {isEditing ? (
                                             <input
                                                 type="text"
                                                 name="fullName"
                                                 value={editedData.fullName}
                                                 onChange={handleChange}
-                                                className="text-2xl w-full p-2 border rounded"
+                                                className="text-2xl p-2 border rounded"
                                             />
                                         ) : (
-                                            <p className="text-2xl p-2">{userData.fullName}</p>
+                                            <p className="p-2 text-2xl">{userData.fullName}</p>
                                         )}
                                     </div>
-                                    <div className="flex mb-3 gap-10">
-                                        <h2 className="text-2xl p-2">Email:</h2>
+                                    <div className="flex mb-3">
+                                        <h2 className="text-2xl p-2 w-56">Email:</h2>
                                         {isEditing ? (
                                             <input
                                                 type="email"
                                                 name="email"
                                                 value={editedData.email}
                                                 onChange={handleChange}
-                                                className="text-2xl w-full p-2 border rounded"
+                                                className="text-2xl p-2 border rounded"
                                             />
                                         ) : (
                                             <p className="p-2 text-2xl">{userData.email}</p>
                                         )}
                                     </div>
-                                    <div className="flex mb-3 gap-10">
-                                        <h2 className="text-2xl p-2">Số điện thoại:</h2>
+                                    <div className="flex mb-3">
+                                        <h2 className="text-2xl p-2 w-56">Số điện thoại:</h2>
                                         {isEditing ? (
                                             <input
                                                 type="tel"
                                                 name="phone"
                                                 value={editedData.phone}
                                                 onChange={handleChange}
-                                                className="text-2xl w-full p-2 border rounded"
+                                                className="text-2xl p-2 border rounded"
                                             />
                                         ) : (
                                             <p className="p-2 text-2xl">{userData.phone}</p>
                                         )}
                                     </div>
-                                    <div className="flex mb-3 gap-10">
-                                        <h2 className="text-2xl p-2">Địa chỉ:</h2>
+                                    <div className="flex mb-3">
+                                        <h2 className="text-2xl p-2 w-56">Địa chỉ:</h2>
                                         {isEditing ? (
                                             <input
                                                 type="text"
                                                 name="address"
                                                 value={editedData.address}
                                                 onChange={handleChange}
-                                                className="text-2xl w-full p-2 border rounded"
+                                                className="text-2xl p-2 border rounded"
                                             />
                                         ) : (
                                             <p className="p-2 text-2xl">{userData.address}</p>

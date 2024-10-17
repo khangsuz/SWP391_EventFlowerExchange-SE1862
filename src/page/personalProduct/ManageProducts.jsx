@@ -3,7 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import Header from "../../component/header";
 import Footer from "../../component/footer";
 import api from "../../config/axios";
-import { Modal, Input, Button, Select, notification } from "antd";
+import { Modal, Input, Button, Select } from "antd";
+import { Notification, notifySuccess, notifyError } from "../../component/alert";
 import { getFullImageUrl } from '../../utils/imageHelpers';
 
 const { Option } = Select;
@@ -31,7 +32,7 @@ const ManageProducts = () => {
       setProducts(response.data);
     } catch (err) {
       console.error("Error fetching products:", err);
-      notification.error({ message: 'Không thể tải danh sách sản phẩm' });
+      notifyError({ message: 'Không thể tải danh sách sản phẩm' });
     } finally {
       setLoading(false);
     }
@@ -43,7 +44,7 @@ const ManageProducts = () => {
       setCategories(response.data);
     } catch (err) {
       console.error("Error fetching categories:", err);
-      notification.error({ message: 'Không thể tải danh sách danh mục' });
+      notifyError({ message: 'Không thể tải danh sách danh mục' });
     }
   }, []);
 
@@ -52,10 +53,10 @@ const ManageProducts = () => {
       try {
         await api.delete(`Flowers/${flowerId}`);
         setProducts(products.filter((product) => product.flowerId !== flowerId));
-        notification.success({ message: 'Xóa sản phẩm thành công' });
+        notifySuccess({ message: 'Xóa sản phẩm thành công' });
       } catch (err) {
         console.error("Error deleting product:", err);
-        notification.error({ message: 'Xóa sản phẩm thất bại' });
+        notifyError({ message: 'Xóa sản phẩm thất bại' });
       }
     }
   };
@@ -87,10 +88,10 @@ const ManageProducts = () => {
       await api.put(`Flowers/${currentProduct.flowerId}`, formData);
       await fetchProducts();
       setIsModalVisible(false);
-      notification.success({ message: 'Cập nhật sản phẩm thành công!' });
+      notifySuccess({ message: 'Cập nhật sản phẩm thành công!' });
     } catch (error) {
       console.error('Lỗi khi cập nhật sản phẩm:', error);
-      notification.error({ message: 'Cập nhật sản phẩm thất bại!' });
+      notifyError({ message: 'Cập nhật sản phẩm thất bại!' });
     }
   };
 
@@ -114,6 +115,7 @@ const ManageProducts = () => {
 
   return (
     <>
+    <Notification />
       <Header />
       <div className="container mx-auto py-24">
         <h1 className="text-2xl font-bold mb-6">Quản lý sản phẩm của bạn</h1>
@@ -223,7 +225,6 @@ const ManageProducts = () => {
           />
         )}
       </Modal>
-
       <Footer />
     </>
   );

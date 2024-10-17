@@ -6,7 +6,7 @@ import { useCart } from "../../contexts/CartContext";
 import { getFullImageUrl } from '../../utils/imageHelpers';
 import { Notification, notifySuccess, notifyError } from "../../component/alert";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faStar, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faStar, faStarHalfAlt, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 function ProductCard({ flower }) {
   const navigate = useNavigate();
@@ -83,7 +83,9 @@ function ProductCard({ flower }) {
     } catch (err) {
       console.error("Error fetching reviews:", err);
     }
-  };useEffect(() => {
+  };
+
+  useEffect(() => {
     if (flower) {
       fetchReviews();
     }
@@ -92,7 +94,8 @@ function ProductCard({ flower }) {
   const imageUrl = getFullImageUrl(flower.imageUrl);
 
   const fullStars = Math.floor(averageRating);
-  const halfStar = averageRating % 1 >= 0.5 ? 1 : 0;
+  const hasHalfStar = averageRating % 1 >= 0.25 && averageRating % 1 < 0.75;
+  const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
 
   if (!flower) return null;
 
@@ -114,9 +117,9 @@ function ProductCard({ flower }) {
           {[...Array(fullStars)].map((_, index) => (
             <FontAwesomeIcon key={index} icon={faStar} className="text-yellow-400" />
           ))}
-          {halfStar === 1 && <FontAwesomeIcon icon={faStar} className="text-yellow-400" />}
-          {[...Array(5 - fullStars - halfStar)].map((_, index) => (
-            <FontAwesomeIcon key={index + fullStars + halfStar} icon={faStar} className="text-gray-300" />
+          {hasHalfStar && <FontAwesomeIcon icon={faStarHalfAlt} className="text-yellow-400" />}
+          {[...Array(emptyStars)].map((_, index) => (
+            <FontAwesomeIcon key={index + fullStars + (hasHalfStar ? 1 : 0)} icon={faStar} className="text-gray-300" />
           ))}
           {averageRating === 0 && <p className="text-gray-500 text-sm mt-1">Chưa có đánh giá</p>}
         </div>

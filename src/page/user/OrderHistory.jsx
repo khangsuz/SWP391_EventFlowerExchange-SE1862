@@ -8,7 +8,7 @@ function OrderHistory() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const [ordersPerPage] = useState(5); // Number of orders per page
+    const [ordersPerPage] = useState(5);
 
     useEffect(() => {
         fetchOrderHistory();
@@ -31,12 +31,10 @@ function OrderHistory() {
         }
     };
 
-    // Calculate the orders to display on the current page
     const indexOfLastOrder = currentPage * ordersPerPage;
     const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
     const currentOrders = orders.slice(indexOfFirstOrder, indexOfLastOrder);
 
-    // Change page
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     if (loading) return <div>Loading...</div>;
