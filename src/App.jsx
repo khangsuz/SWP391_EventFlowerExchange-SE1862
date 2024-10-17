@@ -10,7 +10,7 @@ import Products from "./page/products";
 import ProductDetail from "./page/productDetail";
 import PrivateRoute from "./component/private-route";
 import About from "./page/about";
-import Profile from "./page/user/EditProfile";
+import Profile from "./page/user/editProfile";
 import CreateProduct from "./page/seller";
 import ForgotPassword from './page/login/forgetPassword';
 import AdminLayout from "./page/admin/AdminLayout";
@@ -27,7 +27,7 @@ import RegisterSeller from "./page/user/RegisterSeller";
 import ChatPage from "./page/chat/chatPage";
 import Events from "./page/events";
 import SearchResult from "./page/searchResult";
-import ChangePassword from "./page/user/changePassword";
+import ChangePassword from "./page/user/ChangePassword";
 import OrderHistory from "./page/user/OrderHistory";
 
 const App = () => {
@@ -45,13 +45,9 @@ const App = () => {
       element: <SignUp />,
     },
     {
-      path: "profile/*", // Use wildcard to support nested routes
+      path: "profile",
       element: <Profile />,
       children: [
-        {
-          path: "",
-          element: <Profile />,
-        },
         {
           path: "register-seller",
           element: <RegisterSeller />,

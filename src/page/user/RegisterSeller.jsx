@@ -105,37 +105,36 @@ const RegisterSeller = () => {
 
     return (
         <div className="max-w-2xl mx-auto p-6">
-            <h1 className="text-center text-2xl mb-6 font-semibold">Đăng ký làm người bán</h1>
             <Form form={form} onFinish={onFinish} layout="vertical" className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Form.Item
                     name="userName"
                     label="Tên người dùng"
-                    className="col-span-1"
+                    className="block text-gray-700 text-lg font-bold mb-2"
                 >
-                    <Input disabled className="border-gray-300 rounded-md" />
+                    <Input disabled className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
                 </Form.Item>
                 <Form.Item
                     name="storeName"
                     label="Tên cửa hàng"
                     rules={[{ required: true, message: 'Vui lòng nhập tên cửa hàng!' }]}
-                    className="col-span-1"
+                    className="block text-gray-700 text-lg font-bold mb-2"
                 >
-                    <Input className="border-gray-300 rounded-md" />
+                    <Input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
                 </Form.Item>
                 <Form.Item
                     name="email"
                     label="Email"
-                    className="col-span-1"
+                    className="block text-gray-700 text-lg font-bold mb-2"
                 >
-                    <Input disabled className="border-gray-300 rounded-md" />
+                    <Input disabled className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
                 </Form.Item>
                 <Form.Item
                     name="address"
                     label="Địa chỉ"
                     rules={[{ required: true, message: 'Vui lòng nhập địa chỉ!' }]}
-                    className="col-span-1"
+                    className="block text-gray-700 text-lg font-bold mb-2"
                 >
-                    <Input className="border-gray-300 rounded-md" />
+                    <Input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
                 </Form.Item>
                 <Form.Item
                     name="phone"
@@ -144,9 +143,9 @@ const RegisterSeller = () => {
                         { required: true, message: 'Vui lòng nhập số điện thoại!' },
                         { pattern: /^[0-9]{10}$/, message: 'Số điện thoại phải có 10 chữ số!' }
                     ]}
-                    className="col-span-1"
+                    className="block text-gray-700 text-lg font-bold mb-2"
                 >
-                    <Input className="border-gray-300 rounded-md" />
+                    <Input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
                 </Form.Item>
                 <Form.Item
                     name="idCard"
@@ -155,9 +154,9 @@ const RegisterSeller = () => {
                         { required: true, message: 'Vui lòng nhập số CMND/CCCD!' },
                         { pattern: /^[0-9]{9,12}$/, message: 'Số CMND/CCCD phải có 9 hoặc 12 chữ số!' }
                     ]}
-                    className="col-span-1"
+                    className="block text-gray-700 text-lg font-bold mb-2"
                 >
-                    <Input className="border-gray-300 rounded-md" />
+                    <Input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
                 </Form.Item>
                 <Form.Item className="col-span-2">
                     <Button type="primary" htmlType="submit" loading={loading} className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 rounded-md">
