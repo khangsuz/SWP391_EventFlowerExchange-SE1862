@@ -51,12 +51,11 @@ const PersonalProduct = () => {
         }
       });
       setIsFollowing(response.data);
-      console.log(response.data)
     } catch (err) {
       console.error("Error checking following status:", err);
     }
   };
-  
+
   useEffect(() => {
     if (currentUserId && userId) {
       fetchIsFollowing();
@@ -119,15 +118,19 @@ const PersonalProduct = () => {
                   </div>
                 </div>
                 <div className="flex mt-2">
-                  <button className="chat-button text-sm border border-gray-300 rounded py-1 px-2 mr-2" onClick={handleChat}>
-                    Chat Ngay
-                  </button>
-                  <button
-                    className={`text-sm border border-gray-300 rounded py-1 px-2 ${isFollowing ? 'bg-red-500 text-white' : ''}`}
-                    onClick={handleFollow}
-                  >
-                    {isFollowing ? "Bỏ Yêu Thích" : "Yêu Thích"}
-                  </button>
+                  {currentUserId !== parseInt(userId) && (
+                    <button className="chat-button text-sm border border-gray-300 rounded py-1 px-2 mr-2" onClick={handleChat}>
+                      Chat Ngay
+                    </button>
+                  )}
+                  {currentUserId !== parseInt(userId) && (
+                    <button
+                      className={`text-sm border border-gray-300 rounded py-1 px-2 ${isFollowing ? 'bg-red-500 text-white' : ''}`}
+                      onClick={handleFollow}
+                    >
+                      {isFollowing ? "Bỏ Yêu Thích" : "Yêu Thích"}
+                    </button>
+                  )}
                   {currentUserId === parseInt(userId) && (
                     <button
                       className="text-sm border border-gray-300 rounded py-1 px-2 ml-2"
