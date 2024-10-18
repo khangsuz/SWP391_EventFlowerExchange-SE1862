@@ -10,11 +10,11 @@ const App = () => {
   const [totalIncome, setTotalIncome] = useState(0);
   const [orderCount, setOrderCount] = useState(0);
   const [productCount, setProductCount] = useState(0);
-  const [dailyIncomeData, setDailyIncomeData] = useState([]); // State to hold daily income data
+  const [dailyIncomeData, setDailyIncomeData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Hàm fetch tổng thu nhập, số đơn hàng và số sản phẩm từ API
+  
   const fetchDashboardStats = async (token) => {
     try {
       const response = await axios.get('https://localhost:7288/api/admin/dashboard/stats', {

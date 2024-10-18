@@ -97,6 +97,13 @@ const PersonalProduct = () => {
       console.error("Error handling follow/unfollow:", err);
     }
   };
+  const handleRevenue = () => {
+    navigate(`/manage-revenue/${userId}`);
+  };
+
+  const handleOrders = () => {
+    navigate(`/manage-orders/${userId}`);
+  };
 
   if (loading) return <div>Loading...</div>;
 
@@ -136,12 +143,17 @@ const PersonalProduct = () => {
                     {isFollowing ? "Bỏ Yêu Thích" : "Yêu Thích"}
                   </button>
                   {currentUserId === parseInt(userId) && (
-                    <button
-                      className="text-sm border border-gray-300 rounded py-1 px-2 ml-2"
-                      onClick={handleManageProducts}
-                    >
+                    <>
+                    <button className="text-sm border border-gray-300 rounded-lg py-2 px-5" onClick={handleManageProducts}>
                       Quản lý sản phẩm
                     </button>
+                    <button className="text-sm border border-gray-300 rounded-lg py-2 px-5" onClick={handleRevenue}>
+                      Xem Doanh Thu
+                    </button>
+                    <button className="text-sm border border-gray-300 rounded-lg py-2 px-5" onClick={handleOrders}>
+                      Xem Đơn Hàng
+                    </button>
+                  </>
                   )}
                 </div>
               </div>

@@ -18,6 +18,7 @@ import QuanLiSanPham from "./page/admin/QuanLiSanPham";
 import QuanLiNguoiDung from "./page/admin/QuanLiNguoiDung";
 import QuanLiNguoiBan from "./page/admin/QuanLiNguoiBan";
 import QuanLiDonHang from "./page/admin/QuanLiDonHang";
+import WithdrawalRequests from "./page/admin/WithdrawalRequests";
 import PaymentButton from "./component/button/PaymentButton";
 import PaymentResult from "./page/payment/paymentResult";
 import CheckoutPage from './page/payment/checkOutPage';
@@ -27,6 +28,8 @@ import RegisterSeller from "./page/user/RegisterSeller";
 import ChatPage from "./page/chat/chatPage";
 import Events from "./page/events";
 import SearchResult from "./page/searchResult";
+import ManageRevenue from "./page/personalProduct/ManageRevenue";
+import ManageOrders from "./page/personalProduct/ManageOrders";
 import ChangePassword from "./page/user/ChangePassword";
 import OrderHistory from "./page/user/OrderHistory";
 import SellerOrderManagement from "./page/personalProduct/SellerOrderManagement";
@@ -95,6 +98,8 @@ const App = () => {
       path: "manage-products/:userId",
       element: <ManageProducts />,
     },
+    { path: "manage-revenue/:userId", element: <ManageRevenue /> },
+    { path: "manage-orders/:userId", element: <ManageOrders /> },
     {
       path: "products",
       element: <Products />,
@@ -156,6 +161,10 @@ const App = () => {
         {
           path: "quanlidonhang",
           element: <QuanLiDonHang />,
+        },
+        {
+          path: "WithdrawalRequests",
+          element: <WithdrawalRequests />,
         },
       ],
     },

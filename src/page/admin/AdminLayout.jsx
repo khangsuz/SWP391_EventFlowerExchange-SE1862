@@ -37,6 +37,11 @@ const AdminLayout = () => {
       icon: <ShopOutlined />,
       label: <Link to="/admin/quanlinguoiban">Quản lý người bán</Link>,
     },
+    {
+      key: "6",
+      icon: <ShopOutlined />,
+      label: <Link to="/admin/WithdrawalRequests">Quản lý rút tiền</Link>,
+    },
   ];
 
   return (
