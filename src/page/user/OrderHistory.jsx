@@ -61,6 +61,7 @@ function OrderHistory() {
                             <td className="border p-2">
                                 <div className="text-center text-lg">{order.orderId}</div>
                             </td>
+                            
                             <td className="border p-2">
                                 <div><strong>Tên:</strong> {order.recipient?.fullName}</div>
                                 <div><strong>SĐT:</strong> {order.recipient?.phone}</div>

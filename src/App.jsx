@@ -29,6 +29,7 @@ import Events from "./page/events";
 import SearchResult from "./page/searchResult";
 import ChangePassword from "./page/user/ChangePassword";
 import OrderHistory from "./page/user/OrderHistory";
+import SellerOrderManagement from "./page/personalProduct/SellerOrderManagement";
 
 const App = () => {
   const router = createBrowserRouter([
@@ -75,6 +76,10 @@ const App = () => {
       element: <ProductDetail />,
     },
     {
+      path: "profile/change-password",
+      element: <ChangePassword />,
+    },
+    {
       path: "events",
       element: <Events />
     },
@@ -101,6 +106,10 @@ const App = () => {
     {
       path: "/checkout",
       element: <CheckoutPage />
+    },  
+    {
+      path: "/seller/:userId/orders",
+      element: <SellerOrderManagement />
     },  
     {
       path: "/chat/:conversationId",

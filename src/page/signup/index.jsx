@@ -6,25 +6,33 @@ import api from "../../config/axios";
 import { Link, useNavigate } from "react-router-dom";
 import Footer from "../../component/footer";
 
+
+
 const SignUp = () => {
   const navigate = useNavigate();
 
   const handleSignUp = async (values) => {
-    console.log(values);
-
+    console.log("Form values:", values);
+  
     try {
       const response = await api.post("Users/register", values);
       const { token } = response.data;
-
+  
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(response.data));
-
-      navigate("/");
+  
+      navigate("/login");
     } catch (err) {
-      console.log(err);
+      console.error("Registration error:", err.response?.data);
       if (err.response && err.response.data) {
-        alert(err.response.data);
-        navigate("/login")
+        if (err.response.data.errors) {
+          const errorMessages = err.response.data.errors.map(error => 
+            `${error.field}: ${error.errors.join(', ')}`
+          ).join('\n');
+          alert(`Validation errors:\n${errorMessages}`);
+        } else {
+          alert(err.response.data.message || "An error occurred during registration.");
+        }
       } else {
         alert("An error occurred. Please try again.");
       }
@@ -77,6 +85,21 @@ const SignUp = () => {
                 <Input type="text" placeholder="username" />
               </Form.Item>
 
+              {/* Full Name Input */}
+              <Form.Item
+                className="block text-gray-700 text-sm font-bold mb-2"
+                label="Họ và tên"
+                name="fullName"
+                rules={[
+                  {
+                    required: true,
+                    message: "Vui lòng nhập họ và tên!",
+                  },
+                ]}
+              >
+                <Input type="text" placeholder="Nguyễn Văn A" />
+              </Form.Item>
+
               {/* Email Input */}
               <Form.Item
                 className="block text-gray-700 text-sm font-bold mb-2"
@@ -94,6 +117,34 @@ const SignUp = () => {
                 ]}
               >
                 <Input type="text" placeholder="you@example.com" />
+              </Form.Item>
+
+              {/* Address Input */}
+              <Form.Item
+                className="block text-gray-700 text-sm font-bold mb-2"
+                label="Địa chỉ"
+                name="address"
+                rules={[
+                  {
+                    required: true,
+                    message: "Vui lòng nhập địa chỉ!",
+                  },
+                ]}
+              >
+                <Input type="text" placeholder="123 Đường A, Quận X, TP. HCM" />
+              </Form.Item>
+              <Form.Item
+                className="block text-gray-700 text-sm font-bold mb-2"
+                label="Điện thoại"
+                name="phone"
+                rules={[
+                  {
+                    required: true,
+                    message: "Vui lòng nhập số điện thoại!",
+                  },
+                ]}
+              >
+                <Input type="text" placeholder="0123456789" />
               </Form.Item>
 
               {/* Password Input */}

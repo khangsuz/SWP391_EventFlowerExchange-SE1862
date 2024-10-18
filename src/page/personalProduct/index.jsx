@@ -76,6 +76,10 @@ const PersonalProduct = () => {
     navigate(`/chat/${userId}`);
   };
 
+  const handleManageOrders = () => {
+    navigate(`/seller/${userId}/orders`);
+  };
+
   const handleManageProducts = () => {
     navigate(`/manage-products/${userId}`);
   };
@@ -118,6 +122,18 @@ const PersonalProduct = () => {
                   </div>
                 </div>
                 <div className="flex mt-2">
+                  <button className="chat-button text-sm border border-gray-300 rounded py-1 px-2 mr-2" onClick={handleChat}>
+                    Chat Ngay
+                  </button>
+                  <button className="chat-button text-sm border border-gray-300 rounded py-1 px-2 mr-2" onClick={handleManageOrders}>
+                    Giao hàng
+                  </button>
+                  <button
+                    className={`text-sm border border-gray-300 rounded py-1 px-2 ${isFollowing ? 'bg-red-500 text-white' : ''}`}
+                    onClick={handleFollow}
+                  >
+                    {isFollowing ? "Bỏ Yêu Thích" : "Yêu Thích"}
+                  </button>
                   {currentUserId !== parseInt(userId) && (
                     <button className="chat-button text-sm border border-gray-300 rounded py-1 px-2 mr-2" onClick={handleChat}>
                       Chat Ngay
