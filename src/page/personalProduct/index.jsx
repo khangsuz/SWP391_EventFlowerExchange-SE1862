@@ -136,13 +136,10 @@ const PersonalProduct = () => {
                     {isFollowing ? "Bỏ Yêu Thích" : "Yêu Thích"}
                   </button>
                   {currentUserId === parseInt(userId) && (
-                    <button
-                      className="text-sm border border-gray-300 rounded py-1 px-2 ml-2"
-                      onClick={handleManageProducts}
-                    >
-                      Quản lý sản phẩm
-                    </button>
-                  )}
+                  <button className="chat-button text-sm border border-gray-300 rounded py-1 px-2 mr-2" onClick={handleManageOrders}>
+                    Quản lí đơn hàng
+                  </button>
+                )}
                 </div>
               </div>
             </div>

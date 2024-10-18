@@ -14,6 +14,17 @@ function OrderHistory() {
         fetchOrderHistory();
     }, []);
 
+    const getStatusText = (status) => {
+        switch(Number(status)) {
+            case 0: return "Chờ xử lý";
+            case 1: return "Đã xác nhận";
+            case 2: return "Đang giao hàng";
+            case 3: return "Đã giao hàng";
+            case 4: return "Đã hủy";
+            default: return "Không xác định";
+        }
+    };
+
     const fetchOrderHistory = async () => {
         try {
             const response = await api.get('Orders/history');
@@ -84,7 +95,11 @@ function OrderHistory() {
                                 </ul>
                             </td>
                             <td className="border p-2 text-red-500 text-center">{order.totalAmount?.toLocaleString()}đ</td>
-                            <td className="border p-2"></td>
+                            <td className="border p-2 text-center">
+                                <span className={`px-2 py-1 rounded ${(order.orderDelivery)}`}>
+                                    {getStatusText(order.orderDelivery)}
+                                </span>
+                            </td>
                         </tr>
                     ))}
                 </tbody>

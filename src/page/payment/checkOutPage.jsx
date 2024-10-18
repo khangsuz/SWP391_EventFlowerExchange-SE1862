@@ -15,6 +15,7 @@ function CheckoutPage() {
     const [shippingFee, setShippingFee] = useState(0);
     const { updateCartItemCount } = useCart();
     const [cartItems, setCartItems] = useState([]);
+    const [isButtonDisabled, setIsButtonDisabled] = useState(false);
     const [userInfo, setUserInfo] = useState({
         fullName: '',
         phone: '',
@@ -24,6 +25,8 @@ function CheckoutPage() {
     const [paymentMethod, setPaymentMethod] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
     const [selectedWardName, setSelectedWardName] = useState('');
+    const [selectedDistrictName, setSelectedDistrictName] = useState('');
+    const [fullAddress, setFullAddress] = useState('');
 
     useEffect(() => {
         const storedCart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -39,6 +42,16 @@ function CheckoutPage() {
             setShippingFee(0);
         }
     }, [selectedDistrict]);
+
+    useEffect(() => {
+        const addressParts = [
+            userInfo.address,
+            selectedWardName,
+            selectedDistrictName,
+            'TP Hồ Chí Minh'
+        ].filter(Boolean);
+        setFullAddress(addressParts.join(', '));
+    }, [userInfo.address, selectedWardName, selectedDistrictName]);
 
     const calculateTotalWeight = useCallback(() => {
         return cartItems.reduce((total, item) => total + 5000 * item.quantity, 0);
@@ -85,7 +98,7 @@ function CheckoutPage() {
             console.error('Error calculating shipping fee:', error);
             notifyError('Shop chưa hỗ trợ giao hàng đến địa chỉ này.');
         }
-    }, [selectedDistrict, selectedWard, cartItems, navigate]);
+    }, [selectedDistrict, selectedWard, cartItems, navigate, calculateTotalWeight]);
 
     useEffect(() => {
         handleShippingFeeCalculation();
@@ -139,14 +152,13 @@ function CheckoutPage() {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setUserInfo((prev) => ({ ...prev, [name]: value || '' })); // Đảm bảo không có giá trị null
+        setUserInfo((prev) => ({ ...prev, [name]: value || '' }));
     };
 
     const calculateTotal = () => {
         const total = cartItems.reduce((total, item) => total + item.price * item.quantity, 0) + shippingFee;
         return total >= 0 ? total : 0;
     };
-
 
     const createShippingOrder = async () => {
         const token = localStorage.getItem('token');
@@ -166,7 +178,7 @@ function CheckoutPage() {
             from_province_name: 'TP Hồ Chí Minh',
             to_name: userInfo.fullName,
             to_phone: userInfo.phone,
-            to_address: userInfo.address,
+            to_address: fullAddress,
             to_ward_name: selectedWardName,
             to_ward_code: selectedWard,
             to_district_id: selectedDistrict,
@@ -200,6 +212,7 @@ function CheckoutPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         const token = localStorage.getItem('token');
+        if (isButtonDisabled) return;
         if (!token) {
             notifyError('Vui lòng đăng nhập trước khi thanh toán');
             navigate('/login');
@@ -217,6 +230,7 @@ function CheckoutPage() {
         }
 
         setIsProcessing(true);
+        setIsButtonDisabled(true); 
 
         try {
             await handleShippingFeeCalculation();
@@ -227,7 +241,7 @@ function CheckoutPage() {
             }));
 
             const checkoutResponse = await api.post(
-                'Orders/checkout',
+                `Orders/checkout?fullAddress=${encodeURIComponent(fullAddress)}`,
                 cartItemsToSend,
                 {
                     headers: {
@@ -243,7 +257,8 @@ function CheckoutPage() {
                     'Payments/createVnpPayment',
                     {
                         Amount: calculateTotal(),
-                        ...userInfo
+                        FullName: userInfo.fullName,
+                        FullAddress: fullAddress
                     },
                     {
                         headers: {
@@ -252,30 +267,44 @@ function CheckoutPage() {
                         }
                     }
                 );
-                notifySuccess('Đặt hàng thành công. Chuyển đến trang thanh toán');
-                localStorage.setItem('pendingOrderId', checkoutResponse.data.orderId);
-                window.location.href = paymentResponse.data.paymentUrl;
-
-                updateCartItemCount(0);
-                localStorage.setItem('cart', JSON.stringify([]));
+                
+                if (paymentResponse.data && paymentResponse.data.paymentUrl) {
+                    notifySuccess('Đặt hàng thành công. Chuyển đến trang thanh toán');
+                    localStorage.setItem('pendingOrderId', checkoutResponse.data.orderId);
+                    updateCartItemCount(0);
+                    localStorage.setItem('cart', JSON.stringify([]));
+                    window.location.href = paymentResponse.data.paymentUrl;
+                } else {
+                    notifyError('Invalid response from payment server');
+                    setIsButtonDisabled(false); 
+                }
             }
-
         } catch (error) {
-            notifyError('Thanh toán thất bại');
-            if (error.response) {
-                notifyError(`Thanh toán thất bại: ${error.response.data}`);
-            } else if (error.request) {
-                notifyError('Lỗi mạng. Vui lòng kiểm tra kết nối và thử lại.');
-            } else {
-                notifyError('Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.');
-            }
+            handlePaymentError(error);
+            setIsButtonDisabled(false);
         } finally {
             setIsProcessing(false);
         }
     };
 
+    const handlePaymentError = (error) => {
+        console.error('Payment error:', error);
+        if (error.response) {
+            notifyError(`Thanh toán thất bại: ${error.response.data}`);
+        } else if (error.request) {
+            notifyError('Lỗi mạng. Vui lòng kiểm tra kết nối và thử lại.');
+        } else {
+            notifyError('Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.');
+        }
+    };
+
     const handleDistrictChange = (e) => {
-        setSelectedDistrict(e.target.value);
+        const districtId = e.target.value;
+        setSelectedDistrict(districtId);
+        const district = districts.find(d => d.districtId === parseInt(districtId));
+        if (district) {
+            setSelectedDistrictName(district.districtName);
+        }
         setSelectedWard('');
         setShippingFee(0);
     };

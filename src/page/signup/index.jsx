@@ -120,7 +120,7 @@ const SignUp = () => {
               </Form.Item>
 
               {/* Address Input */}
-              <Form.Item
+              {/* <Form.Item
                 className="block text-gray-700 text-sm font-bold mb-2"
                 label="Địa chỉ"
                 name="address"
@@ -132,7 +132,7 @@ const SignUp = () => {
                 ]}
               >
                 <Input type="text" placeholder="123 Đường A, Quận X, TP. HCM" />
-              </Form.Item>
+              </Form.Item> */}
               <Form.Item
                 className="block text-gray-700 text-sm font-bold mb-2"
                 label="Điện thoại"
