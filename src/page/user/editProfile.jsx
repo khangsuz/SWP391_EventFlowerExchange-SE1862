@@ -7,6 +7,7 @@ import Footer from "../../component/footer";
 import { useCart } from "../../contexts/CartContext";
 import RegisterSeller from "./RegisterSeller";
 import OrderHistory from "./OrderHistory";
+import ChangePassword from "./ChangePassword";
 
 const Profile = () => {
     const navigate = useNavigate();
@@ -284,6 +285,7 @@ const Profile = () => {
                                     </div>
                                 </>
                             } />
+                            <Route path="change-password" element={<ChangePassword />} />
                             <Route path="register-seller" element={<RegisterSeller userData={userData} />} />
                             <Route path="order-history" element={<OrderHistory />} />
                         </Routes>

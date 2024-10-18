@@ -27,7 +27,7 @@ import RegisterSeller from "./page/user/RegisterSeller";
 import ChatPage from "./page/chat/chatPage";
 import Events from "./page/events";
 import SearchResult from "./page/searchResult";
-import ChangePassword from "./page/user/changePassword";
+import ChangePassword from "./page/user/ChangePassword";
 import OrderHistory from "./page/user/OrderHistory";
 import SellerOrderManagement from "./page/personalProduct/SellerOrderManagement";
 
@@ -46,13 +46,9 @@ const App = () => {
       element: <SignUp />,
     },
     {
-      path: "profile/*", // Use wildcard to support nested routes
+      path: "profile",
       element: <Profile />,
       children: [
-        {
-          path: "",
-          element: <Profile />,
-        },
         {
           path: "register-seller",
           element: <RegisterSeller />,

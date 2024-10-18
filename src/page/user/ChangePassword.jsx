@@ -1,47 +1,32 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Header from '../../component/header';
-import Footer from '../../component/footer';
 import api from '../../config/axios';
+import { Form, Input, Button, Alert } from 'antd';
 
 const ChangePassword = () => {
     const navigate = useNavigate();
-    const [passwords, setPasswords] = useState({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: '',
-    });
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
 
-    const handleChange = (e) => {
-        setPasswords({ ...passwords, [e.target.name]: e.target.value });
-    };
-
-    const validatePassword = (password) => {
-        return password.length >= 5;
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const handleSubmit = async (values) => {
         setError(null);
         setSuccess(null);
-    
-        if (!validatePassword(passwords.newPassword)) {
+
+        if (values.newPassword.length < 5) {
             setError('Mật khẩu mới phải có ít nhất 5 ký tự.');
             return;
         }
 
-        if (passwords.newPassword !== passwords.confirmPassword) {
+        if (values.newPassword !== values.confirmPassword) {
             setError('Mật khẩu mới và xác nhận mật khẩu không khớp.');
             return;
         }
-    
+
         try {
             const response = await api.post('/Users/change-password', {
-                currentPassword: passwords.currentPassword,
-                newPassword: passwords.newPassword,
-                confirmPassword: passwords.confirmPassword
+                currentPassword: values.currentPassword,
+                newPassword: values.newPassword,
+                confirmPassword: values.confirmPassword
             });
             setSuccess('Đổi mật khẩu thành công!');
             setTimeout(() => navigate('/profile'), 2000);
@@ -52,70 +37,45 @@ const ChangePassword = () => {
 
     return (
         <>
-            <Header />
-            <div className="bg-slate-100 p-20">
-                <div className="max-w-md mx-auto bg-white shadow-md rounded-lg p-6">
-                    <h1 className="text-2xl font-bold mb-6 text-center">Đổi mật khẩu</h1>
-                    {error && (
-                        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                            <span className="block sm:inline">{error}</span>
-                        </div>
-                    )}
-                    {success && (
-                        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
-                            <span className="block sm:inline">{success}</span>
-                        </div>
-                    )}
-                    <form onSubmit={handleSubmit}>
-                        <div className="mb-4">
-                            <label htmlFor="currentPassword" className="block text-gray-700 text-sm font-bold mb-2">Mật khẩu hiện tại</label>
-                            <input
-                                type="password"
-                                id="currentPassword"
-                                name="currentPassword"
-                                value={passwords.currentPassword}
-                                onChange={handleChange}
-                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                required
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label htmlFor="newPassword" className="block text-gray-700 text-sm font-bold mb-2">Mật khẩu mới</label>
-                            <input
-                                type="password"
-                                id="newPassword"
-                                name="newPassword"
-                                value={passwords.newPassword}
-                                onChange={handleChange}
-                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                required
-                                minLength={5}
-                            />
-                        </div>
-                        <div className="mb-6">
-                            <label htmlFor="confirmPassword" className="block text-gray-700 text-sm font-bold mb-2">Xác nhận mật khẩu mới</label>
-                            <input
-                                type="password"
-                                id="confirmPassword"
-                                name="confirmPassword"
-                                value={passwords.confirmPassword}
-                                onChange={handleChange}
-                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                required
-                            />
-                        </div>
-                        <div className="flex items-center justify-between">
-                            <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                                Đổi mật khẩu
-                            </button>
-                            <button type="button" onClick={() => navigate('/profile')} className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                                Hủy
-                            </button>
-                        </div>
-                    </form>
-                </div>
+            <div className="max-w-xl mx-auto p-6 rounded-lg">
+                {error && (
+                    <Alert message={error} type="error" showIcon className="mb-4" />
+                )}
+                {success && (
+                    <Alert message={success} type="success" showIcon className="mb-4" />
+                )}
+                <Form onFinish={handleSubmit} layout="vertical">
+                    <Form.Item
+                        name="currentPassword"
+                        label="Mật khẩu hiện tại"
+                        rules={[{ required: true, message: 'Vui lòng nhập mật khẩu hiện tại!' }]}
+                        className="block text-gray-700 text-lg font-bold mb-2"
+                    >
+                        <Input.Password placeholder="Nhập mật khẩu hiện tại" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+                    </Form.Item>
+                    <Form.Item
+                        name="newPassword"
+                        label="Mật khẩu mới"
+                        rules={[{ required: true, message: 'Vui lòng nhập mật khẩu mới!' }, { min: 5, message: 'Mật khẩu mới phải có ít nhất 5 ký tự!' }]}
+                        className="block text-gray-700 text-lg font-bold mb-2"
+                    >
+                        <Input.Password placeholder="Nhập mật khẩu mới" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+                    </Form.Item>
+                    <Form.Item
+                        name="confirmPassword"
+                        label="Xác nhận mật khẩu mới"
+                        rules={[{ required: true, message: 'Vui lòng xác nhận mật khẩu mới!' }]}
+                        className="block text-gray-700 text-lg font-bold mb-2"
+                    >
+                        <Input.Password placeholder="Xác nhận mật khẩu mới" className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+                    </Form.Item>
+                    <Form.Item>
+                        <Button type="primary" htmlType="submit" className="w-full mt-2 font-bold">
+                            Đổi mật khẩu
+                        </Button>
+                    </Form.Item>
+                </Form>
             </div>
-            <Footer />
         </>
     );
 };
