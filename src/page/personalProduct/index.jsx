@@ -122,18 +122,11 @@ const PersonalProduct = () => {
                   </div>
                 </div>
                 <div className="flex mt-2">
-                  <button className="chat-button text-sm border border-gray-300 rounded py-1 px-2 mr-2" onClick={handleChat}>
-                    Chat Ngay
-                  </button>
+                {currentUserId === parseInt(userId) && (
                   <button className="chat-button text-sm border border-gray-300 rounded py-1 px-2 mr-2" onClick={handleManageOrders}>
-                    Giao hàng
+                    Quản lí đơn hàng
                   </button>
-                  <button
-                    className={`text-sm border border-gray-300 rounded py-1 px-2 ${isFollowing ? 'bg-red-500 text-white' : ''}`}
-                    onClick={handleFollow}
-                  >
-                    {isFollowing ? "Bỏ Yêu Thích" : "Yêu Thích"}
-                  </button>
+                )}
                   {currentUserId !== parseInt(userId) && (
                     <button className="chat-button text-sm border border-gray-300 rounded py-1 px-2 mr-2" onClick={handleChat}>
                       Chat Ngay
@@ -147,7 +140,7 @@ const PersonalProduct = () => {
                       {isFollowing ? "Bỏ Yêu Thích" : "Yêu Thích"}
                     </button>
                   )}
-                  {currentUserId === parseInt(userId) && (
+                  {currentUserId == parseInt(userId) && (
                     <button
                       className="text-sm border border-gray-300 rounded py-1 px-2 ml-2"
                       onClick={handleManageProducts}

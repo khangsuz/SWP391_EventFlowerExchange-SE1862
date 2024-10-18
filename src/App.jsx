@@ -108,7 +108,7 @@ const App = () => {
       element: <CheckoutPage />
     },  
     {
-      path: "/seller/:userId/orders",
+      path: "/seller/:userId/orders", 
       element: <SellerOrderManagement />
     },  
     {
