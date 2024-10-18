@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Select, message, Input, Button } from 'antd';
+import { Select, message } from 'antd';
 import { useParams } from 'react-router-dom';
 import api from "../../config/axios";
 
@@ -11,9 +11,7 @@ function SellerOrderManagement() {
     const { userId } = useParams();
     const [currentPage, setCurrentPage] = useState(1);
     const [ordersPerPage] = useState(4);
-    const [trackingCode, setTrackingCode] = useState('');
-    const [trackingResult, setTrackingResult] = useState(null);
-
+    
 
     useEffect(() => {
         fetchSellerOrders();
@@ -28,19 +26,6 @@ function SellerOrderManagement() {
             console.error('Error fetching seller orders:', error);
             message.error('Không thể tải danh sách đơn hàng');
             setLoading(false);
-        }
-    };
-    const handleTrackOrder = async () => {
-        if (!trackingCode) {
-            message.error('Vui lòng nhập mã đơn hàng');
-            return;
-        }
-        try {
-            const response = await api.post(`Shipping/track-order`, { order_code: trackingCode });
-            setTrackingResult(response.data);
-        } catch (error) {
-            console.error('Error tracking order:', error);
-            message.error('Không thể tra cứu đơn hàng: ' + (error.response?.data || error.message));
         }
     };
 
@@ -121,30 +106,6 @@ function SellerOrderManagement() {
                     ))}
                 </tbody>
             </table>
-            <div className="mt-8 border-t pt-8">
-                <h2 className="text-2xl font-bold mb-4">Tra cứu đơn hàng</h2>
-                <div className="flex items-center mb-4">
-                    <Input 
-                        placeholder="Nhập mã đơn hàng" 
-                        value={trackingCode}
-                        onChange={(e) => setTrackingCode(e.target.value)}
-                        className="mr-2"
-                    />
-                    <Button onClick={handleTrackOrder} type="primary">Tra cứu</Button>
-                </div>
-                {trackingResult && (
-                    <div className="bg-gray-100 p-4 rounded">
-                        <h3 className="font-bold mb-2">Thông tin đơn hàng: {trackingResult.MaDon}</h3>
-                        <p><strong>Người nhận:</strong> {trackingResult.BenNhan.Ten}</p>
-                        <p><strong>SĐT:</strong> {trackingResult.BenNhan.SDT}</p>
-                        <p><strong>Địa chỉ:</strong> {trackingResult.BenNhan.DiaChi}</p>
-                        <p><strong>Thanh toán:</strong> {trackingResult.ThuHo.LoaiThanhToan} - {trackingResult.ThuHo.SoTien.toLocaleString()}đ</p>
-                        <p><strong>Khối lượng:</strong> {trackingResult.KhoiLuong}g</p>
-                        <p><strong>Phí vận chuyển:</strong> {trackingResult.TongPhi.toLocaleString()}đ</p>
-                        <p><strong>Trạng thái:</strong> {trackingResult.TrangThaiDonHang}</p>
-                    </div>
-                )}
-            </div>
             <div className="flex justify-center mt-4">
                 {Array.from({ length: Math.ceil(orders.length / ordersPerPage) }, (_, i) => (
                     <button
