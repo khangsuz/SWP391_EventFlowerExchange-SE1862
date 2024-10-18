@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import React, { useEffect, useState, useCallback } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import Header from "../../component/header";
 import Footer from "../../component/footer";
 import api from "../../config/axios";
-import { Modal, Input, Button, Select, notification  } from "antd";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { getFullImageUrl } from "../../utils/imageHelpers";
+import { Modal, Input, Button, Select, notification } from "antd";
 
 const { Option } = Select;
 
@@ -17,124 +16,76 @@ const ManageProducts = () => {
   const [loading, setLoading] = useState(true);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [currentProduct, setCurrentProduct] = useState(null);
-  const [updatedProduct, setUpdatedProduct] = useState({
-    flowerName: '',
-    price: '',
-    quantity: '',
-    condition: '',
-    status: '',
-    category: '',
-    imageUrl: null, 
-  });
-  
 
-
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       const response = await api.get(`Flowers/seller/${userId}`);
       setProducts(response.data);
-      setLoading(false);
     } catch (err) {
       console.error("Error fetching products:", err);
+      notification.error({ message: 'Không thể tải danh sách sản phẩm' });
+    } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
-      const response = await api.get('Flowers/categories'); // Lấy danh sách categories từ API
+      const response = await api.get('Flowers/categories');
+      console.log("Categories fetched:", response.data);
       setCategories(response.data);
     } catch (err) {
       console.error("Error fetching categories:", err);
+      notification.error({ message: 'Không thể tải danh sách danh mục' });
     }
-  };
+  }, []);
 
   const handleDelete = async (flowerId) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) {
       try {
         await api.delete(`Flowers/${flowerId}`);
         setProducts(products.filter((product) => product.flowerId !== flowerId));
+        notification.success({ message: 'Xóa sản phẩm thành công' });
       } catch (err) {
         console.error("Error deleting product:", err);
+        notification.error({ message: 'Xóa sản phẩm thất bại' });
       }
     }
   };
 
   const openEditModal = (product) => {
     setCurrentProduct(product);
-    setUpdatedProduct({
-      flowerName: product.flowerName,
-      price: product.price,
-      quantity: product.quantity,
-      condition: product.condition || '',
-      status: product.status,
-      category: product.categoryName,
-      imageUrl: null, // Đặt lại giá trị hình ảnh
-    });
     setIsModalVisible(true);
   };
 
-  const updateProduct = async (productId, productData) => {
-    try {
-        const formData = new FormData();
-        formData.append("flowerName", productData.flowerName);
-        formData.append("price", productData.price);
-        formData.append("quantity", productData.quantity);
-        formData.append("condition", productData.condition || '');
-        formData.append("status", productData.status);
-        formData.append("category", productData.category);
-
-        if (productData.imageUrl) {
-            formData.append("imageUrl", productData.imageUrl);
-        }
-
-        const response = await axios.put(`https://localhost:7288/api/Flowers/${productId}`, formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        });
-        console.log('Cập nhật sản phẩm thành công:', response.data);
-        
-        // Hiển thị thông báo thành công
-        notification.success({
-            message: 'Cập nhật thành công!',
-            description: 'Thông tin sản phẩm đã được cập nhật.',
-        });
-        
-        // Cập nhật lại danh sách sản phẩm nếu cần
-        fetchProducts(); // Gọi lại hàm fetchProducts để cập nhật danh sách sản phẩm
-    } catch (error) {
-        console.error('Lỗi khi cập nhật sản phẩm:', error.response?.data || error);
-        notification.error({
-            message: 'Cập nhật thất bại!',
-            description: 'Đã xảy ra lỗi khi cập nhật sản phẩm.',
-        });
-    }
-};
-
-
-
-  const handleImageChange = (event) => {
-    setUpdatedProduct({ ...updatedProduct, imageUrl: event.target.files[0] });
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setCurrentProduct(prev => ({ ...prev, [name]: value }));
   };
-  const handleCloseEditModal = () => {
-    setIsModalVisible(false);
-    setCurrentProduct(null); // Đặt lại sản phẩm hiện tại
-    setUpdatedProduct({
-        flowerName: '',
-        price: '',
-        quantity: '',
-        condition: '',
-        status: '',
-        category: '',
-        imageUrl: null, // Đảm bảo giá trị là null cho hình ảnh
-    });
-};
+
+  const handleCategoryChange = (value) => {
+    setCurrentProduct(prev => ({ ...prev, categoryId: value }));
+  };
+
+  const handleEditSubmit = async () => {
+    
+    try {
+      await api.put(`Flowers/${currentProduct.flowerId}`, currentProduct);
+      setProducts(products.map(product => 
+        product.flowerId === currentProduct.flowerId ? currentProduct : product
+      ));
+      notification.success({ message: 'Chỉnh sửa sản phẩm thành công' });
+      setIsModalVisible(false);
+    } catch (err) {
+      console.error("Error updating product:", err);
+      notification.error({ message: 'Chỉnh sửa sản phẩm thất bại' });
+    }
+  };
 
   useEffect(() => {
     fetchProducts();
-    fetchCategories(); // Gọi fetchCategories
-  }, [userId]);
+    fetchCategories();
+  }, [fetchProducts, fetchCategories]);
 
   if (loading) return <div>Loading...</div>;
 
@@ -143,18 +94,16 @@ const ManageProducts = () => {
       <Header />
       <div className="container mx-auto py-24">
         <h1 className="text-2xl font-bold mb-6">Quản lý sản phẩm của bạn</h1>
-         {/* Nút quay về xem shop */}
-         <button
-          onClick={() => navigate(`/personal-product/${userId}`)} // Điều hướng tới trang shop
-          className="bg-blue-500 text-white px-4 py-2 rounded mb-4"
+        <button
+          onClick={() => navigate(`/personal-product/${userId}`)}
+          className="bg-blue-500 text-white px-4 py-2 rounded mb-4 mr-2"
         >
           Quay về xem shop
         </button>
-
-        {/* Nút tạo sản phẩm mới */}
         <button 
-        onClick={() => navigate(`/manage-product`)}
-        className="bg-green-500 text-white px-4 py-2 rounded mb-4">
+          onClick={() => navigate(`/manage-product`)}
+          className="bg-green-500 text-white px-4 py-2 rounded mb-4"
+        >
           Tạo Sản Phẩm Mới
         </button>
         
@@ -163,7 +112,7 @@ const ManageProducts = () => {
             products.map((product) => (
               <div key={product.flowerId} className="flex items-center border p-4 rounded-lg shadow-md">
                 <img
-                  src={product.imageUrl}
+                  src={getFullImageUrl(product.imageUrl)}
                   alt={product.flowerName}
                   className="w-16 h-16 object-cover rounded mr-4"
                 />
@@ -193,75 +142,75 @@ const ManageProducts = () => {
             <p>Không có sản phẩm nào để quản lý.</p>
           )}
         </div>
-       
-      </div>
-      
 
-      {/* Modal Chỉnh sửa sản phẩm */}
-      <Modal
-        title="Chỉnh sửa thông tin hoa"
-        visible={isModalVisible}
-        onOk={async () => {
-          // Gọi hàm updateProduct với productId và updatedProduct
-          if (currentProduct) {
-              await updateProduct(currentProduct.flowerId, updatedProduct); // Truyền đúng tham số
-          }
-          handleCloseEditModal(); // Đóng modal sau khi cập nhật
-      }}
-        onCancel={() => setIsModalVisible(false)}
-      >
-        <Input
-          placeholder="Tên hoa"
-          value={updatedProduct.flowerName}
-          onChange={(e) => setUpdatedProduct({ ...updatedProduct, flowerName: e.target.value })}
-          style={{ marginBottom: 10 }}
-        />
-        <Input
-          placeholder="Giá"
-          type="number"
-          value={updatedProduct.price}
-          onChange={(e) => setUpdatedProduct({ ...updatedProduct, price: e.target.value })}
-          style={{ marginBottom: 10 }}
-        />
-        <Input
-          placeholder="Condition" // Nhập điều kiện
-          value={updatedProduct.condition}
-          onChange={(e) => setUpdatedProduct({ ...updatedProduct, condition: e.target.value })}
-          style={{ marginBottom: 10 }}
-        />
-        <Input
-          placeholder="Số lượng"
-          type="number"
-          value={updatedProduct.quantity}
-          onChange={(e) => setUpdatedProduct({ ...updatedProduct, quantity: e.target.value })}
-          style={{ marginBottom: 10 }}
-        />
-        <Input
-          placeholder="Trạng thái"
-          value={updatedProduct.status}
-          onChange={(e) => setUpdatedProduct({ ...updatedProduct, status: e.target.value })}
-          style={{ marginBottom: 10 }}
-        />
-        <Select
-          placeholder="Chọn danh mục"
-          value={updatedProduct.category}
-          onChange={(value) => setUpdatedProduct({ ...updatedProduct, category: value })}
-          style={{ marginBottom: 10, width: '100%' }}
+        {/* Modal for Editing Product */}
+        <Modal
+          title="Chỉnh sửa sản phẩm"
+          visible={isModalVisible}
+          onCancel={() => setIsModalVisible(false)}
+          footer={[
+            <Button key="back" onClick={() => setIsModalVisible(false)}>
+              Hủy
+            </Button>,
+            <Button key="submit" type="primary" onClick={handleEditSubmit}>
+              Lưu
+            </Button>
+          ]}
         >
-          {categories.map((category) => (
-            <Option key={category.id} value={category.categoryName}>
-              {category.categoryName}
-            </Option>
-          ))}
-        </Select>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleImageChange}
-          style={{ marginBottom: 10 }}
-        />
-      </Modal>
-
+          {currentProduct && (
+            <div>
+              <Input
+                placeholder="Tên sản phẩm"
+                name="flowerName"
+                value={currentProduct.flowerName}
+                onChange={handleEditChange}
+              />
+              <Input
+                placeholder="Giá"
+                name="price"
+                type="number"
+                value={currentProduct.price}
+                onChange={handleEditChange}
+                style={{ marginTop: '10px' }}
+              />
+              <Input
+                placeholder="Số lượng"
+                name="quantity"
+                type="number"
+                value={currentProduct.quantity}
+                onChange={handleEditChange}
+                style={{ marginTop: '10px' }}
+              />
+              <Select
+                placeholder="Chọn danh mục"
+                value={currentProduct.categoryId}
+                onChange={handleCategoryChange}
+                style={{ width: '100%', marginTop: '10px' }}
+              >
+                {categories.map(category => (
+                  <Option key={category.categoryId} value={category.categoryName}>
+                    {category.categoryName}
+                  </Option>
+                ))}
+              </Select>
+              <Input
+                placeholder="Trạng thái"
+                name="status"
+                value={currentProduct.status}
+                onChange={handleEditChange}
+                style={{ marginTop: '10px' }}
+              />
+              <Input
+                placeholder="URL hình ảnh"
+                name="imageUrl"
+                value={currentProduct.imageUrl}
+                onChange={handleEditChange}
+                style={{ marginTop: '10px' }}
+              />
+            </div>
+          )}
+        </Modal>
+      </div>
       <Footer />
     </>
   );

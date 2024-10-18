@@ -44,6 +44,9 @@ const ProductDetail = () => {
       console.error("Error fetching flower details:", err);
     }
   };
+  
+
+
   const handleChat = async () => {
     const currentUser = JSON.parse(localStorage.getItem("user"));
     if (!currentUser) {

@@ -1,6 +1,5 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
 import "./index.scss";
 import api from "../../config/axios";
 import { useCart } from "../../contexts/CartContext";
@@ -12,6 +11,8 @@ import { faStar, faSpinner } from '@fortawesome/free-solid-svg-icons';
 function ProductCard({ flower }) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const [averageRating, setAverageRating] = useState(0);
   const { updateCartItemCount } = useCart();
 
   const addToCart = (item, quantity) => {
@@ -43,8 +44,6 @@ function ProductCard({ flower }) {
     setLoading(true);
 
     const token = localStorage.getItem("token");
-    console.log("Token:", token);
-
     const quantity = 1;
     if (!token) {
       notifyError("Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng!");
@@ -64,9 +63,7 @@ function ProductCard({ flower }) {
       });
       addToCart(flower, quantity);
       updateCartItemCount();
-      console.log(response);
     } catch (err) {
-      console.log(err);
       const errorMessage = err.response?.data?.message || "Thêm vào giỏ hàng thất bại!";
       notifyError(errorMessage);
     } finally {
@@ -78,11 +75,22 @@ function ProductCard({ flower }) {
     navigate(`/product/${flower.flowerId}`);
   };
 
+  const fetchReviews = async () => {
+    try {
+      const response = await api.get(`Reviews/flower/${flower.flowerId}`);
+      setAverageRating(response.data.averageRating || 0);
+      setReviews(response.data.reviews);
+    } catch (err) {
+      console.error("Error fetching reviews:", err);
+    }
+  };useEffect(() => {
+    if (flower) {
+      fetchReviews();
+    }
+  }, [flower]);
+
   const imageUrl = getFullImageUrl(flower.imageUrl);
 
-  const averageRating = flower.rating && flower.rating.length > 0
-    ? (flower.rating.reduce((acc, curr) => acc + curr, 0) / flower.rating.length).toFixed(1)
-    : 0;
   const fullStars = Math.floor(averageRating);
   const halfStar = averageRating % 1 >= 0.5 ? 1 : 0;
 

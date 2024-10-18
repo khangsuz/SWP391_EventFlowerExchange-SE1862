@@ -8,6 +8,7 @@ import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import "./index.scss";
 import { Notification, notifySuccess, notifyError } from "../../component/alert";
+import { faL } from "@fortawesome/free-solid-svg-icons";
 
 const Products = () => {
   const [flowers, setFlowers] = useState([]);
@@ -16,7 +17,7 @@ const Products = () => {
   const [flowersPerPage] = useState(12);
   const [priceRange, setPriceRange] = useState([0, 10000000]);
   const [sortOption, setSortOption] = useState("default");
-  const [isFilterOpen, setIsFilterOpen] = useState(true);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const location = useLocation();
   const categoryId = location.state?.categoryId;

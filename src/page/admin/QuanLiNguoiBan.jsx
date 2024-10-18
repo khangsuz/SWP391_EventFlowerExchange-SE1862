@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Table, Button, message, Modal } from 'antd';
 import axios from 'axios';
 const API_URL = 'https://localhost:7288/api';
+
+
 const api = axios.create({
   baseURL: API_URL,
   timeout: 5000,
@@ -9,21 +11,26 @@ const api = axios.create({
     'Content-Type': 'application/json',
   }
 });
+
 const QuanLiNguoiBan = () => {
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
     const [modalVisible, setModalVisible] = useState(false);
     const [currentRequestId, setCurrentRequestId] = useState(null);
     const [currentUserId, setCurrentUserId] = useState(null);
+
+
     useEffect(() => {
         fetchRequests();
     }, []);
+
     const fetchRequests = async () => {
         try {
             const token = localStorage.getItem("token");
             if (!token) {
                 throw new Error('No token found');
             }
+
             const response = await api.get('/SellerRegistration', {
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -46,6 +53,7 @@ const QuanLiNguoiBan = () => {
             setLoading(false);
         }
     };
+
     const handleApprove = async (approved) => {
         try {
             const token = localStorage.getItem("token");
@@ -87,6 +95,7 @@ const QuanLiNguoiBan = () => {
             message.error('Có lỗi xảy ra khi xử lý yêu cầu');
         }
     };
+
     const columns = [
         { title: 'Tên cửa hàng', dataIndex: 'storeName', key: 'storeName' },
         { title: 'Email', dataIndex: 'email', key: 'email' },
@@ -106,11 +115,13 @@ const QuanLiNguoiBan = () => {
             ),
         },
     ];
+
     const showApprovalModal = (requestId, userId) => {
         setCurrentRequestId(requestId);
         setCurrentUserId(userId);
         setModalVisible(true);
     };
+
     return (
         <div className="admin-seller-requests">
             <h2>Yêu cầu đăng ký làm người bán</h2>
@@ -134,4 +145,5 @@ const QuanLiNguoiBan = () => {
         </div>
     );
 };
+
 export default QuanLiNguoiBan;

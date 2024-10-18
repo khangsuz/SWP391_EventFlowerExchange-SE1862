@@ -181,7 +181,7 @@ const Profile = () => {
                         )}
                         <h2 className="text-xl font-semibold mt-2">{userData.name}</h2>
                         <p className="text-gray-600">{userData.email}</p>
-                        
+
                     </div>
                         <nav class="space-y-2">
                             <Link className="block text-gray-700 hover:bg-gray-200 p-2 rounded">Thông tin</Link>
@@ -286,5 +286,4 @@ const Profile = () => {
         </>
     );
 };
-
 export default Profile;

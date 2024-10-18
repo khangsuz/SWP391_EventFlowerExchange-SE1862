@@ -113,7 +113,7 @@ const QuanLiHoa = () => {
         title="Chỉnh sửa thông tin hoa"
         // visible={isModalVisible}
         open={isModalVisible}
-        onOk={updateFlower} 
+        onOk={updateFlower} // Không cần truyền tham số
         onCancel={() => setIsModalVisible(false)}
       >
         <Input

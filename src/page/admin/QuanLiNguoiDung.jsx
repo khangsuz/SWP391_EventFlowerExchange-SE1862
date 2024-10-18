@@ -18,7 +18,7 @@ const QuanLiNguoiDung = () => {
     phone: '',
     address: '',
     userType: '',
-    password: '', 
+    password: '',
   });
 
   

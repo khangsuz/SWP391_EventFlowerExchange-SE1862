@@ -3,9 +3,13 @@ import { Form, Input, Button, message, Typography } from 'antd';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import "./RegisterSeller.scss";
+
+
 const { Title } = Typography;
+
 const API_URL = 'https://localhost:7288/api';
 console.log("API URL:", API_URL);
+
 const api = axios.create({
     baseURL: API_URL,
     timeout: 5000,
@@ -13,26 +17,31 @@ const api = axios.create({
         'Content-Type': 'application/json',
     }
 });
+
 const RegisterSeller = () => {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
     const [userData, setUserData] = useState(null);
     const navigate = useNavigate();
+
     useEffect(() => {
         const fetchUserData = async () => {
             try {
                 const token = localStorage.getItem("token");
                 console.log("Token used for request:", token);
+
                 if (!token) {
                     message.error('Vui lòng đăng nhập để tiếp tục.');
                     navigate('/login');
                     return;
                 }
+
                 const response = await api.get('/Users/current-user', {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
                 });
+
                 console.log("User data response:", response);
                 if (response.status === 200) {
                     setUserData(response.data);
@@ -55,6 +64,7 @@ const RegisterSeller = () => {
         };
         fetchUserData();
     }, [form, navigate]);
+
     const onFinish = async (values) => {
         setLoading(true);
         try {
@@ -99,67 +109,68 @@ const RegisterSeller = () => {
             setLoading(false);
         }
     };
+
     return (
         <div className="register-seller-container">
-            <Title level={2}>Đăng ký làm người bán</Title>
-            <Form form={form} onFinish={onFinish} layout="vertical" className="register-seller-form">
-                <Form.Item
-                    name="userName"
-                    label="Tên người dùng"
-                >
-                    <Input disabled />
-                </Form.Item>
-                <Form.Item
-                    name="storeName"
-                    label="Tên cửa hàng"
-                    rules={[{ required: true, message: 'Vui lòng nhập tên cửa hàng!' }]}
-                >
-                    <Input />
-                </Form.Item>
-                <Form.Item
-                    name="email"
-                    label="Email"
-                >
-                    <Input disabled />
-                </Form.Item>
-                <Form.Item
-                    name="address"
-                    label="Địa chỉ"
-                    rules={[{ required: true, message: 'Vui lòng nhập địa chỉ!' }]}
-                >
-                    <Input />
-                </Form.Item>
-                <Form.Item
-                    name="phone"
-                    label="Số điện thoại"
-                    rules={[
-                        { required: true, message: 'Vui lòng nhập số điện thoại!' },
-                        { pattern: /^[0-9]{10}$/, message: 'Số điện thoại phải có 10 chữ số!' }
-                    ]}
-                >
-                    <Input />
-                </Form.Item>
-                <Form.Item
-                    name="idCard"
-                    label="Số CMND/CCCD"
-                    rules={[
-                        { required: true, message: 'Vui lòng nhập số CMND/CCCD!' },
-                        { pattern: /^[0-9]{9,12}$/, message: 'Số CMND/CCCD phải có 9 hoặc 12 chữ số!' }
-                    ]}
-                >
-                    <Input />
-                </Form.Item>
-                <Form.Item>
-                    <Button type="primary" htmlType="submit" loading={loading} className="register-seller-submit">
-                        Gửi yêu cầu
-                    </Button>
-                </Form.Item>
-            </Form>
-            <p className="register-seller-info">
-                Sau khi gửi yêu cầu, chúng tôi sẽ xem xét và phê duyệt trong thời gian sớm nhất.
-            </p>
+          <Title level={2}>Đăng ký làm người bán</Title>
+          <Form form={form} onFinish={onFinish} layout="vertical" className="register-seller-form">
+            <Form.Item
+              name="userName"
+              label="Tên người dùng"
+            >
+              <Input disabled />
+            </Form.Item>
+            <Form.Item
+              name="storeName"
+              label="Tên cửa hàng"
+              rules={[{ required: true, message: 'Vui lòng nhập tên cửa hàng!' }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="email"
+              label="Email"
+            >
+              <Input disabled />
+            </Form.Item>
+            <Form.Item
+              name="address"
+              label="Địa chỉ"
+              rules={[{ required: true, message: 'Vui lòng nhập địa chỉ!' }]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="phone"
+              label="Số điện thoại"
+              rules={[
+                { required: true, message: 'Vui lòng nhập số điện thoại!' },
+                { pattern: /^[0-9]{10}$/, message: 'Số điện thoại phải có 10 chữ số!' }
+              ]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              name="idCard"
+              label="Số CMND/CCCD"
+              rules={[
+                { required: true, message: 'Vui lòng nhập số CMND/CCCD!' },
+                { pattern: /^[0-9]{9,12}$/, message: 'Số CMND/CCCD phải có 9 hoặc 12 chữ số!' }
+              ]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item>
+              <Button type="primary" htmlType="submit" loading={loading} className="register-seller-submit">
+                Gửi yêu cầu
+              </Button>
+            </Form.Item>
+          </Form>
+          <p className="register-seller-info">
+            Sau khi gửi yêu cầu, chúng tôi sẽ xem xét và phê duyệt trong thời gian sớm nhất.
+          </p>
         </div>
-    );
-};
-
-export default RegisterSeller;
+      );
+    };
+    
+    export default RegisterSeller;

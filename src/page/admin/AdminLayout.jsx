@@ -41,7 +41,6 @@ const AdminLayout = () => {
   return (
     <Layout className="min-h-screen">
       <Sider collapsible>
-        
         <Menu theme="dark" mode="inline" items={menuItems} />
       </Sider>
       <Layout className="site-layout">

@@ -7,7 +7,6 @@ import { useNavigate, Link } from "react-router-dom";
 import { FaGoogle } from "react-icons/fa";
 import { useGoogleLogin } from "@react-oauth/google";
 import Footer from "../../component/footer";
-import { Notification, notifySuccess, notifyError } from '../../component/alert';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -19,26 +18,36 @@ const Login = () => {
 
   const handleLogin = async (values) => {
     try {
-      const response = await api.post("Users/login", values);
+      console.log("Login data being sent:", values); // Log dữ liệu gửi đi
+      const response = await api.post("Users/login", {
+        name: values.name,
+        password: values.password
+      });
       console.log("Login response data:", response.data);
   
-      const { token = null, userType = null } = response.data;
+      const { token, userType, userId } = response.data;
   
-      console.log("Extracted token:", token);
-      console.log("Extracted userType:", userType);
+      if (!token || !userId) {
+        throw new Error("Invalid response from server");
+      }
+  
+      const userData = { token, userType, userId };
       localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify({ token, userType }));
-      console.log("Stored user data:", JSON.parse(localStorage.getItem("user")));
-      notifySuccess("Đăng nhập thành công")
+      localStorage.setItem("user", JSON.stringify(userData));
+  
+      console.log("Stored user data:", userData);
+      console.log("Login successful - UserId:", userId, "Token:", token);
+  
       if (userType === "Admin") {
         navigate("/admin/dashboard");
       } else {
         navigate("/");
       }
     } catch (error) {
+      console.error("Login error:", error.response?.data || error.message);
+      alert("Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin đăng nhập.");
     }
   };
-
   const loginGoogle = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       console.log("Google login response:", tokenResponse);
@@ -46,28 +55,29 @@ const Login = () => {
         const result = await api.post("LoginGoogle/google-login", {
           accessToken: tokenResponse.access_token
         });
-
+  
         console.log("Google login result:", result.data);
-
+  
         if (result.data.isNewUser) {
           setIsNewUser(true);
           setNewUserEmail(result.data.email);
-        } else if (result.data.token) {
+        } else if (result.data.token && result.data.user) {
           localStorage.setItem("token", result.data.token);
           localStorage.setItem("user", JSON.stringify(result.data.user));
           navigate(result.data.user.userType === "Admin" ? "/admin/dashboard" : "/");
         } else {
-          throw new Error("Không nhận được token từ server");
+          throw new Error("Không nhận được thông tin người dùng hợp lệ từ server");
         }
       } catch (error) {
         console.error("Đăng nhập thất bại:", error.response?.data || error.message);
-        notifyError("Đăng nhập bằng Google thất bại. Vui lòng thử lại.");
+        alert("Đăng nhập bằng Google thất bại. Vui lòng thử lại.");
       }
     },
     flow: 'implicit',
     scope: "email profile",
   });
-
+  
+  // Hàm xử lý hoàn tất đăng ký cho người dùng mới
   const handleCompleteRegistration = async (values) => {
     try {
       const result = await api.post("LoginGoogle/complete-registration", {
@@ -76,25 +86,22 @@ const Login = () => {
         phone: values.phone,
         address: values.address
       });
-
-      if (result.data.token) {
+  
+      if (result.data.token && result.data.user) {
         localStorage.setItem("token", result.data.token);
         localStorage.setItem("user", JSON.stringify(result.data.user));
-        localStorage.setItem("cart", JSON.stringify([]));
-        notifySuccess("Đăng ký thành công!");
+        console.log("Đăng ký thành công:", result.data.user);
         navigate("/");
       } else {
-        throw new Error("Không nhận được token từ server");
+        throw new Error("Không nhận được thông tin người dùng hợp lệ từ server");
       }
     } catch (error) {
       console.error("Đăng ký thất bại:", error.response?.data || error.message);
-      notifyError("Đăng ký thất bại. Vui lòng thử lại.");
+      alert("Đăng ký thất bại: " + (error.response?.data?.message || error.message));
     }
   };
-
   return (
     <>
-    <Notification />
       <Header />
       <div className="login">
         <div className="login__image mt-1 mb-1">
@@ -108,9 +115,6 @@ const Login = () => {
             {isNewUser ? (
               <Form onFinish={handleCompleteRegistration}>
                 <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">Hoàn tất đăng ký</h2>
-                <Form.Item label="Email" name="email">
-                  <Input value={newUserEmail} disabled />
-                </Form.Item>
                 <Form.Item 
                   label="Họ và tên" 
                   name="fullName" 

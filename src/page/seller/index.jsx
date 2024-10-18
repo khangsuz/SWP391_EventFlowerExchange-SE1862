@@ -99,6 +99,29 @@ const CreateProduct = () => {
 
       const newFlower = response.data;
       console.log("Sản phẩm mới:", newFlower);
+
+      // Tạo thông báo mới
+      try {
+        const userString = localStorage.getItem('user');
+        if (!userString) {
+          throw new Error('User information not found in localStorage');
+        }
+        const currentUser = JSON.parse(userString);
+        if (!currentUser || !currentUser.userId) {
+          throw new Error('Invalid user information');
+        }
+        
+        await api.post('Notification', {
+          Message: `Sản phẩm mới đã được thêm: ${newFlower.flowerName}`,
+          NotificationDate: new Date().toISOString(),
+          IsRead: false,
+          SellerId: currentUser.userId 
+        });
+        console.log("Thông báo đã được tạo thành công");
+      } catch (notificationError) {
+        console.error("Lỗi khi tạo thông báo:", notificationError.message);
+      }
+
       
       alert('Sản phẩm đã được tạo thành công!');
       navigate(`/manage-products/${userId}`); // Sử dụng userId đã lưu để điều hướng
@@ -119,7 +142,7 @@ const CreateProduct = () => {
 
   return (
     <>
-    <Header />
+      <Header />
       <div style={{ border: '1px solid red', padding: '20px', margin: '20px' }}>
         <div className="max-w-md mx-auto mt-10">
           <h2 className="text-2xl font-bold mb-5">Tạo Sản Phẩm Mới</h2>
