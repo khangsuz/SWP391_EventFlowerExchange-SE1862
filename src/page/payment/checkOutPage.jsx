@@ -139,7 +139,7 @@ function CheckoutPage() {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setUserInfo((prev) => ({ ...prev, [name]: value || '' })); // Đảm bảo không có giá trị null
+        setUserInfo((prev) => ({ ...prev, [name]: value || '' }));
     };
 
     const calculateTotal = () => {
