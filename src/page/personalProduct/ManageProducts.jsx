@@ -3,9 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import Header from "../../component/header";
 import Footer from "../../component/footer";
 import api from "../../config/axios";
-import { Modal, Input, Button, Select } from "antd";
-import { Notification, notifySuccess, notifyError } from "../../component/alert";
-import { getFullImageUrl } from '../../utils/imageHelpers';
+import { getFullImageUrl } from "../../utils/imageHelpers";
+import { Modal, Input, Button, Select, notification } from "antd";
 
 const { Option } = Select;
 
@@ -28,11 +27,11 @@ const ManageProducts = () => {
 
   const fetchProducts = useCallback(async () => {
     try {
-      const response = await api.get(`Flowers/seller/${userId}`);
+      const response = await api.get(`Flowers/manage/${userId}`); // Updated endpoint
       setProducts(response.data);
     } catch (err) {
       console.error("Error fetching products:", err);
-      notifyError({ message: 'Không thể tải danh sách sản phẩm' });
+      notification.error({ message: 'Không thể tải danh sách sản phẩm' });
     } finally {
       setLoading(false);
     }
@@ -44,7 +43,7 @@ const ManageProducts = () => {
       setCategories(response.data);
     } catch (err) {
       console.error("Error fetching categories:", err);
-      notifyError({ message: 'Không thể tải danh sách danh mục' });
+      notification.error({ message: 'Không thể tải danh sách danh mục' });
     }
   }, []);
 
@@ -53,10 +52,10 @@ const ManageProducts = () => {
       try {
         await api.delete(`Flowers/${flowerId}`);
         setProducts(products.filter((product) => product.flowerId !== flowerId));
-        notifySuccess({ message: 'Xóa sản phẩm thành công' });
+        notification.success({ message: 'Xóa sản phẩm thành công' });
       } catch (err) {
         console.error("Error deleting product:", err);
-        notifyError({ message: 'Xóa sản phẩm thất bại' });
+        notification.error({ message: 'Xóa sản phẩm thất bại' });
       }
     }
   };
@@ -88,10 +87,10 @@ const ManageProducts = () => {
       await api.put(`Flowers/${currentProduct.flowerId}`, formData);
       await fetchProducts();
       setIsModalVisible(false);
-      notifySuccess({ message: 'Cập nhật sản phẩm thành công!' });
+      notification.success({ message: 'Cập nhật sản phẩm thành công!' });
     } catch (error) {
       console.error('Lỗi khi cập nhật sản phẩm:', error);
-      notifyError({ message: 'Cập nhật sản phẩm thất bại!' });
+      notification.error({ message: 'Cập nhật sản phẩm thất bại!' });
     }
   };
 
@@ -115,7 +114,6 @@ const ManageProducts = () => {
 
   return (
     <>
-    <Notification />
       <Header />
       <div className="container mx-auto py-24">
         <h1 className="text-2xl font-bold mb-6">Quản lý sản phẩm của bạn</h1>
@@ -169,7 +167,7 @@ const ManageProducts = () => {
 
       <Modal
         title="Chỉnh sửa thông tin hoa"
-        visible={isModalVisible}
+        open={isModalVisible}
         onOk={updateProduct}
         onCancel={() => setIsModalVisible(false)}
       >
@@ -225,6 +223,7 @@ const ManageProducts = () => {
           />
         )}
       </Modal>
+
       <Footer />
     </>
   );

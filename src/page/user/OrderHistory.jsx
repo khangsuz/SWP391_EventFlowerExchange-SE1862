@@ -18,7 +18,8 @@ function OrderHistory() {
         try {
             const response = await api.get('Orders/history');
             if (Array.isArray(response.data)) {
-                setOrders(response.data);
+                const completedOrders = response.data.filter(order => order.orderStatus === "Completed");
+                setOrders(completedOrders);
             } else {
                 console.error('Data is not an array:', response.data);
                 setError('Invalid data format received');
@@ -45,15 +46,16 @@ function OrderHistory() {
             <h1 className="text-2xl font-bold mb-4">Lịch sử đơn hàng</h1>
             <table className="w-full border-collapse">
                 <thead>
-                    <tr className="bg-gray-100">
-                        <th className="border p-4">#</th>
-                        <th className="border p-2">Mã đơn hàng</th>
-                        <th className="border p-2">Thông tin người nhận</th>
-                        <th className="border p-2">Phương thức</th>
-                        <th className="border p-4">Tổng tiền</th>
-                        <th className="border p-2">Phí vận chuyển</th>
-                        <th className="border p-2">Thao tác</th>
-                    </tr>
+                <tr className="bg-gray-100">
+            <th className="border p-4">#</th>
+            <th className="border p-2">Mã đơn hàng</th>
+            <th className="border p-2">Thông tin người nhận</th>
+            <th className="border p-2">Phương thức</th>
+            <th className="border p-4">Tổng tiền</th>
+            <th className="border p-2">Phí vận chuyển</th>
+            <th className="border p-2">Trạng thái giao hàng</th>
+            <th className="border p-2">Thao tác</th>
+        </tr>
                 </thead>
                 <tbody>
                     {currentOrders.map((order, index) => (
@@ -63,13 +65,14 @@ function OrderHistory() {
                                 <div>{order.orderId}</div>
                                 <div className="text-sm text-gray-500">{order.orderStatus}</div>
                             </td>
+                            
                             <td className="border p-2">
-                                <div>{order.recipient?.fullName}</div>
-                                <div className="text-sm text-gray-500">{order.recipient?.phone}</div>
-                                <div className="text-sm text-gray-500">{order.recipient?.email}</div>
-                                <div className="text-sm text-gray-500">{order.recipient?.address}</div>
-                                <div className="text-sm text-gray-500">Ngày tạo: {new Date(order.orderDate).toLocaleDateString()}</div>
-                            </td>
+    <div><strong>Tên:</strong> {order.recipient?.fullName}</div>
+    <div><strong>SĐT:</strong> {order.recipient?.phone}</div>
+    <div><strong>Email:</strong> {order.recipient?.email}</div>
+    <div><strong>Địa chỉ:</strong> {order.recipient?.address}</div>
+    <div><strong>Ngày tạo:</strong> {new Date(order.orderDate).toLocaleDateString()}</div>
+</td>
                             <td className="border p-2">VnPay</td>
                             <td className="border p-2 text-red-500">{order.totalAmount?.toLocaleString()}đ</td>
                             <td className="border p-2">
@@ -77,6 +80,9 @@ function OrderHistory() {
                                 <div>Tổng thu: {order.totalAmount?.toLocaleString()} vnđ</div>
                                 <div className="text-sm text-gray-500">(Bao gồm COD)</div>
                             </td>
+                            <td className="border p-2">
+                    {order.orderDelivery || "Chờ lấy hàng"}
+                </td>
                             <td className="border p-">
                                 <button className="bg-blue-500 text-white px-2 py-1 rounded mr-2 mb-1">Chỉnh sửa</button>
                                 <button className="bg-green-500 text-white px-2 py-1 rounded mr-2 mb-1">Tra cứu</button>

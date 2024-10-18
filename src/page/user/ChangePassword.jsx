@@ -18,11 +18,20 @@ const ChangePassword = () => {
         setPasswords({ ...passwords, [e.target.name]: e.target.value });
     };
 
+    const validatePassword = (password) => {
+        return password.length >= 5;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError(null);
         setSuccess(null);
     
+        if (!validatePassword(passwords.newPassword)) {
+            setError('Mật khẩu mới phải có ít nhất 5 ký tự.');
+            return;
+        }
+
         if (passwords.newPassword !== passwords.confirmPassword) {
             setError('Mật khẩu mới và xác nhận mật khẩu không khớp.');
             return;
@@ -80,6 +89,7 @@ const ChangePassword = () => {
                                 onChange={handleChange}
                                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                                 required
+                                minLength={5}
                             />
                         </div>
                         <div className="mb-6">

@@ -13,6 +13,7 @@ const Login = () => {
   const navigate = useNavigate();
   const [isNewUser, setIsNewUser] = useState(false);
   const [newUserEmail, setNewUserEmail] = useState('');
+  const [googleUserInfo, setGoogleUserInfo] = useState(null);
 
   const handleLogin = async (values) => {
     try {
@@ -46,6 +47,7 @@ const Login = () => {
       notifyError("Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin đăng nhập.");
     }
   };
+
   const loginGoogle = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       console.log("Google login response:", tokenResponse);
@@ -59,6 +61,10 @@ const Login = () => {
         if (result.data.isNewUser) {
           setIsNewUser(true);
           setNewUserEmail(result.data.email);
+          setGoogleUserInfo({
+            email: result.data.email,
+            name: result.data.name // Assuming the API returns the name from Google
+          });
         } else if (result.data.token && result.data.user) {
           localStorage.setItem("token", result.data.token);
           localStorage.setItem("user", JSON.stringify(result.data.user));
@@ -88,6 +94,7 @@ const Login = () => {
         localStorage.setItem("token", result.data.token);
         localStorage.setItem("user", JSON.stringify(result.data.user));
         navigate("/");
+        notifySuccess("Đăng ký thành công!");
       } else {
         throw new Error("Không nhận được thông tin người dùng hợp lệ từ server");
       }
@@ -96,6 +103,7 @@ const Login = () => {
       notifyError("Đăng ký thất bại. Vui lòng thử lại.");
     }
   };
+
   return (
     <>
     <Notification />
@@ -110,11 +118,11 @@ const Login = () => {
         <div className="login__form">
           <div className="form-wrapper">
             {isNewUser ? (
-              <Form onFinish={handleCompleteRegistration}>
+              <Form onFinish={handleCompleteRegistration} initialValues={{ fullName: googleUserInfo?.name }}>
                 <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">Hoàn tất đăng ký</h2>
-                <Form.Item label="Email" name="email" className="font-bold">
+                {/* <Form.Item label="Email" name="email" className="font-bold">
                   <Input value={newUserEmail} disabled />
-                </Form.Item>
+                </Form.Item> */}
                 <Form.Item 
                   label="Họ và tên" 
                   name="fullName" 
@@ -204,4 +212,4 @@ const Login = () => {
   );
 };
 
-export default Login; 
+export default Login;
