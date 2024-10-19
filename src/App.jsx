@@ -30,6 +30,7 @@ import SearchResult from "./page/searchResult";
 import ChangePassword from "./page/user/ChangePassword";
 import OrderHistory from "./page/user/OrderHistory";
 import SellerOrderManagement from "./page/personalProduct/SellerOrderManagement";
+import AdminReviewManagement from "./page/admin/AdminReviewManagement";
 
 const App = () => {
   const router = createBrowserRouter([
@@ -108,7 +109,7 @@ const App = () => {
       element: <CheckoutPage />
     },  
     {
-      path: "/seller/:userId/orders",
+      path: "/seller/:userId/orders", 
       element: <SellerOrderManagement />
     },  
     {
@@ -156,6 +157,10 @@ const App = () => {
         {
           path: "quanlidonhang",
           element: <QuanLiDonHang />,
+        },
+        {
+          path: "quanlidanhgia",
+          element: <AdminReviewManagement />,
         },
       ],
     },

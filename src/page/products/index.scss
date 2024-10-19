@@ -46,13 +46,12 @@
   border: 1px solid #e9ecef;
   border-radius: 4px;
   width: 50%;
-  margin: 20px auto; // Thay đổi margin này
+  margin: 20px auto;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  max-width: 600px; // Thêm max-width để giới hạn chiều rộng tối đa
+  max-width: 600px;
 
-  // Các styles khác giữ nguyên
   .filter-toggle {
-    width: 100%; // Thay đổi width thành 100%
+    width: 100%;
     padding: 15px 20px;
     background-color: transparent;
     border: none;

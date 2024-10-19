@@ -167,8 +167,8 @@ function CheckoutPage() {
             navigate('/login');
             return;
         }
-
-        const totalWeight = calculateTotalWeight();
+        const MAX_WEIGHT = 30000;
+        const totalWeight = Math.min(calculateTotalWeight(), MAX_WEIGHT);
         const shippingOrder = {
             from_name: 'Shop Hoa ABC',
             from_phone: '0901234567',

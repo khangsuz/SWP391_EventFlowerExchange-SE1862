@@ -5,6 +5,7 @@ import Footer from "../../component/footer";
 import api from "../../config/axios";
 import { getFullImageUrl } from "../../utils/imageHelpers";
 import { Modal, Input, Button, Select, notification } from "antd";
+import { Notification, notifySuccess, notifyError } from "../../component/alert";
 
 const { Option } = Select;
 
@@ -27,7 +28,7 @@ const ManageProducts = () => {
 
   const fetchProducts = useCallback(async () => {
     try {
-      const response = await api.get(`Flowers/manage/${userId}`); // Updated endpoint
+      const response = await api.get(`Flowers/manage/${userId}`);
       setProducts(response.data);
     } catch (err) {
       console.error("Error fetching products:", err);
@@ -43,7 +44,7 @@ const ManageProducts = () => {
       setCategories(response.data);
     } catch (err) {
       console.error("Error fetching categories:", err);
-      notification.error({ message: 'Không thể tải danh sách danh mục' });
+      notifyError({ message: 'Không thể tải danh sách danh mục' });
     }
   }, []);
 
@@ -52,10 +53,10 @@ const ManageProducts = () => {
       try {
         await api.delete(`Flowers/${flowerId}`);
         setProducts(products.filter((product) => product.flowerId !== flowerId));
-        notification.success({ message: 'Xóa sản phẩm thành công' });
+        notifySuccess({ message: 'Xóa sản phẩm thành công' });
       } catch (err) {
         console.error("Error deleting product:", err);
-        notification.error({ message: 'Xóa sản phẩm thất bại' });
+        notifyError({ message: 'Xóa sản phẩm thất bại' });
       }
     }
   };
@@ -76,21 +77,32 @@ const ManageProducts = () => {
   const updateProduct = async () => {
     try {
       const formData = new FormData();
-      Object.keys(updatedProduct).forEach(key => {
-        if (key === 'imageUrl' && updatedProduct[key] instanceof File) {
-          formData.append(key, updatedProduct[key]);
-        } else if (key !== 'imageUrl') {
-          formData.append(key, updatedProduct[key]);
-        }
+      formData.append('FlowerName', updatedProduct.flowerName);
+      formData.append('Price', updatedProduct.price);
+      formData.append('Quantity', updatedProduct.quantity);
+      formData.append('Status', updatedProduct.status);
+      formData.append('Category', updatedProduct.category);
+  
+      if (updatedProduct.imageUrl instanceof File) {
+        formData.append('image', updatedProduct.imageUrl);
+      }
+  
+      const response = await api.put(`Flowers/${currentProduct.flowerId}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
-
-      await api.put(`Flowers/${currentProduct.flowerId}`, formData);
-      await fetchProducts();
-      setIsModalVisible(false);
-      notification.success({ message: 'Cập nhật sản phẩm thành công!' });
+  
+      if (response.status === 204) {
+        await fetchProducts();
+        setIsModalVisible(false);
+        notifySuccess({ message: 'Cập nhật sản phẩm thành công!' });
+      } else {
+        throw new Error('Unexpected response status');
+      }
     } catch (error) {
       console.error('Lỗi khi cập nhật sản phẩm:', error);
-      notification.error({ message: 'Cập nhật sản phẩm thất bại!' });
+      notifyError({ message: 'Cập nhật sản phẩm thất bại!' });
     }
   };
 
@@ -114,7 +126,8 @@ const ManageProducts = () => {
 
   return (
     <>
-      <Header />
+    <Notification />
+    <Header />
       <div className="container mx-auto py-24">
         <h1 className="text-2xl font-bold mb-6">Quản lý sản phẩm của bạn</h1>
         <button

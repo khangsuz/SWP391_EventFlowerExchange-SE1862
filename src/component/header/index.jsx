@@ -237,7 +237,7 @@ function Header({ setFilteredFlowers }) {
             </svg>
           </button>
         </Tippy>
-
+        
         {searchVisible && (
           <div
             className="absolute right-16 mt-9 w-72 bg-white border-2 rounded-md shadow-lg"

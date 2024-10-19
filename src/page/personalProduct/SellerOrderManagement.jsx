@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Select, message } from 'antd';
+import { Table, Select, message } from 'antd';
 import { useParams } from 'react-router-dom';
 import api from "../../config/axios";
 
@@ -11,7 +11,6 @@ function SellerOrderManagement() {
     const { userId } = useParams();
     const [currentPage, setCurrentPage] = useState(1);
     const [ordersPerPage] = useState(4);
-    
 
     useEffect(() => {
         fetchSellerOrders();
@@ -45,8 +44,6 @@ function SellerOrderManagement() {
     const currentOrders = orders.slice(indexOfFirstOrder, indexOfLastOrder);
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-    if (loading) return <div>Loading...</div>;
-
     return (
         <div className="container mx-auto px-4 py-8">
             <table className="w-full border-collapse">
@@ -67,8 +64,8 @@ function SellerOrderManagement() {
                             <td className="border p-2">
                                 <div className="text-center text-lg">{order.orderId}</div>
                             </td>
-                            <td className="border p-2">
-                                <div><strong>Tên:</strong> {order.recipient?.fullName}</div>
+                            
+                            <td className="border p-2"><div><strong>Tên:</strong> {order.recipient?.fullName}</div>
                                 <div><strong>SĐT:</strong> {order.recipient?.phone}</div>
                                 <div><strong>Email:</strong> {order.recipient?.email}</div>
                                 <div><strong>Địa chỉ:</strong> {order.recipient?.address}</div>
@@ -115,10 +112,9 @@ function SellerOrderManagement() {
                     >
                         {i + 1}
                     </button>
-                ))}
-            </div>
-        </div>
-    );
-}
-
-export default SellerOrderManagement;
+                ))}</div>
+                </div>
+            );
+        }
+        
+        export default SellerOrderManagement;

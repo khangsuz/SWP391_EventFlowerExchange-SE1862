@@ -53,12 +53,12 @@ function OrderHistory() {
     if (error) return <div>{error}</div>;
 
     return (
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto">
             <table className="w-full border-collapse">
                 <thead>
                     <tr className="bg-gray-100">
                         <th className="border p-4">#</th>
-                        <th className="border p-2">Mã đơn hàng</th>
+                        <th className="border p-2">Mã đơn</th>
                         <th className="border p-2">Thông tin người nhận</th>
                         <th className="border p-2">Sản phẩm</th>
                         <th className="border p-2">Tổng tiền</th>
