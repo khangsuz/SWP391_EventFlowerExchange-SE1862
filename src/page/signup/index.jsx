@@ -62,7 +62,8 @@ const SignUp = () => {
               onFinish={handleSignUp}
             >
               {/* Sign-up title */}
-              <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">
+              {/* <h2 className="text-3xl font-bold mb-6 text-center text-gray-800"> */}
+              <h2 className="text-3xl font-bold mb-6 mt-6 text-center text-gray-800">
                 Đăng ký
               </h2>
 
@@ -119,7 +120,7 @@ const SignUp = () => {
                 <Input type="text" placeholder="you@example.com" />
               </Form.Item>
 
-              {/* Address Input */}
+              {/* Address Input
               <Form.Item
                 className="block text-gray-700 text-sm font-bold mb-2"
                 label="Địa chỉ"
@@ -132,7 +133,7 @@ const SignUp = () => {
                 ]}
               >
                 <Input type="text" placeholder="123 Đường A, Quận X, TP. HCM" />
-              </Form.Item>
+              </Form.Item> */}
               <Form.Item
                 className="block text-gray-700 text-sm font-bold mb-2"
                 label="Điện thoại"

@@ -33,6 +33,7 @@ import ManageOrders from "./page/personalProduct/ManageOrders";
 import ChangePassword from "./page/user/ChangePassword";
 import OrderHistory from "./page/user/OrderHistory";
 import SellerOrderManagement from "./page/personalProduct/SellerOrderManagement";
+import AdminReviewManagement from "./page/admin/AdminReviewManagement";
 
 const App = () => {
   const router = createBrowserRouter([
@@ -165,6 +166,10 @@ const App = () => {
         {
           path: "WithdrawalRequests",
           element: <WithdrawalRequests />,
+        },
+        {
+          path: "quanlidanhgia",
+          element: <AdminReviewManagement />,
         },
       ],
     },

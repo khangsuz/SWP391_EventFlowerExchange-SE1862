@@ -27,7 +27,7 @@ const ManageProducts = () => {
 
   const fetchProducts = useCallback(async () => {
     try {
-      const response = await api.get(`Flowers/manage/${userId}`); // Updated endpoint
+      const response = await api.get(`Flowers/manage/${userId}`); 
       setProducts(response.data);
     } catch (err) {
       console.error("Error fetching products:", err);
@@ -76,21 +76,31 @@ const ManageProducts = () => {
   const updateProduct = async () => {
     try {
       const formData = new FormData();
-      Object.keys(updatedProduct).forEach(key => {
-        if (key === 'imageUrl' && updatedProduct[key] instanceof File) {
-          formData.append(key, updatedProduct[key]);
-        } else if (key !== 'imageUrl') {
-          formData.append(key, updatedProduct[key]);
-        }
+      formData.append('FlowerName', updatedProduct.flowerName);
+      formData.append('Price', updatedProduct.price);
+      formData.append('Quantity', updatedProduct.quantity);
+      formData.append('Status', updatedProduct.status);
+      formData.append('Category', updatedProduct.category);
+      if (updatedProduct.imageUrl instanceof File) {
+        formData.append('image', updatedProduct.imageUrl);
+      }
+  
+      const response = await api.put(`Flowers/${currentProduct.flowerId}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
-
-      await api.put(`Flowers/${currentProduct.flowerId}`, formData);
-      await fetchProducts();
-      setIsModalVisible(false);
-      notification.success({ message: 'Cập nhật sản phẩm thành công!' });
+  
+      if (response.status === 204) {
+        await fetchProducts();
+        setIsModalVisible(false);
+        notification.success({ message: 'Cập nhật sản phẩm thành công!' });
+      } else {
+        throw new Error('Unexpected response status');
+      }
     } catch (error) {
       console.error('Lỗi khi cập nhật sản phẩm:', error);
-      notification.error({ message: 'Cập nhật sản phẩm thất bại!' });
+      notifyError({ message: 'Cập nhật sản phẩm thất bại!' });
     }
   };
 

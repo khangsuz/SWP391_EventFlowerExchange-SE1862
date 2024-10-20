@@ -18,7 +18,8 @@ const ChangePassword = () => {
         }
 
         if (values.newPassword !== values.confirmPassword) {
-            setError('Mật khẩu mới và xác nhận mật khẩu không khớp.');
+            // setError('Mật khẩu mới và xác nhận mật khẩu không khớp.');
+            setError('Cập nhật không thành công. Vui lòng kiểm tra lại thông tin.');
             return;
         }
 

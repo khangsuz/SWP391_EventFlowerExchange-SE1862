@@ -42,6 +42,11 @@ const AdminLayout = () => {
       icon: <ShopOutlined />,
       label: <Link to="/admin/WithdrawalRequests">Quản lý rút tiền</Link>,
     },
+    {
+      key: "7",
+      icon: <CustomerServiceOutlined />,
+      label: <Link to="/admin/quanlidanhgia">Quản lý đánh giá</Link>,
+    },
   ];
 
   return (

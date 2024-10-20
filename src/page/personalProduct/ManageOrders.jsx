@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import api from "../../config/axios";
 import { useParams, useNavigate } from "react-router-dom";
-import { Table, Tag, Typography, Space, Button, Modal, Form, Input, message } from "antd";
+import { Table, Tag, Typography, Space, Button, Modal, Form, Input, message, Select } from "antd";
 import { EditOutlined, DeleteOutlined, HomeOutlined } from '@ant-design/icons';
 import Header from "../../component/header";
 import Footer from "../../component/footer";
@@ -15,6 +15,17 @@ const ManageOrders = () => {
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [currentOrder, setCurrentOrder] = useState(null); 
   const [currentUserId, setCurrentUserId] = useState(null);
+  
+  const handleDeliveryStatusChange = async (orderId, newStatus) => {
+    try {
+        await api.put(`Orders/${orderId}/delivery`, { orderDelivery: newStatus, userId });
+        message.success('Cập nhật trạng thái giao hàng thành công');
+        fetchOrders();
+    } catch (error) {
+        console.error('Error updating order delivery status:', error);
+        message.error('Không thể cập nhật trạng thái giao hàng: ' + (error.response?.data || error.message));
+    }
+};
 
   const fetchCurrentUserId = async () => {
     try {
@@ -113,6 +124,24 @@ const ManageOrders = () => {
         <Tag color={status === 'Completed' ? 'green' : status === 'Pending' ? 'orange' : 'red'}>
           {status}
         </Tag>
+      ),
+    },
+    {
+      title: 'Trạng Thái Giao Hàng',
+      dataIndex: 'orderDelivery',
+      key: 'orderDelivery',
+      render: (text, order) => (
+        <Select
+          defaultValue={text}
+          style={{ width: 150 }}
+          onChange={(value) => handleDeliveryStatusChange(order.orderId, value)}
+        >
+          <Option value="ChờXửLý">Chờ xử lý</Option>
+          <Option value="ĐangXửLý">Đang xử lý</Option>
+          <Option value="ĐãGửiHàng">Đã gửi hàng</Option>
+          <Option value="ĐãGiaoHàng">Đã giao hàng</Option>
+          <Option value="ĐãHủy">Đã hủy</Option>
+        </Select>
       ),
     },
     {

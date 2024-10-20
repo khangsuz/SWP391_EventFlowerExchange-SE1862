@@ -8,21 +8,32 @@ import { Link } from "react-router-dom";
 
 
 const Home = () => {
-  const [flowers, setFlowers] = useState([]);
-  const [filteredFlowers, setFilteredFlowers] = useState([]);
+  // const [flowers, setFlowers] = useState([]);
+  // const [filteredFlowers, setFilteredFlowers] = useState([]);
+  const [bestSellingFlowers, setBestSellingFlowers] = useState([]);
 
-  const fetchFlower = async () => {
+  const fetchBestSellingFlowers = async () => {
     try {
-      const response = await api.get("Flowers");
-      setFlowers(response.data);
-      setFilteredFlowers(response.data);
+      const response = await api.get("Flowers/best-selling");
+      setBestSellingFlowers(response.data);
     } catch (err) {
       console.log(err);
     }
   };
 
+  // const fetchFlower = async () => {
+  //   try {
+  //     const response = await api.get("Flowers");
+  //     setFlowers(response.data);
+  //     setFilteredFlowers(response.data);
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  // };
+
   useEffect(() => {
-    fetchFlower();
+    // fetchFlower();
+    fetchBestSellingFlowers();
   }, []);
 
   return (
@@ -113,14 +124,18 @@ const Home = () => {
       {/* Title */}
       <div className="section-title text-center mt-10">
         <h1 className="section-title-1">The Most Trendy</h1>
-        <h3 className="section-title-3">Featured Product</h3>
+        {/* <h3 className="section-title-3">Featured Product</h3> */}
+        <h3 className="section-title-3">Best Selling Products</h3>
         <div className="flex gap-2 px-8 pb-4">
-          {filteredFlowers
+          {/* {filteredFlowers
             .sort((a, b) => b.averageRating - a.averageRating) // Sắp xếp theo đánh giá
             .slice(0, 4) // Lấy 4 sản phẩm đầu tiên
             .map((flower) => (
               <ProductCard key={flower.flowerId} flower={flower} />
-            ))}
+            ))} */}
+            {bestSellingFlowers.slice(0, 4).map((flower) => (
+            <ProductCard key={flower.flowerId} flower={flower} />
+          ))}
         </div>
       </div>
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../../config/axios";
-import { Table, Modal, Input } from "antd";
+import { Table, Modal, Input, Button } from "antd";
 import { Line } from 'react-chartjs-2'; 
 import Header from "../../component/header";
 import Footer from "../../component/footer";
@@ -29,7 +29,40 @@ const ManageRevenue = () => {
   const [revenueData, setRevenueData] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(null);
+  const [withdrawalRequests, setWithdrawalRequests] = useState([]); 
+  const [isHistoryModalVisible, setIsHistoryModalVisible] = useState(false);
 
+
+  const handleCancelRequest = async (requestId) => {
+    if (!requestId) {
+      alert('Yêu cầu không hợp lệ!');
+      return;
+    }
+    
+    try {
+      await api.delete(`Users/api/withdrawal-requests/${requestId}`); 
+      alert('Yêu cầu rút tiền đã được hủy!');
+      fetchWithdrawalRequests();
+    } catch (error) {
+      console.error("Error canceling withdrawal request:", error);
+      alert('Hủy yêu cầu không thành công!');
+    }
+  };
+  const showHistoryModal = () => {
+    setIsHistoryModalVisible(true); 
+  };
+
+  const handleHistoryCancel = () => {
+    setIsHistoryModalVisible(false); 
+  };
+  const fetchWithdrawalRequests = async () => {
+    try {
+      const response = await api.get(`Users/api/withdrawal-requests/${userId}`); 
+      setWithdrawalRequests(response.data); 
+    } catch (err) {
+      console.error("Error fetching withdrawal requests:", err);
+    }
+  };
   const fetchCurrentUserId = async () => {
     try {
       const response = await api.get('/Users/current-user'); 
@@ -82,6 +115,7 @@ const ManageRevenue = () => {
   useEffect(() => {
     fetchRevenue();
     fetchCurrentIncome(); 
+    fetchWithdrawalRequests();
   }, [userId]);
 
   const chartData = {
@@ -111,6 +145,7 @@ const ManageRevenue = () => {
       setIsModalVisible(false);
       fetchRevenue(); 
       fetchCurrentIncome(); 
+      fetchWithdrawalRequests();
     } catch (error) {
       console.error("Error during withdrawal:", error);
       alert('Rút tiền không thành công!');
@@ -169,8 +204,15 @@ const ManageRevenue = () => {
               >
                 <FaMoneyCheckAlt className="inline-block mr-2" /> Rút Tiền
               </button>
+              <Button 
+                className="bg-yellow-600 text-white font-bold py-2 px-6 rounded transition duration-300 ease-in-out transform hover:bg-yellow-500 hover:scale-105 shadow-md hover:shadow-lg ml-4"
+                onClick={showHistoryModal} 
+              >
+                Lịch Sử Yêu Cầu Rút Tiền
+              </Button>
             </div>
           </div>
+          
 
           {/* Biểu đồ doanh thu */}
           <div className="mb-8">
@@ -288,6 +330,43 @@ const ManageRevenue = () => {
           value={withdrawRequest.remarks}
           onChange={handleInputChange}
         />
+      </Modal>
+      {/* Modal để hiển thị lịch sử yêu cầu rút tiền */}
+      <Modal
+        title="Lịch Sử Yêu Cầu Rút Tiền"
+        visible={isHistoryModalVisible}
+        onCancel={handleHistoryCancel}
+        footer={null} 
+        width={1000}
+      >
+        <Table
+            dataSource={withdrawalRequests}
+            columns={[
+              { title: 'Số Tài Khoản', dataIndex: 'accountNumber', key: 'accountNumber' },
+              { title: 'Họ Tên', dataIndex: 'fullName', key: 'fullName' },
+              { title: 'Số Điện Thoại', dataIndex: 'phone', key: 'phone' },
+              { title: 'Số Tiền', dataIndex: 'amount', key: 'amount', render: (text) => `${(text || 0).toLocaleString()} VNĐ` },
+              { title: 'Trạng Thái', dataIndex: 'status', key: 'status', render: (text) => text || 'Chờ Xử Lý' },
+              { title: 'Ghi Chú', dataIndex: 'remarks', key: 'remarks' },
+              { title: 'Ngày Yêu Cầu', dataIndex: 'requestDate', key: 'requestDate', render: (text) => text ? new Date(text).toLocaleDateString() : 'Không có ngày' },
+              {
+                title: 'Hành Động',
+                key: 'action',
+                render: (text, record) => (
+                  <Button 
+                    type="danger" 
+                    onClick={() => handleCancelRequest(record.requestId)}
+                  >
+                    Hủy
+                  </Button>
+                ),
+              },
+            ]}
+            rowKey="requestDate" 
+            pagination={false}
+            bordered
+            className="bg-gray-100"
+          />
       </Modal>
 
       <Footer />
