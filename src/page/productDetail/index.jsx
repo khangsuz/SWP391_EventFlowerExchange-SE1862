@@ -4,17 +4,19 @@ import "../../index.css";
 import { useNavigate } from "react-router-dom";
 import Header from "../../component/header";
 import Footer from "../../component/footer";
-import api from "../../config/axios";
+import api, { baseUrl } from "../../config/axios";
 import { useCart } from "../../contexts/CartContext";
 import { getFullImageUrl } from '../../utils/imageHelpers';
 import { Link } from "react-router-dom";
 import { Notification, notifySuccess, notifyError } from "../../component/alert";
+import UserAvatar from "../user/UserAvatar";
 
 const ProductDetail = () => {
   const { updateCartItemCount } = useCart();
   const { id } = useParams();
   const [flower, setFlower] = useState(null);
   const [relatedFlowers, setRelatedFlowers] = useState([]);
+  const [imageKey, setImageKey] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
   const [reviews, setReviews] = useState([]);
@@ -107,6 +109,12 @@ const ProductDetail = () => {
     } catch (err) {
       console.error("Error fetching reviews:", err);
     }
+  };
+  const handleImageError = (e) => {
+    console.error("Image load error:", e);
+    console.log("Attempted image URL:", e.target.src);
+    e.target.onerror = null;
+    e.target.src = '/path/to/default/image.jpg';
   };
 
 
@@ -265,7 +273,13 @@ const ProductDetail = () => {
       <div className="text-gray-700 body-font overflow-hidden bg-white product-detail">
         <div className="container px-5 py-24 mx-auto">
           <div className="lg:w-3/5 mx-auto flex flex-wrap">
-            <img alt="ecommerce" className="lg:w-3/6 w-full object-cover object-center rounded border border-gray-200" src={imageUrl || "https://i.postimg.cc/Jz0MW07g/top-view-roses-flowers-Photoroom.png"} />
+          <img 
+        key={imageKey}
+        src={imageUrl || "https://i.postimg.cc/Jz0MW07g/top-view-roses-flowers-Photoroom.png"}
+        alt={flower.flowerName}
+        className="lg:w-3/6 w-full object-cover object-center rounded border border-gray-200"
+        onError={handleImageError}
+      />
             <div className="lg:w-1/2 w-full lg:pl-10 lg:py-6 mt-3 lg:mt-0">
               <h1 className="text-gray-900 text-4xl title-font font-medium mb-1 mt-3">{flower.flowerName}</h1>
               <p className="title-font mt-2 font-medium text-xl text-[#bc0000]">{flower.price.toLocaleString()}₫</p>
@@ -392,112 +406,104 @@ const ProductDetail = () => {
         <div className="reviews-list">
           {/* Hiển thị đánh giá của người dùng trước */}
           {userReview && (
-            <div className="flex border-b py-4">
-              {userReview.profileImageUrl ? (
-                <img src={userReview.profileImageUrl} alt="Profile" className="w-10 h-10 rounded-full" />
-              ) : (
-                <div className="w-10 h-10 rounded-full bg-gray-300"></div>
-              )}
-              <div key={userReview.reviewId} className="review-item w-full ml-3">
-                <div className="flex items-center mb-2">
-                  <span className="font-bold mr-2">{userReview.userName ? userReview.userName : "Người dùng ẩn danh"}</span>
-                  {/* SVG Stars */}
-                  <div className="flex items-center">
-                    {Array.from({ length: userReview.rating }, (_, index) => (
-                      <svg key={index} xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" className="w-5 h-5 text-yellow-500">
-                        <path d="M12 .587l3.668 7.568 8.332 1.207-6.004 5.848 1.417 8.267L12 18.896l-7.413 3.895 1.417-8.267-6.004-5.848 8.332-1.207z" />
-                      </svg>
-                    ))}
-                    {Array.from({ length: 5 - userReview.rating }, (_, index) => (
-                      <svg key={index} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="w-5 h-5 text-yellow-500">
-                        <path d="M12 .587l3.668 7.568 8.332 1.207-6.004 5.848 1.417 8.267L12 18.896l-7.413 3.895 1.417-8.267-6.004-5.848 8.332-1.207z" stroke="currentColor" strokeWidth="2" />
-                      </svg>
-                    ))}
-                  </div>
-                </div>
-                {editingReviewId === userReview.reviewId ? (
-                  <form onSubmit={(e) => handleReviewSubmit(e, userReview.reviewId)}>
-                    <div className="mb-4">
-                      <label className="block mb-2">Đánh giá:</label>
-                      <select
-                        value={newReview.rating}
-                        onChange={(e) => setNewReview({ ...newReview, rating: parseInt(e.target.value) })}
-                        className="border rounded p-2"
-                      >
-                        {[1, 2, 3, 4, 5].map((num) => (
-                          <option key={num} value={num}>{num} sao</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="mb-4">
-                      <label className="block mb-2">Nhận xét:</label>
-                      <textarea
-                        value={newReview.reviewComment}
-                        onChange={(e) => setNewReview({ ...newReview, reviewComment: e.target.value })}
-                        className="border rounded p-2 w-full"
-                        rows="4"
-                      ></textarea>
-                    </div>
-                    <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded mr-2">
-                      Cập nhật
-                    </button>
-                    <button type="button" onClick={() => setEditingReviewId(null)} className="bg-gray-500 text-white px-4 py-2 rounded">
-                      Hủy
-                    </button>
-                  </form>
-                ) : (
-                  <>
-                    <p>{userReview.reviewComment}</p>
-                    <span className="text-sm text-gray-500">{new Date(userReview.reviewDate).toLocaleDateString()}</span>
-                    <div className="mt-2">
-                      <button onClick={() => handleEditReview(userReview.reviewId)} className="text-blue-500 hover:text-blue-700 mr-2">
-                        Chỉnh sửa
-                      </button>
-                      <button onClick={() => handleDeleteReview(userReview.reviewId)} className="text-red-500 hover:text-red-700">
-                        Xóa
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
-  
-          {/* Hiển thị các đánh giá khác */}
-          {reviews.length > 0 ? (
-            reviews.filter(review => review.userId !== JSON.parse(localStorage.getItem("user"))?.userId).map((review) => (
-              <div key={review.reviewId} className="flex border-b py-4">
-                {review.profileImageUrl ? (
-                  <img src={review.profileImageUrl} alt="Profile" className="w-10 h-10 rounded-full" />
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-gray-300"></div>
-                )}
-                <div className="review-item w-full ml-3">
-                  <div className="flex items-center mb-2">
-                    <span className="font-bold mr-2">{review.userName ? review.userName : "Người dùng ẩn danh"}</span>
-                    {/* SVG Stars */}
-                    <div className="flex items-center">
-                      {Array.from({ length: review.rating }, (_, index) => (
-                        <svg key={index} xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" className="w-5 h-5 text-yellow-500">
-                          <path d="M12 .587l3.668 7.568 8.332 1.207-6.004 5.848 1.417 8.267L12 18.896l-7.413 3.895 1.417-8.267-6.004-5.848 8.332-1.207z" />
-                        </svg>
-                      ))}
-                      {Array.from({ length: 5 - review.rating }, (_, index) => (
-                        <svg key={index} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="w-5 h-5 text-yellow-500">
-                          <path d="M12 .587l3.668 7.568 8.332 1.207-6.004 5.848 1.417 8.267L12 18.896l-7.413 3.895 1.417-8.267-6.004-5.848 8.332-1.207z" stroke="currentColor" strokeWidth="2" />
-                        </svg>
-                      ))}
-                    </div>
-                  </div>
-                  <p>{review.reviewComment}</p>
-                  <span className="text-sm text-gray-500">{new Date(review.reviewDate).toLocaleDateString()}</span>
-                </div>
-              </div>
-            ))
-          ) : (
-            <p>Chưa có đánh giá nào cho sản phẩm này.</p>
-          )}
-        </div>
+           <div className="flex border-b py-4">
+           <UserAvatar userId={userReview.userId} userName={userReview.userName} />
+           <div className="review-item w-full ml-3">
+             <div className="flex items-center mb-2">
+               <span className="font-bold mr-2">{userReview.userName ? userReview.userName : "Người dùng ẩn danh"}</span>
+               {/* SVG Stars */}
+               <div className="flex items-center">
+                 {Array.from({ length: userReview.rating }, (_, index) => (
+                   <svg key={index} xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" className="w-5 h-5 text-yellow-500">
+                     <path d="M12 .587l3.668 7.568 8.332 1.207-6.004 5.848 1.417 8.267L12 18.896l-7.413 3.895 1.417-8.267-6.004-5.848 8.332-1.207z" />
+                   </svg>
+                 ))}
+                 {Array.from({ length: 5 - userReview.rating }, (_, index) => (
+                   <svg key={index} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="w-5 h-5 text-yellow-500">
+                     <path d="M12 .587l3.668 7.568 8.332 1.207-6.004 5.848 1.417 8.267L12 18.896l-7.413 3.895 1.417-8.267-6.004-5.848 8.332-1.207z" stroke="currentColor" strokeWidth="2" />
+                   </svg>
+                 ))}
+               </div>
+             </div>
+             {editingReviewId === userReview.reviewId ? (
+               <form onSubmit={(e) => handleReviewSubmit(e, userReview.reviewId)}>
+                 <div className="mb-4">
+                   <label className="block mb-2">Đánh giá:</label>
+                   <select
+                     value={newReview.rating}
+                     onChange={(e) => setNewReview({ ...newReview, rating: parseInt(e.target.value) })}
+                     className="border rounded p-2"
+                   >
+                     {[1, 2, 3, 4, 5].map((num) => (
+                       <option key={num} value={num}>{num} sao</option>
+                     ))}
+                   </select>
+                 </div>
+                 <div className="mb-4">
+                   <label className="block mb-2">Nhận xét:</label>
+                   <textarea
+                     value={newReview.reviewComment}
+                     onChange={(e) => setNewReview({ ...newReview, reviewComment: e.target.value })}
+                     className="border rounded p-2 w-full"
+                     rows="4"
+                   ></textarea>
+                 </div>
+                 <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded mr-2">
+                   Cập nhật
+                 </button>
+                 <button type="button" onClick={() => setEditingReviewId(null)} className="bg-gray-500 text-white px-4 py-2 rounded">
+                   Hủy
+                 </button>
+               </form>
+             ) : (
+               <>
+                 <p>{userReview.reviewComment}</p>
+                 <span className="text-sm text-gray-500">{new Date(userReview.reviewDate).toLocaleDateString()}</span>
+                 <div className="mt-2">
+                   <button onClick={() => handleEditReview(userReview.reviewId)} className="text-blue-500 hover:text-blue-700 mr-2">
+                     Chỉnh sửa
+                   </button>
+                   <button onClick={() => handleDeleteReview(userReview.reviewId)} className="text-red-500 hover:text-red-700">
+                     Xóa
+                   </button>
+                 </div>
+               </>
+             )}
+           </div>
+         </div>
+       )}
+     
+       {/* Hiển thị các đánh giá khác */}
+       {reviews.length > 0 ? (
+         reviews.filter(review => review.userId !== JSON.parse(localStorage.getItem("user"))?.userId).map((review) => (
+           <div key={review.reviewId} className="flex border-b py-4">
+             <UserAvatar userId={review.userId} userName={review.userName} />
+             <div className="review-item w-full ml-3">
+               <div className="flex items-center mb-2">
+                 <span className="font-bold mr-2">{review.userName ? review.userName : "Người dùng ẩn danh"}</span>
+                 {/* SVG Stars */}
+                 <div className="flex items-center">
+                   {Array.from({ length: review.rating }, (_, index) => (
+                     <svg key={index} xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" className="w-5 h-5 text-yellow-500">
+                       <path d="M12 .587l3.668 7.568 8.332 1.207-6.004 5.848 1.417 8.267L12 18.896l-7.413 3.895 1.417-8.267-6.004-5.848 8.332-1.207z" />
+                     </svg>
+                   ))}
+                   {Array.from({ length: 5 - review.rating }, (_, index) => (
+                     <svg key={index} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="w-5 h-5 text-yellow-500">
+                       <path d="M12 .587l3.668 7.568 8.332 1.207-6.004 5.848 1.417 8.267L12 18.896l-7.413 3.895 1.417-8.267-6.004-5.848 8.332-1.207z" stroke="currentColor" strokeWidth="2" />
+                     </svg>
+                   ))}
+                 </div>
+               </div>
+               <p>{review.reviewComment}</p>
+               <span className="text-sm text-gray-500">{new Date(review.reviewDate).toLocaleDateString()}</span>
+             </div>
+           </div>
+         ))
+       ) : (
+         <p>Chưa có đánh giá nào cho sản phẩm này.</p>
+       )}
+     </div>
       </div>
   
       {/* Related Products Section */}
