@@ -353,14 +353,16 @@ const ManageRevenue = () => {
                 title: 'Hành Động',
                 key: 'action',
                 render: (text, record) => (
-                  <Button 
-                    type="danger" 
-                    onClick={() => handleCancelRequest(record.requestId)}
-                  >
-                    Hủy
-                  </Button>
-                ),
-              },
+                    record.status !== "Approved" ? ( // Kiểm tra trạng thái
+                            <Button 
+                                type="danger" 
+                                onClick={() => handleCancelRequest(record.requestId)}
+                            >
+                                Hủy
+                            </Button>
+                        ) : null // Không hiển thị nút nếu đã được duyệt
+                    ),
+                },
             ]}
             rowKey="requestDate" 
             pagination={false}

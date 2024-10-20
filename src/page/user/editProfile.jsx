@@ -26,7 +26,7 @@ const Profile = () => {
             const response = await api.get('/Users/profile');
             setUserData(response.data);
             setEditedData(response.data);
-            const storedImage = localStorage.getItem('profileImage');
+            const storedImage = localStorage.getItem('profileImageUrl');
         } catch (error) {
             console.error("Error fetching user data:", error);
             setError("Failed to load user data. Please try again later.");
@@ -79,7 +79,6 @@ const Profile = () => {
         if (file) {
             setProfileImage(file);
             setEditedData({ ...editedData, profileImageUrl: URL.createObjectURL(file) });
-            localStorage.setItem('profileImage', URL.createObjectURL(file));
         }
     };
 
@@ -111,21 +110,26 @@ const Profile = () => {
 
         if (isValid) {
             const formData = new FormData();
-            Object.keys(editedData).forEach(key => {
-                formData.append(key, editedData[key]);
-            });
+            // Cập nhật các trường dữ liệu theo yêu cầu của backend
+            formData.append("FullName", editedData.fullName); // Thay đổi tên trường
+            formData.append("Email", editedData.email);
+            formData.append("Address", editedData.address); // Thêm địa chỉ
+            formData.append("Phone", editedData.phone); // Thêm số điện thoại
+    
+            // Chỉ thêm profileImage nếu có
             if (profileImage) {
-                formData.append("profileImage", profileImage);
+                formData.append("image", profileImage); // Thay đổi tên trường cho hình ảnh
             }
+    
             try {
-                const response = await api.put('/Users/profile', editedData);
-                setUserData(response.data);
+                const response = await api.put('/Users/profile', formData); // Cập nhật API endpoint
+                setUserData(response.data); // Cập nhật state với dữ liệu mới
                 setIsEditing(false);
                 setSuccess("Profile updated successfully!");
                 setError(null);
                 setTimeout(() => setSuccess(null), 3000);
             } catch (error) {
-                console.error("Error updating user data:", error);
+                console.error("Error updating user data:", error.response ? error.response.data : error.message);
                 setError("Failed to update user data. Please try again.");
                 setSuccess(null);
             }
@@ -153,11 +157,11 @@ const Profile = () => {
                 <div className="flex max-w-6xl mx-auto">
                     <div className="w-1/4 bg-white shadow-md rounded-lg p-5">
                         <div className="text-center mb-5">
-                            <img
-                                src={isEditing && profileImage ? URL.createObjectURL(profileImage) : userData.profileImageUrl}
-                                alt={userData.name}
-                                className="w-24 h-24 rounded-full mx-auto mb-2"
-                            />
+                        <img
+                            src={`https://localhost:7288${userData.profileImageUrl}`} // Đảm bảo URL đầy đủ
+                            alt={userData.name}
+                            className="w-24 h-24 rounded-full mx-auto mb-2"
+                        />
                             {isEditing && (
                                 <input
                                     type="file"

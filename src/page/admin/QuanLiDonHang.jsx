@@ -13,24 +13,47 @@ const QuanLiDonHang = () => {
   const [isUpdateStatusModalVisible, setIsUpdateStatusModalVisible] = useState(false);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
   const [newStatus, setNewStatus] = useState("");
+  const [newDeliveryStatus, setNewDeliveryStatus] = useState("");
+
 
   useEffect(() => {
-    const fetchOrders = async () => {
-      const token = localStorage.getItem("token");
-      try {
-        const response = await axios.get('https://localhost:7288/api/admin/orders', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setOrders(response.data);
-      } catch (error) {
-        setError("Lỗi khi tải dữ liệu đơn hàng.");
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchOrders();
   }, []);
 
+  const fetchOrders = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      const response = await axios.get('https://localhost:7288/api/admin/orders', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setOrders(response.data);
+    } catch (error) {
+      setError("Lỗi khi tải dữ liệu đơn hàng.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  const handleDeliveryStatusChange = async (orderId, newStatus) => {
+    const token = localStorage.getItem("token");
+    try {
+      await axios.put(`https://localhost:7288/api/admin/orders/${orderId}/delivery`, 
+        { orderDelivery: newStatus }, 
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+        }
+      );
+      message.success("Cập nhật trạng thái giao hàng thành công!");
+      fetchOrders(); 
+    } catch (error) {
+      console.error("Error updating delivery status:", error); 
+        message.error("Lỗi khi cập nhật trạng thái giao hàng.");
+    }
+  };
   const handleUpdateStatus = async () => {
     const token = localStorage.getItem("token");
     try {
@@ -110,9 +133,27 @@ const QuanLiDonHang = () => {
     <>
       <Table dataSource={orders} rowKey="orderId">
         <Column title="ID" dataIndex="orderId" key="orderId" />
-        <Column title="Người mua" dataIndex="userId" key="userId" />
+        <Column title="Người mua" dataIndex="userName" key="userName" />
         <Column title="Ngày đặt hàng" dataIndex="orderDate" key="orderDate" />
         <Column title="Trạng thái" dataIndex="orderStatus" key="orderStatus" />
+        <Column 
+          title="Trạng thái Giao Hàng" 
+          dataIndex="orderDelivery" 
+          key="orderDelivery" 
+          render={(text, record) => (
+            <Select
+              defaultValue={text}
+              style={{ width: 150 }}
+              onChange={(value) => handleDeliveryStatusChange(record.orderId, value)}
+            >
+              <Option value="ChờXửLý">Chờ xử lý</Option>
+              <Option value="ĐangXửLý">Đang xử lý</Option>
+              <Option value="ĐãGửiHàng">Đã gửi hàng</Option>
+              <Option value="ĐãGiaoHàng">Đã giao hàng</Option>
+              <Option value="ĐãHủy">Đã hủy</Option>
+            </Select>
+          )}
+        />
         <Column title="Địa chỉ giao hàng" dataIndex="deliveryAddress" key="deliveryAddress" />
         <Column
           title="Hành động"

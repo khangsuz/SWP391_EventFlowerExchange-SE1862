@@ -309,7 +309,8 @@ const ProductDetail = () => {
       {seller && (
         <div className="seller-info container mx-auto mt-6 p-7 border border-gray-200 rounded shadow-sm">
           <div className="flex flex-nowrap items-center">
-            <img src={seller.profileImageUrl} alt={seller.name} className="w-20 h-20 rounded-full mr-2" />
+            <img src={seller.profileImageUrl ? `https://localhost:7288${seller.profileImageUrl}` : 'default-image-url'}
+             alt={seller.name} className="w-20 h-20 rounded-full mr-2" />
             <div className="ml-2 mr-2">
               <p className="text-lg text-center">{seller.name || "Không xác định"}</p>
               <div className="flex mt-2">

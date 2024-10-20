@@ -114,7 +114,8 @@ const PersonalProduct = () => {
         {sellerProfile && (
           <div className="mb-6 p-4 border border-gray-200 rounded">
             <div className="flex items-center">
-              <img src={sellerProfile.profileImageUrl} alt={sellerProfile.name} className="w-10 h-10 rounded-full mr-2" />
+              <img src={sellerProfile.profileImageUrl ? `https://localhost:7288${sellerProfile.profileImageUrl}` : 'default-image-url'}
+               alt={sellerProfile.name} className="w-10 h-10 rounded-full mr-2" />
               <div className="ml-2">
                 <h2 className="text-xl font-bold">{sellerProfile.name}</h2>
 

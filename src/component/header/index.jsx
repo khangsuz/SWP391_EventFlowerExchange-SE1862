@@ -14,17 +14,21 @@ function Header({ setFilteredFlowers }) {
   const [searchValue, setSearchValue] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
   const [userData, setUserData] = useState(null);
+  const [userType, setUserType] = useState(null);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [searchVisible, setSearchVisible] = useState(false);
   const notificationRef = useRef(null);
+  
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     const user = localStorage.getItem('user');
     console.log("User:", user);
     if (token && user) {
-      setCurrentUser(JSON.parse(user));
+      const parsedUser = JSON.parse(user); 
+      setCurrentUser(parsedUser);
+      setUserType(parsedUser.userType); 
       fetchUserData();
     }
 
@@ -160,6 +164,13 @@ function Header({ setFilteredFlowers }) {
           width={100}
         />
       </Link>
+      {userType === 'Admin' && ( 
+        <Link to="/admin/dashboard">
+          <button className="bg-gradient-to-r from-teal-400 to-teal-600 text-white p-3 rounded-lg font-semibold shadow-lg transition-transform transform hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-teal-300 focus:ring-opacity-50">
+          Admin
+          </button>
+        </Link>
+      )}
       <div className="flex justify-between items-center">
         <ul className="flex space-x-10">
           <li>
@@ -325,21 +336,13 @@ function Header({ setFilteredFlowers }) {
         {currentUser ? (
           <Tippy content={`Hi, ${userData ? userData.name : 'User'}`} placement="bottom">
             <Link to={"/profile"}>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="size-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-                />
-              </svg>
-            </Link>
+            <img 
+                src={userData ? `https://localhost:7288${userData.profileImageUrl}` : 'default-image-url'} // Sử dụng URL đầy đủ
+                alt={userData ? userData.name : 'User'} 
+                className="size-6 rounded-full" 
+                style={{ width: '26px', height: '26px' }} 
+            />
+        </Link>
           </Tippy>
         ) : (
           <Tippy content="Tài khoản" placement="bottom">
