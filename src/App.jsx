@@ -150,7 +150,6 @@ const App = () => {
     },  
     {
       path: "/seller/:userId/orders", 
-      path: "/seller/:userId/orders", 
       element: <SellerOrderManagement />
     },  
     {
