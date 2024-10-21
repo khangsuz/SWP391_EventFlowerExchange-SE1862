@@ -45,22 +45,21 @@ function ThienNhien() {
   return (
     <div className="thien-nhien container mx-auto p-20">
       <h1 className="text-2xl mb-6 font-bold text-center">Danh Sách Hoa Thiên Nhiên</h1>
-      <div className="product-grid">
+      <div className="grid grid-cols-4 gap-4">
         {currentFlowers.map(flower => (
           <Link to={flower.flowerId} key={flower.flowerId} className="product-grid-item">
             <ProductCard flower={flower} />
           </Link>
         ))}
       </div>
-      
-      {/* Điều khiển phân trang */}
+
       {flowers.length > flowersPerPage && (
-        <div className="pagination">
+        <div className="flex justify-center my-8">
           {pageNumbers.map(number => (
             <button
               key={number}
               onClick={() => paginate(number)}
-              className={`pagination-button ${currentPage === number ? 'active' : ''}`}
+              className={`mx-1 px-4 py-2 border ${currentPage === number ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-800 border-gray-300'} transition-all duration-300`}
             >
               {number}
             </button>

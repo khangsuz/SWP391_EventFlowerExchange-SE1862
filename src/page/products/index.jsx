@@ -131,9 +131,9 @@ const Products = () => {
       </div>
       <div className="home__main-content">
         {currentFlowers.length > 0 ? (
-          <div className="product-grid">
+          <div className="grid grid-cols-4 gap-2">
             {currentFlowers.map((flower) => (
-              <div key={flower.flowerId} className="product-grid-item">
+              <div key={flower.flowerId} className="w-full">
                 <ProductCard flower={flower} />
               </div>
             ))}
@@ -143,12 +143,12 @@ const Products = () => {
         )}
       </div>
       {filteredFlowers.length > flowersPerPage && (
-        <div className="pagination">
+        <div className="flex justify-center my-8">
           {pageNumbers.map(number => (
             <button
               key={number}
               onClick={() => paginate(number)}
-              className={`pagination-button ${currentPage === number ? 'active' : ''}`}
+              className={`mx-1 px-4 py-2 border ${currentPage === number ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-800 border-gray-300'} transition-all duration-300`}
             >
               {number}
             </button>
