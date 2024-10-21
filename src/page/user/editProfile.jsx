@@ -87,7 +87,7 @@ const Profile = () => {
         let isValid = true;
         if (editedData.name !== userData.name) {
             const nameRegex = /^[^\s!@#$%^&*()_+={}\[\]:;"'<>,.?~]+$/;
-            if (!nameRegex.test(editedData.name)) {
+if (!nameRegex.test(editedData.name)) {
                 alert("Tên không được chứa dấu cách hoặc ký tự đặc biệt.");
                 isValid = false;
             }
@@ -160,7 +160,7 @@ const Profile = () => {
                             />
                             {isEditing && (
                                 <input
-                                    type="file"
+type="file"
                                     accept="image/*"
                                     onChange={handleImageChange}
                                     className="mt-3 w-ful p-2 border rounded"
@@ -212,7 +212,7 @@ const Profile = () => {
                             </button>
                         </nav>
                     </div>
-                    <div className="flex-1 bg-white shadow-md rounded-lg p-5 ml-5">
+<div className="flex-1 bg-white shadow-md rounded-lg p-5 ml-5">
                         <Routes>
                             <Route path="/" element={
                                 <>
@@ -259,7 +259,7 @@ const Profile = () => {
                                             <p className="p-2 text-2xl">{userData.phone}</p>
                                         )}
                                     </div>
-                                    <div className="flex mb-3">
+<div className="flex mb-3">
                                         <h2 className="text-2xl p-2 w-56">Địa chỉ:</h2>
                                         {isEditing ? (
                                             <input

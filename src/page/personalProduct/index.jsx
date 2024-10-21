@@ -97,7 +97,7 @@ const PersonalProduct = () => {
             <div className="flex items-center">
               <img src={sellerProfile.profileImageUrl} alt={sellerProfile.name} className="w-10 h-10 rounded-full mr-2" />
               <div className="ml-2">
-                <h2 className="text-xl font-bold">{sellerProfile.name}</h2>
+                <h2 className="text-xl font-bold">{sellerProfile.fullName}</h2>
                 <div className="flex mt-2">
                   <div className="mr-6">
                     <span>Đánh Giá: </span><strong>{totalReviews}</strong>

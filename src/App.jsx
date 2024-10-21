@@ -30,6 +30,11 @@ import SearchResult from "./page/searchResult";
 import ChangePassword from "./page/user/ChangePassword";
 import OrderHistory from "./page/user/OrderHistory";
 import SellerOrderManagement from "./page/personalProduct/SellerOrderManagement";
+import DamCuoi from "./page/events/DamCuoi";
+import VanPhong from "./page/events/VanPhong";
+import ThienNhien from "./page/events/ThienNhien";
+import SinhNhat from "./page/events/SinhNhat";
+import Policy from "./component/policy";
 
 const App = () => {
   const router = createBrowserRouter([
@@ -46,7 +51,7 @@ const App = () => {
       element: <SignUp />,
     },
     {
-      path: "profile",
+      path: "profile/*",
       element: <Profile />,
       children: [
         {
@@ -76,12 +81,26 @@ const App = () => {
       element: <ProductDetail />,
     },
     {
-      path: "profile/change-password",
-      element: <ChangePassword />,
-    },
-    {
       path: "events",
-      element: <Events />
+      element: <Events />,
+      children: [
+        {
+          path: "hoa-sinh-nhat",
+          element: <SinhNhat />
+        },
+        {
+          path: "hoa-van-phong",
+          element: <VanPhong />
+        },
+        {
+          path: "hoa-dam-cuoi",
+          element: <DamCuoi />
+        },
+        {
+          path: "hoa-thien-nhien",
+          element: <ThienNhien />
+        },
+      ],
     },
     {
       path: "/search", 
@@ -124,6 +143,10 @@ const App = () => {
       element: <PrivateRoute requiredRole="Seller">
         <CreateProduct />
       </PrivateRoute>
+    },
+    {
+      path: "policy",
+      element: <Policy />,
     },
     {
       path: "admin",

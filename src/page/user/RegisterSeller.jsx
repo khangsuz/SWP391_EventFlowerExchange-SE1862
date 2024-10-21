@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Input, Button, message, Typography } from 'antd';
+import { Form, Input, Button, message, Typography, Checkbox, Modal } from 'antd';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const { Title } = Typography;
+const { Title, Paragraph } = Typography;
 
 const API_URL = 'https://localhost:7288/api';
 
@@ -19,6 +19,7 @@ const RegisterSeller = () => {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
     const [userData, setUserData] = useState(null);
+    const [isPolicyModalVisible, setIsPolicyModalVisible] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -103,6 +104,18 @@ const RegisterSeller = () => {
         }
     };
 
+    const showPolicyModal = () => {
+        setIsPolicyModalVisible(true);
+    };
+
+    const handlePolicyModalOk = () => {
+        setIsPolicyModalVisible(false);
+    };
+
+    const handlePolicyModalCancel = () => {
+        setIsPolicyModalVisible(false);
+    };
+
     return (
         <div className="max-w-2xl mx-auto p-6">
             <Form form={form} onFinish={onFinish} layout="vertical" className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -158,15 +171,60 @@ const RegisterSeller = () => {
                 >
                     <Input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
                 </Form.Item>
+                <Form.Item
+                    name="agreement"
+                    valuePropName="checked"
+                    rules={[
+                        {
+                            validator: (_, value) =>
+                                value ? Promise.resolve() : Promise.reject(new Error('Vui lòng đồng ý với các điều khoản và chính sách')),
+                        },
+                    ]}
+                    className="col-span-2"
+                >
+                    <Checkbox>
+                        Tôi đã đọc và đồng ý với <a onClick={(e) => { e.preventDefault(); showPolicyModal(); }}>các điều khoản và chính sách</a>
+                    </Checkbox>
+                </Form.Item>
                 <Form.Item className="col-span-2">
                     <Button type="primary" htmlType="submit" loading={loading} className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 rounded-md">
                         Gửi yêu cầu
                     </Button>
                 </Form.Item>
             </Form>
-            <p className="text-center text-gray-600 mt-4">
+            <p className="text-center text-gray-600">
                 Sau khi gửi yêu cầu, chúng tôi sẽ xem xét và phê duyệt trong thời gian sớm nhất.
             </p>
+            <Modal
+                title="Điều khoản và Chính sách"
+                visible={isPolicyModalVisible}
+                onOk={handlePolicyModalOk}
+                onCancel={handlePolicyModalCancel}
+                footer={[
+                    <Button key="submit" type="primary" onClick={handlePolicyModalOk}>
+                        Đã hiểu
+                    </Button>,
+                ]}
+            >
+                <Typography>
+                    <Title level={4}>Chính sách đăng ký người bán</Title>
+                    <Paragraph>
+                        1. Người bán phải là cá nhân hoặc tổ chức sở hữu các sản phẩm hoa còn tồn đọng sau sự kiện hoặc trong tình trạng cần thanh lý.
+                    </Paragraph>
+                    <Paragraph>
+                        2. Người bán chịu trách nhiệm về chất lượng và tình trạng của sản phẩm hoa sau sự kiện, đồng thời cung cấp mô tả chính xác về sản phẩm trên nền tảng.
+                    </Paragraph>
+                    <Paragraph>
+                        3. Người bán sẽ phải chịu một khoản phí dịch vụ hoặc hoa hồng cho mỗi giao dịch thành công trên nền tảng, tỷ lệ phần trăm sẽ được chia theo 70% cho người bán và 30% cho nền tảng.
+                    </Paragraph>
+                    <Paragraph>
+                        4. Trong trường hợp có tranh chấp về chất lượng hoa, người bán có trách nhiệm giải quyết với khách hàng và đảm bảo hoàn tiền (nếu cần) theo quy định của nền tảng.
+                    </Paragraph>
+                    <Paragraph>
+                        5. Người bán được quyền sử dụng các công cụ hỗ trợ từ nền tảng để quảng bá sản phẩm, quản lý đơn hàng và theo dõi giao dịch.
+                    </Paragraph>
+                </Typography>
+            </Modal>
         </div>
     );
 };

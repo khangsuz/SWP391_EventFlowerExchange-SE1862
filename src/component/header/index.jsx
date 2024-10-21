@@ -114,7 +114,7 @@ function Header({ setFilteredFlowers }) {
   };
 
   const handleNotificationClick = () => {
-    setShowNotifications(!showNotifications);
+    setShowNotifications(prev => !prev);
   };
 
   const markAsRead = async (id) => {
@@ -174,42 +174,7 @@ function Header({ setFilteredFlowers }) {
           <li className="relative group">
             <Link to="/events" className="flex items-center text-gray-700 hover:text-gray-900">
               <p><b>Hoa sự kiện</b></p>
-              <i className="ml-1">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="size-4"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="m19.5 9.25-7.5 7.5-7.5-7.5"
-                  />
-                </svg>
-              </i>
             </Link>
-            <div
-              id="dropdownHover"
-              className="absolute left-0 hidden group-hover:block bg-white divide-y divide-gray-100 rounded-lg shadow w-44"
-            >
-              <ul className="py-2 text-sm text-gray-700">
-                <li>
-                  <Link to="#" onClick={() => handleFilterByCategory(1)} className="block px-4 py-2 hover:bg-gray-100">Hoa sinh nhật</Link>
-                </li>
-                <li>
-                  <Link to="#" onClick={() => handleFilterByCategory(5)} className="block px-4 py-2 hover:bg-gray-100">Hoa thiên nhiên</Link>
-                </li>
-                <li>
-                  <Link to="#" onClick={() => handleFilterByCategory(4)} className="block px-4 py-2 hover:bg-gray-100">Hoa đám cưới</Link>
-                </li>
-                <li>
-                  <Link to="#" onClick={() => handleFilterByCategory(3)} className="block px-4 py-2 hover:bg-gray-100">Hoa văn phòng</Link>
-                </li>
-              </ul>
-            </div>
           </li>
         </ul>
       </div>

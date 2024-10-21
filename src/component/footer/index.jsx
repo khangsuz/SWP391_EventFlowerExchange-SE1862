@@ -1,6 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Footer = () => {
+    const navigate = useNavigate(); // Khởi tạo hook useNavigate
+
     return (
         <footer className="flex items-center bg-[rgb(250,239,226)] py-2">
             <div className="mx-auto px-5">
@@ -10,7 +13,7 @@ const Footer = () => {
                         <p className="text-center mt-2 text-gray-600">
                             Bloom là nền tảng kết nối những người có nhu cầu thanh lý hoa sau sự kiện và những ai muốn tìm kiếm hoa tươi với giá ưu đãi.
                         </p>
-                    </div>
+                    </div>      
                     <div>
                         <img
                             src="https://i.postimg.cc/tCjpf50j/Black-and-Pink-Flower-Shop-Logo-1-removebg-preview.png"
@@ -18,7 +21,10 @@ const Footer = () => {
                             className="mx-auto mb-4 w-40 h-40 object-contain"
                         >
                         </img>
-                        <h2 className="text-center text-lg font-bold">Cam kết của chúng tôi</h2>
+                        <h3 className="text-center text-lg font-bold underline cursor-pointer" onClick={() => navigate('/policy')}>
+                            Chính sách và bảo mật
+                        </h3>
+                        <h2 className="text-center mt-2 text-lg font-bold">Cam kết của chúng tôi</h2>
                         <p className="text-center mt-2 text-gray-600">Hoa tươi đẹp, được chọn lọc kỹ càng.</p>
                         <p className="text-center mt-2 text-gray-600">Giao dịch nhanh chóng, tiện lợi.</p>
                         <p className="text-center mt-2 text-gray-600">Hỗ trợ khách hàng tận tình và chu đáo.</p>
@@ -42,7 +48,7 @@ const Footer = () => {
                             Bloom@gmail.com</p>
                     </div>
                 </div>
-                <div className="mt-10 text-center">
+                <div className="mt-5 text-center">
                     <span>© 2023 Copyright: </span>
                     <a rel="nofollow" className="font-semibold" href='#'>Bloom</a>
                 </div>

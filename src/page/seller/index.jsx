@@ -40,14 +40,14 @@ const CreateProduct = () => {
     const fetchCurrentUser = async () => {
       try {
         const response = await api.get("/Users/current-user");
-        setUserId(response.data.userId); // Lưu userId vào state
+        setUserId(response.data.userId);
       } catch (error) {
         console.error("Error fetching current user:", error);
       }
     };
 
     fetchCategories();
-    fetchCurrentUser(); // Gọi hàm fetchCurrentUser để lấy thông tin người dùng
+    fetchCurrentUser();
     return () => {
       imageFile && URL.revokeObjectURL(imageFile.preview);
     };
@@ -100,7 +100,6 @@ const CreateProduct = () => {
       const newFlower = response.data;
       console.log("Sản phẩm mới:", newFlower);
 
-      // Tạo thông báo mới
       try {
         const userString = localStorage.getItem('user');
         if (!userString) {

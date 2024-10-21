@@ -116,8 +116,8 @@ const Home = () => {
         <h3 className="section-title-3">Featured Product</h3>
         <div className="flex gap-2 px-8 pb-4">
           {filteredFlowers
-            .sort((a, b) => b.averageRating - a.averageRating) // Sắp xếp theo đánh giá
-            .slice(0, 4) // Lấy 4 sản phẩm đầu tiên
+            .sort((a, b) => b.averageRating - a.averageRating)
+            .slice(0, 4)
             .map((flower) => (
               <ProductCard key={flower.flowerId} flower={flower} />
             ))}

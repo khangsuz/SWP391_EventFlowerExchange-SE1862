@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import api from "../../config/axios";
 import ProductCard from "../../component/product-card";
 import { notifyError } from "../../component/alert";
+import { Link } from "react-router-dom";
+import Header from "../../component/header";
+import Footer from "../../component/footer";
 
 function DamCuoi() {
   const [flowers, setFlowers] = useState([]);
@@ -29,14 +32,19 @@ function DamCuoi() {
   }
 
   return (
-    <div className="dam-cuoi">
-      <h1>Danh Sách Hoa Cưới</h1>
-      <div className="product-list">
+    <>
+    <div className="dam-cuoi container mx-auto p-20">
+      <h1 className="text-2xl mb-6 font-bold text-center">Danh Sách Hoa Đám Cưới</h1>
+      <div className="product-grid">
         {flowers.map(flower => (
-          <ProductCard key={flower.flowerId} flower={flower} />
+          <Link to={flower.flowerId} key={flower.flowerId} className="product-grid-item"> {/* Thêm Link */}
+            <ProductCard flower={flower} />
+          </Link>
         ))}
       </div>
     </div>
+    <Footer />
+    </>
   );
 }
 

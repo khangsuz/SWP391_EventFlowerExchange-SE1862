@@ -26,7 +26,7 @@ const ProductDetail = () => {
   const [seller, setSeller] = useState(null);
   const navigate = useNavigate();
   const imageUrl = flower ? getFullImageUrl(flower.imageUrl) : null;
-  const [starFilter, setStarFilter] = useState(0); // Trạng thái cho bộ lọc sao
+  const [starFilter, setStarFilter] = useState(0);
 
   const fetchFlowerDetails = async () => {
     try {
@@ -293,7 +293,7 @@ const ProductDetail = () => {
         <h2 className="text-2xl font-bold mb-6">Đánh giá sản phẩm</h2>
 
         {/* Bộ lọc đánh giá */}
-        <div className="filter-section mb-6 flex items-center space-x-4"> {/* Sử dụng flex và space-x-4 để có khoảng cách giữa các phần tử */}
+        <div className="filter-section mb-6 flex items-center space-x-4">
           <span className="text-2xl font-bold text-yellow-500">{(reviews.length > 0 ? (reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length).toFixed(1) : 0)} trên 5</span>
 
           {/* Phần hiển thị sao */}
@@ -322,25 +322,15 @@ const ProductDetail = () => {
           </div>
 
           {/*Filter Button */}
-          <button
-            onClick={() => setStarFilter(0)}
-            className={`border rounded px-3 py-1 w-32 ${starFilter === 0 ? 'bg-white-500 border-red-400 text-red-400' : 'bg-white border-color'}`}
-          >
-            Tất cả
-          </button>
           <div className="flex space-x-6">
             {starCounts.slice(1).reverse().map((count, index) => (
-              <button
-                key={5 - index}
-                onClick={() => setStarFilter(5 - index)}
-                className={`border rounded px-3 py-1 w-32 ${starFilter === 5 - index ? 'bg-white-500 border-red-400 text-red-400' : 'bg-white border-color'}`}
-                >
+              <div className="border rounded px-3 py-1 w-32 bg-white-500 border-red-400 text-center"                >
                 {5 - index} Sao ({count})
-              </button>
+              </div>
             ))}
           </div>
         </div>
-
+        
         {canReview && !userReview && (
           <form onSubmit={(e) => handleReviewSubmit(e)} className="mb-8">
             <div className="mb-4">
