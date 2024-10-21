@@ -11,7 +11,7 @@ import ProductDetail from "./page/productDetail";
 import PrivateRoute from "./component/private-route";
 import About from "./page/about";
 import Profile from "./page/user/editProfile";
-import CreateProduct from "./page/seller";
+import CreateProduct from "./page/seller/CreateProduct";
 import ForgotPassword from './page/login/forgetPassword';
 import AdminLayout from "./page/admin/AdminLayout";
 import QuanLiSanPham from "./page/admin/QuanLiSanPham";
@@ -32,7 +32,13 @@ import ManageRevenue from "./page/seller/ManageRevenue";
 import ManageOrders from "./page/seller/ManageOrders";
 import ChangePassword from "./page/user/ChangePassword";
 import OrderHistory from "./page/user/OrderHistory";
+import DamCuoi from "./page/events/DamCuoi";
+import VanPhong from "./page/events/VanPhong";
+import ThienNhien from "./page/events/ThienNhien";
+import SinhNhat from "./page/events/SinhNhat";
+import Policy from "./component/policy";
 import AdminReviewManagement from "./page/admin/AdminReviewManagement";
+
 
 const App = () => {
   const router = createBrowserRouter([
@@ -49,7 +55,7 @@ const App = () => {
       element: <SignUp />,
     },
     {
-      path: "profile",
+      path: "profile/*",
       element: <Profile />,
       children: [
         {
@@ -79,12 +85,45 @@ const App = () => {
       element: <ProductDetail />,
     },
     {
-      path: "profile/change-password",
-      element: <ChangePassword />,
-    },
-    {
       path: "events",
-      element: <Events />
+      element: <Events />,
+      children: [
+        {
+          path: "hoa-sinh-nhat",
+          element: <SinhNhat />
+        },
+        {
+          path: "hoa-van-phong",
+          element: <VanPhong />
+        },
+        {
+          path: "hoa-dam-cuoi",
+          element: <DamCuoi />
+        },
+        {
+          path: "hoa-thien-nhien",
+          element: <ThienNhien />
+        },
+      ],
+      element: <Events />,
+      children: [
+        {
+          path: "hoa-sinh-nhat",
+          element: <SinhNhat />
+        },
+        {
+          path: "hoa-van-phong",
+          element: <VanPhong />
+        },
+        {
+          path: "hoa-dam-cuoi",
+          element: <DamCuoi />
+        },
+        {
+          path: "hoa-thien-nhien",
+          element: <ThienNhien />
+        },
+      ],
     },
     {
       path: "/search", 
@@ -111,7 +150,7 @@ const App = () => {
     {
       path: "/checkout",
       element: <CheckoutPage />
-    },  
+    },
     {
       path: "/chat/:conversationId",
       element: <ChatPage />,
@@ -125,6 +164,10 @@ const App = () => {
       element: <PrivateRoute requiredRole="Seller">
         <CreateProduct />
       </PrivateRoute>
+    },
+    {
+      path: "policy",
+      element: <Policy />,
     },
     {
       path: "admin",
@@ -157,6 +200,10 @@ const App = () => {
         {
           path: "quanlidonhang",
           element: <QuanLiDonHang />,
+        },
+        {
+          path: "quanlidanhgia",
+          element: <AdminReviewManagement />,
         },
         {
           path: "WithdrawalRequests",
