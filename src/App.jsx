@@ -54,6 +54,7 @@ const App = () => {
     },
     {
       path: "profile/*",
+      path: "profile/*",
       element: <Profile />,
       children: [
         {
@@ -103,6 +104,25 @@ const App = () => {
           element: <ThienNhien />
         },
       ],
+      element: <Events />,
+      children: [
+        {
+          path: "hoa-sinh-nhat",
+          element: <SinhNhat />
+        },
+        {
+          path: "hoa-van-phong",
+          element: <VanPhong />
+        },
+        {
+          path: "hoa-dam-cuoi",
+          element: <DamCuoi />
+        },
+        {
+          path: "hoa-thien-nhien",
+          element: <ThienNhien />
+        },
+      ],
     },
     {
       path: "/search", 
@@ -129,6 +149,7 @@ const App = () => {
       element: <CheckoutPage />
     },  
     {
+      path: "/seller/:userId/orders", 
       path: "/seller/:userId/orders", 
       element: <SellerOrderManagement />
     },  

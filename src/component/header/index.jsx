@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleXmark, faMagnifyingGlass, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { faCircleXmark, faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import Tippy from "@tippyjs/react";
 import 'tippy.js/dist/tippy.css';
 import api from "../../config/axios";
@@ -59,7 +59,6 @@ function Header({ setFilteredFlowers }) {
   const fetchNotifications = async () => {
     try {
       const response = await api.get(`Notification`);
-      // Check if the response data contains a 'notifications' property
       const notificationsData = response.data.notifications || response.data;
       setNotifications(Array.isArray(notificationsData) ? notificationsData : []);
     } catch (error) {
@@ -234,56 +233,56 @@ function Header({ setFilteredFlowers }) {
             </div>
           </div>
         )}
-       {currentUser && (
-        <Tippy content="Thông báo" placement="top">
-          <div className="relative flex items-center justify-center cursor-pointer" onClick={handleNotificationClick}>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="size-6 w-6 h-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
-              />
-            </svg>
-            {notifications.filter(n => !n.isRead).length > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5">
-                {notifications.filter(n => !n.isRead).length}
-              </span>
-            )}
-          </div>
-        </Tippy>
-      )}
-        {showNotifications && (
-        <div ref={notificationRef} className="absolute right-10 mt-8 w-80 bg-white border-2 rounded-md shadow-lg overflow-hidden z-20">
-          <div className="py-2">
-            <div className="flex justify-between px-4 py-2 border-b">
-              <h3 className="font-bold">Thông báo</h3>
-              <button onClick={markAllAsRead} className="text-xs text-blue-500">Đánh dấu tất cả đã đọc</button>
+        {currentUser && (
+          <Tippy content="Thông báo" placement="top">
+            <div className="relative flex items-center justify-center cursor-pointer" onClick={handleNotificationClick}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="size-6 w-6 h-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
+                />
+              </svg>
+              {notifications.filter(n => !n.isRead).length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5">
+                  {notifications.filter(n => !n.isRead).length}
+                </span>
+              )}
             </div>
-            {notifications.length > 0 ? (
-              notifications.map((notification) => (
-                <div key={notification.notificationId} className={`px-2 py-2 hover:bg-gray-100 ${notification.isRead ? 'opacity-50' : ''}`}>
-                  <p className="text-sm">{notification.message}</p>
-                  <p className="text-xs text-gray-500">
-                    {new Date(notification.notificationDate).toLocaleString()}
-                    {notification.sellerName && ` - Created by: ${notification.sellerName}`}
-                  </p>
-                  {!notification.isRead && (
-                    <button onClick={() => markAsRead(notification.notificationId)} className="text-xs text-blue-500 mt-1">
-                      Đánh dấu đã đọc
-                    </button>
-                  )}
-                </div>
-              ))
-            ) : (
-              <p className="px-4 py-2 text-sm text-gray-500">Không có thông báo mới</p>
-            )}
+          </Tippy>
+        )}
+        {showNotifications && (
+          <div ref={notificationRef} className="absolute right-10 mt-8 w-80 bg-white border-2 rounded-md shadow-lg overflow-hidden z-20">
+            <div className="py-2">
+              <div className="flex justify-between px-4 py-2 border-b">
+                <h3 className="font-bold">Thông báo</h3>
+                <button onClick={markAllAsRead} className="text-xs text-blue-500">Đánh dấu tất cả đã đọc</button>
+              </div>
+              {notifications.length > 0 ? (
+                notifications.map((notification) => (
+                  <div key={notification.notificationId} className={`px-2 py-2 hover:bg-gray-100 ${notification.isRead ? 'opacity-50' : ''}`}>
+                    <p className="text-sm">{notification.message}</p>
+                    <p className="text-xs text-gray-500">
+                      {new Date(notification.notificationDate).toLocaleString()}
+                      {notification.sellerName && ` - Created by: ${notification.sellerName}`}
+                    </p>
+                    {!notification.isRead && (
+                      <button onClick={() => markAsRead(notification.notificationId)} className="text-xs text-blue-500 mt-1">
+                        Đánh dấu đã đọc
+                      </button>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <p className="px-4 py-2 text-sm text-gray-500">Không có thông báo mới</p>
+              )}
             </div>
           </div>
         )}
