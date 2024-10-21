@@ -85,7 +85,11 @@ function OrderHistory() {
                                 </ul>
                             </td>
                             <td className="border p-2 text-red-500 text-center">{order.totalAmount?.toLocaleString()}đ</td>
-                            <td className="border p-2"></td>
+                            <td className="border p-2 text-center">
+                                <span className="px-2 py-1 rounded text-white bg-green-500">
+                                    {order.orderStatus}
+                                </span>
+                            </td>
                         </tr>
                     ))}
                 </tbody>

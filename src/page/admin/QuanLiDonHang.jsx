@@ -33,7 +33,17 @@ const QuanLiDonHang = () => {
       setLoading(false);
     }
   };
-
+  const formatDate = (dateString) => {
+    const options = { 
+      year: 'numeric', 
+      month: '2-digit', 
+      day: '2-digit', 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      hour12: false 
+    };
+    return new Date(dateString).toLocaleString('vi-VN', options);
+  };
 
   const handleDeliveryStatusChange = async (orderId, newStatus) => {
     const token = localStorage.getItem("token");
@@ -134,7 +144,12 @@ const QuanLiDonHang = () => {
       <Table dataSource={orders} rowKey="orderId">
         <Column title="ID" dataIndex="orderId" key="orderId" />
         <Column title="Người mua" dataIndex="userName" key="userName" />
-        <Column title="Ngày đặt hàng" dataIndex="orderDate" key="orderDate" />
+        <Column 
+            title="Ngày đặt hàng" 
+            dataIndex="orderDate" 
+            key="orderDate" 
+            render={(text) => formatDate(text)}
+          />
         <Column title="Trạng thái" dataIndex="orderStatus" key="orderStatus" />
         <Column 
           title="Trạng thái Giao Hàng" 

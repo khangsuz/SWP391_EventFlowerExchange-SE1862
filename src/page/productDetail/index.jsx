@@ -28,6 +28,7 @@ const ProductDetail = () => {
   const imageUrl = flower ? getFullImageUrl(flower.imageUrl) : null;
   const [starFilter, setStarFilter] = useState(0);
 
+  
   const fetchFlowerDetails = async () => {
     try {
       const response = await api.get(`Flowers/${id}`);
@@ -96,11 +97,27 @@ const ProductDetail = () => {
   const fetchReviews = async () => {
     try {
       const response = await api.get(`Reviews/flower/${id}`);
+      console.log("Reviews data:", response.data.reviews);
       setAverageRating(response.data.averageRating || 0);
-      setReviews(response.data.reviews);
+  
+      // Lấy thông tin hồ sơ cho mỗi đánh giá
+      const reviewsWithProfiles = await Promise.all(response.data.reviews.map(async (review) => {
+        try {
+          const userResponse = await api.get(`Users/${review.userId}`);
+          return {
+            ...review,
+            profileImageUrl: userResponse.data.profileImageUrl
+          };
+        } catch (error) {
+          console.error(`Error fetching profile for user ${review.userId}:`, error);
+          return review; // Trả về đánh giá gốc nếu không lấy được thông tin hồ sơ
+        }
+      }));
+  
+      setReviews(reviewsWithProfiles);
       const user = JSON.parse(localStorage.getItem("user"));
       if (user) {
-        const userReview = response.data.reviews.find(review => review.userId === user.userId);
+        const userReview = reviewsWithProfiles.find(review => review.userId === user.userId);
         setUserReview(userReview);
         setNewReview(userReview || { rating: 5, reviewComment: "" });
       }
@@ -429,11 +446,11 @@ const ProductDetail = () => {
                       {/* Hiển thị đánh giá của người dùng trước */}
           {userReview && (
             <div className="flex border-b py-4">
-              {userReview.profileImageUrl ? (
-                <img src={userReview.profileImageUrl} alt="Profile" className="w-10 h-10 rounded-full" />
-              ) : (
-                <div className="w-10 h-10 rounded-full bg-gray-300"></div>
-              )}
+              <img
+                  src={userReview.profileImageUrl ? `https://localhost:7288${userReview.profileImageUrl}` : 'default-image-url'}  
+                  alt="Profile" 
+                  className="w-10 h-10 rounded-full" 
+                />
               <div key={userReview.reviewId} className="review-item w-full ml-3">
                 <div className="flex items-center mb-2">
                   <span className="font-bold mr-2">{userReview.userName ? userReview.userName : "Người dùng ẩn danh"}</span>
@@ -522,11 +539,11 @@ const ProductDetail = () => {
           {reviews.length > 0 ? (
             reviews.filter(review => review.userId !== JSON.parse(localStorage.getItem("user"))?.userId).map((review) => (
               <div key={review.reviewId} className="flex border-b py-4">
-                {review.profileImageUrl ? (
-                  <img src={review.profileImageUrl} alt="Profile" className="w-10 h-10 rounded-full" />
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-gray-300"></div>
-                )}
+                <img 
+                  src={review.profileImageUrl ? `https://localhost:7288${review.profileImageUrl}` : 'default-image-url'}
+                  alt="Profile" 
+                  className="w-10 h-10 rounded-full" 
+                />
                 <div className="review-item w-full ml-3">
                   <div className="flex items-center mb-2">
                     <span className="font-bold mr-2">{review.userName ? review.userName : "Người dùng ẩn danh"}</span>
