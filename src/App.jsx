@@ -35,6 +35,8 @@ import VanPhong from "./page/events/VanPhong";
 import ThienNhien from "./page/events/ThienNhien";
 import SinhNhat from "./page/events/SinhNhat";
 import Policy from "./component/policy";
+import AdminReviewManagement from "./page/admin/AdminReviewManagement";
+
 
 const App = () => {
   const router = createBrowserRouter([
@@ -179,6 +181,10 @@ const App = () => {
         {
           path: "quanlidonhang",
           element: <QuanLiDonHang />,
+        },
+        {
+          path: "quanlidanhgia",
+          element: <AdminReviewManagement />,
         },
       ],
     },

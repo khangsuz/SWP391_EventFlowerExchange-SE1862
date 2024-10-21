@@ -91,8 +91,7 @@ const Products = () => {
 
   return (
     <div className="products__main">
-      <Notification />
-      <Header setFilteredFlowers={setFilteredFlowers} />
+      <Notification /><Header setFilteredFlowers={setFilteredFlowers} />
       <div className="filters-container">
         <button className="filter-toggle" onClick={() => setIsFilterOpen(!isFilterOpen)}>
           Lọc & Sắp xếp {isFilterOpen ? '▲' : '▼'}
