@@ -2,10 +2,14 @@ import React, { useEffect, useState } from "react";
 import api from "../../config/axios";
 import ProductCard from "../../component/product-card";
 import { notifyError } from "../../component/alert";
+import { Link } from "react-router-dom";
+import LoadingComponent from '../../component/loading'; // Import LoadingComponent
 
 function DamCuoi() {
   const [flowers, setFlowers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const flowersPerPage = 5;
 
   useEffect(() => {
     const fetchFlowers = async () => {
@@ -25,17 +29,44 @@ function DamCuoi() {
   }, []);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <LoadingComponent />; // Show loading component
+  }
+
+  const indexOfLastFlower = currentPage * flowersPerPage;
+  const indexOfFirstFlower = indexOfLastFlower - flowersPerPage;
+  const currentFlowers = flowers.slice(indexOfFirstFlower, indexOfLastFlower);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  const pageNumbers = [];
+  for (let i = 1; i <= Math.ceil(flowers.length / flowersPerPage); i++) {
+    pageNumbers.push(i);
   }
 
   return (
-    <div className="dam-cuoi">
-      <h1>Danh Sách Hoa Cưới</h1>
-      <div className="product-list">
-        {flowers.map(flower => (
-          <ProductCard key={flower.flowerId} flower={flower} />
+    <div className="dam-cuoi container mx-auto p-20">
+      <h1 className="text-2xl mb-6 font-bold text-center">Danh Sách Hoa Đám Cưới</h1>
+      <div className="grid grid-cols-4 gap-4">
+        {currentFlowers.map(flower => (
+          <Link to={flower.flowerId} key={flower.flowerId} className="product-grid-item">
+            <ProductCard flower={flower} />
+          </Link>
         ))}
       </div>
+
+      {flowers.length > flowersPerPage && (
+        <div className="flex justify-center my-8">
+          {pageNumbers.map(number => (
+            <button
+              key={number}
+              onClick={() => paginate(number)}
+              className={`mx-1 px-4 py-2 border ${currentPage === number ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-800 border-gray-300'} transition-all duration-300`}
+            >
+              {number}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

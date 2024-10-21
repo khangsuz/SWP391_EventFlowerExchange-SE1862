@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useCallback  } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../component/header';
 import Footer from '../../component/footer';
 import api from '../../config/axios';
+import { useCart } from "../../contexts/CartContext";
 import { Notification, notifySuccess, notifyError } from "../../component/alert";
+import LoadingComponent from '../../component/loading'; // Import LoadingComponent
 
 function CheckoutPage() {
     const navigate = useNavigate();
@@ -12,7 +14,9 @@ function CheckoutPage() {
     const [selectedDistrict, setSelectedDistrict] = useState('');
     const [selectedWard, setSelectedWard] = useState('');
     const [shippingFee, setShippingFee] = useState(0);
+    const { updateCartItemCount } = useCart();
     const [cartItems, setCartItems] = useState([]);
+    const [isButtonDisabled, setIsButtonDisabled] = useState(false);
     const [userInfo, setUserInfo] = useState({
         fullName: '',
         phone: '',
@@ -21,7 +25,10 @@ function CheckoutPage() {
     });
     const [paymentMethod, setPaymentMethod] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
-    const [selectedWardName, setSelectedWardName] = useState(''); // Thêm state để lưu tên phường
+    const [selectedWardName, setSelectedWardName] = useState('');
+    const [selectedDistrictName, setSelectedDistrictName] = useState('');
+    const [fullAddress, setFullAddress] = useState('');
+    const [loading, setLoading] = useState(false); // Loading state
 
     useEffect(() => {
         const storedCart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -29,7 +36,6 @@ function CheckoutPage() {
         fetchUserInfo();
         fetchDistricts();
     }, []);
-
 
     useEffect(() => {
         if (selectedDistrict) {
@@ -39,9 +45,25 @@ function CheckoutPage() {
         }
     }, [selectedDistrict]);
 
+    useEffect(() => {
+        const addressParts = [
+            userInfo.address,
+            selectedWardName,
+            selectedDistrictName,
+            'TP Hồ Chí Minh'
+        ].filter(Boolean);
+        setFullAddress(addressParts.join(', '));
+    }, [userInfo.address, selectedWardName, selectedDistrictName]);
+
+    const calculateTotalWeight = useCallback(() => {
+        return cartItems.reduce((total, item) => total + 5000 * item.quantity, 0);
+    }, [cartItems]);
+
     const handleShippingFeeCalculation = useCallback(async () => {
+        setLoading(true); // Set loading to true
         if (!selectedDistrict || !selectedWard) {
             setShippingFee(0);
+            setLoading(false); // Set loading to false
             return;
         }
 
@@ -53,11 +75,12 @@ function CheckoutPage() {
         }
 
         try {
+            const totalWeight = calculateTotalWeight();
             const shippingRequest = {
                 from_district_id: 1442,
                 to_district_id: selectedDistrict,
                 to_ward_code: selectedWard,
-                weight: 5000 * cartItems.length,
+                weight: totalWeight,
                 length: 30,
                 width: 30,
                 height: 30
@@ -78,14 +101,17 @@ function CheckoutPage() {
         } catch (error) {
             console.error('Error calculating shipping fee:', error);
             notifyError('Shop chưa hỗ trợ giao hàng đến địa chỉ này.');
+        } finally {
+            setLoading(false); // Set loading to false
         }
-    }, [selectedDistrict, selectedWard, cartItems, navigate]);
+    }, [selectedDistrict, selectedWard, cartItems, navigate, calculateTotalWeight]);
 
     useEffect(() => {
         handleShippingFeeCalculation();
     }, [handleShippingFeeCalculation]);
 
     const fetchUserInfo = async () => {
+        setLoading(true); // Set loading to true
         const token = localStorage.getItem('token');
         if (!token) {
             notifyError('Vui lòng đăng nhập trước khi thanh toán');
@@ -99,10 +125,16 @@ function CheckoutPage() {
                     Authorization: `Bearer ${token}`,
                 }
             });
-            setUserInfo(response.data);
+            if (response.data) {
+                setUserInfo(response.data);
+            } else {
+                notifyError('Không thể lấy thông tin người dùng. Vui lòng thử lại sau.');
+            }
         } catch (error) {
             console.error('Error fetching user info:', error);
             notifyError('Không thể lấy thông tin người dùng. Vui lòng thử lại sau.');
+        } finally {
+            setLoading(false); // Set loading to false
         }
     };
 
@@ -129,14 +161,13 @@ function CheckoutPage() {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setUserInfo((prev) => ({ ...prev, [name]: value }));
+        setUserInfo((prev) => ({ ...prev, [name]: value || '' }));
     };
 
     const calculateTotal = () => {
         const total = cartItems.reduce((total, item) => total + item.price * item.quantity, 0) + shippingFee;
         return total >= 0 ? total : 0;
     };
-
 
     const createShippingOrder = async () => {
         const token = localStorage.getItem('token');
@@ -145,7 +176,8 @@ function CheckoutPage() {
             navigate('/login');
             return;
         }
-
+        const MAX_WEIGHT = 30000;
+        const totalWeight = Math.min(calculateTotalWeight(), MAX_WEIGHT);
         const shippingOrder = {
             from_name: 'Shop Hoa ABC',
             from_phone: '0901234567',
@@ -155,11 +187,11 @@ function CheckoutPage() {
             from_province_name: 'TP Hồ Chí Minh',
             to_name: userInfo.fullName,
             to_phone: userInfo.phone,
-            to_address: userInfo.address,
+            to_address: fullAddress,
             to_ward_name: selectedWardName,
             to_ward_code: selectedWard,
             to_district_id: selectedDistrict,
-            weight: 500 * cartItems.length,
+            weight: totalWeight,
             length: 30,
             width: 20,
             height: 10,
@@ -189,6 +221,7 @@ function CheckoutPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         const token = localStorage.getItem('token');
+        if (isButtonDisabled) return;
         if (!token) {
             notifyError('Vui lòng đăng nhập trước khi thanh toán');
             navigate('/login');
@@ -206,6 +239,8 @@ function CheckoutPage() {
         }
 
         setIsProcessing(true);
+        setIsButtonDisabled(true); 
+
         try {
             await handleShippingFeeCalculation();
 
@@ -215,7 +250,7 @@ function CheckoutPage() {
             }));
 
             const checkoutResponse = await api.post(
-                'Orders/checkout',
+                `Orders/checkout?fullAddress=${encodeURIComponent(fullAddress)}`,
                 cartItemsToSend,
                 {
                     headers: {
@@ -231,7 +266,8 @@ function CheckoutPage() {
                     'Payments/createVnpPayment',
                     {
                         Amount: calculateTotal(),
-                        ...userInfo
+                        FullName: userInfo.fullName,
+                        FullAddress: fullAddress
                     },
                     {
                         headers: {
@@ -240,27 +276,44 @@ function CheckoutPage() {
                         }
                     }
                 );
-                notifySuccess('Đặt hàng thành công. Chuyển đến trang thanh toán');
-                localStorage.setItem('pendingOrderId', checkoutResponse.data.orderId);
-                window.location.href = paymentResponse.data.paymentUrl;
+                
+                if (paymentResponse.data && paymentResponse.data.paymentUrl) {
+                    notifySuccess('Đặt hàng thành công. Chuyển đến trang thanh toán');
+                    localStorage.setItem('pendingOrderId', checkoutResponse.data.orderId);
+                    updateCartItemCount(0);
+                    localStorage.setItem('cart', JSON.stringify([]));
+                    window.location.href = paymentResponse.data.paymentUrl;
+                } else {
+                    notifyError('Invalid response from payment server');
+                    setIsButtonDisabled(false); 
+                }
             }
-            
         } catch (error) {
-            notifyError('Thanh toán thất bại');
-            if (error.response) {
-                notifyError(`Thanh toán thất bại: ${error.response.data}`);
-            } else if (error.request) {
-                notifyError('Lỗi mạng. Vui lòng kiểm tra kết nối và thử lại.');
-            } else {
-                notifyError('Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.');
-            }
+            handlePaymentError(error);
+            setIsButtonDisabled(false);
         } finally {
             setIsProcessing(false);
         }
     };
 
+    const handlePaymentError = (error) => {
+        console.error('Payment error:', error);
+        if (error.response) {
+            notifyError(`Thanh toán thất bại: ${error.response.data}`);
+        } else if (error.request) {
+            notifyError('Lỗi mạng. Vui lòng kiểm tra kết nối và thử lại.');
+        } else {
+            notifyError('Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.');
+        }
+    };
+
     const handleDistrictChange = (e) => {
-        setSelectedDistrict(e.target.value);
+        const districtId = e.target.value;
+        setSelectedDistrict(districtId);
+        const district = districts.find(d => d.districtId === parseInt(districtId));
+        if (district) {
+            setSelectedDistrictName(district.districtName);
+        }
         setSelectedWard('');
         setShippingFee(0);
     };
@@ -274,15 +327,18 @@ function CheckoutPage() {
         }
     };
 
+    if (loading) {
+        return <LoadingComponent />; // Show loading component
+    }
+
     return (
         <>
-        <Notification />
-        <Header />
+            <Notification />
+            <Header />
             <div className="container mx-auto px-4 py-8 flex">
                 <div className="w-full md:w-2/3 px-4">
                     <h2 className="text-2xl text-amber-500 font-bold mb-4">Thông tin thanh toán</h2>
                     <form onSubmit={handleSubmit}>
-                        {/* Form Thông Tin Thanh Toán */}
                         <div className="mb-4">
                             <label className="block font-bold mb-2">Họ và tên *</label>
                             <input
@@ -306,7 +362,7 @@ function CheckoutPage() {
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block font-bold mb-2">Địa chỉ email *</label>
+                            <label className="block font-bold mb-2">Email *</label>
                             <input
                                 type="email"
                                 name="email"
@@ -317,17 +373,6 @@ function CheckoutPage() {
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block font-bold mb-2">Thành phố *</label>
-                            <select
-                                name="province"
-                                className="w-full p-2 border rounded"
-                                value="202"
-                                disabled
-                            >
-                                <option value="202">TP. Hồ Chí Minh</option>
-                            </select>
-                        </div>
-                        <div className="mb-4">
                             <label className="block font-bold mb-2">Quận/Huyện *</label>
                             <select
                                 name="district"
@@ -335,7 +380,7 @@ function CheckoutPage() {
                                 onChange={handleDistrictChange}
                                 className="w-full p-2 border rounded"
                                 required
-                            >   
+                            >
                                 <option value="">Chọn quận/huyện</option>
                                 {districts.map((district) => (
                                     <option key={district.districtId} value={district.districtId}>
@@ -376,8 +421,6 @@ function CheckoutPage() {
                     </form>
                 </div>
                 <div className="w-full md:w-2/4 px-4">
-
-                    {/* Đơn Hàng Của Bạn */}
                     <h2 className="text-2xl text-amber-500 font-bold mb-4">Đơn hàng của bạn</h2>
                     <div className="border p-4 rounded">
                         <div className="flex justify-between">
@@ -403,8 +446,6 @@ function CheckoutPage() {
                             <span>{calculateTotal().toLocaleString()}₫</span>
                         </div>
                     </div>
-
-                    {/* Phương Thức Thanh Toán */}
                     <h3 className="text-xl font-bold mt-6 mb-4">Thanh toán</h3>
                     <div className="flex mb-4">
                         <input
@@ -419,7 +460,7 @@ function CheckoutPage() {
                     <button
                         onClick={handleSubmit}
                         className="w-full bg-green-500 text-white p-4 rounded"
-                        disabled={isProcessing && !paymentMethod}
+                        disabled={isProcessing || !paymentMethod}
                     >
                         {isProcessing ? 'Đang xử lý...' : 'Đặt hàng'}
                     </button>

@@ -5,41 +5,34 @@ import api from "../../config/axios";
 import Footer from "../../component/footer";
 import ProductCard from "../../component/product-card";
 import { Link } from "react-router-dom";
-
+import LoadingComponent from '../../component/loading'; // Import LoadingComponent
 
 const Home = () => {
-  const [flowers, setFlowers] = useState([]);
-  const [filteredFlowers, setFilteredFlowers] = useState([]);
+  const [bestSellingFlowers, setBestSellingFlowers] = useState([]);
+  const [loading, setLoading] = useState(true); // Loading state
 
-  const fetchFlower = async () => {
+  const fetchBestSellingFlowers = async () => {
     try {
-      const response = await api.get("Flowers");
-      setFlowers(response.data);
-      setFilteredFlowers(response.data);
+      const response = await api.get("Flowers/best-selling");
+      setBestSellingFlowers(response.data);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false); // Set loading to false after fetching
     }
   };
 
   useEffect(() => {
-    const fetchFlower = async () => {
-      try {
-        const response = await api.get("Flowers");
-        setFlowers(response.data);
-        setFilteredFlowers(response.data);
-      } catch (err) {
-        console.log(err);
-        setFlowers([]);
-        setFilteredFlowers([]);
-      }
-    };
-  
-    fetchFlower();
+    fetchBestSellingFlowers();
   }, []);
+
+  if (loading) {
+    return <LoadingComponent />; // Show loading component
+  }
 
   return (
     <div className="home">
-      <Header setFilteredFlowers={setFilteredFlowers} />
+      <Header/>
       <div className="landing_img">
         <img src="https://i.postimg.cc/zBvDDdsB/top-view-white-daisies.jpg" alt="" />
         <div className="landing-text">
@@ -122,15 +115,14 @@ const Home = () => {
           </div>
         </div>
       </div>
-
       {/* Title */}
       <div className="section-title text-center mt-10">
         <h1 className="section-title-1">The Most Trendy</h1>
-        <h3 className="section-title-3">Featured Product</h3>
-        <div className="ml-10 mr-10 mb-10 flex flex-wrap">
-          {/* {filteredFlowers.map((flower) => (
+        <h3 className="section-title-3">Best Selling Products</h3>
+        <div className="flex gap-2 px-8 pb-4">
+          {bestSellingFlowers.slice(0, 4).map((flower) => (
             <ProductCard key={flower.flowerId} flower={flower} />
-          ))} */}
+          ))}
         </div>
       </div>
 

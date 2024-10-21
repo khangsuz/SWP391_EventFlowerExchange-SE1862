@@ -18,17 +18,21 @@ import QuanLiSanPham from "./page/admin/QuanLiSanPham";
 import QuanLiNguoiDung from "./page/admin/QuanLiNguoiDung";
 import QuanLiNguoiBan from "./page/admin/QuanLiNguoiBan";
 import QuanLiDonHang from "./page/admin/QuanLiDonHang";
+import WithdrawalRequests from "./page/admin/WithdrawalRequests";
 import PaymentButton from "./component/button/PaymentButton";
 import PaymentResult from "./page/payment/paymentResult";
 import CheckoutPage from './page/payment/checkOutPage';
-import PersonalProduct from "./page/personalProduct";
-import ManageProducts from "./page/personalProduct/ManageProducts";
+import PersonalProduct from "./page/seller";
+import ManageProducts from "./page/seller/ManageProducts";
 import RegisterSeller from "./page/user/RegisterSeller";
 import ChatPage from "./page/chat/chatPage";
 import Events from "./page/events";
 import SearchResult from "./page/searchResult";
-import ChangePassword from "./page/user/changePassword";
+import ManageRevenue from "./page/seller/ManageRevenue";
+import ManageOrders from "./page/seller/ManageOrders";
+import ChangePassword from "./page/user/ChangePassword";
 import OrderHistory from "./page/user/OrderHistory";
+import AdminReviewManagement from "./page/admin/AdminReviewManagement";
 
 const App = () => {
   const router = createBrowserRouter([
@@ -45,13 +49,9 @@ const App = () => {
       element: <SignUp />,
     },
     {
-      path: "profile/*", // Use wildcard to support nested routes
+      path: "profile",
       element: <Profile />,
       children: [
-        {
-          path: "",
-          element: <Profile />,
-        },
         {
           path: "register-seller",
           element: <RegisterSeller />,
@@ -79,6 +79,10 @@ const App = () => {
       element: <ProductDetail />,
     },
     {
+      path: "profile/change-password",
+      element: <ChangePassword />,
+    },
+    {
       path: "events",
       element: <Events />
     },
@@ -94,6 +98,8 @@ const App = () => {
       path: "manage-products/:userId",
       element: <ManageProducts />,
     },
+    { path: "manage-revenue/:userId", element: <ManageRevenue /> },
+    { path: "manage-orders/:userId", element: <ManageOrders /> },
     {
       path: "products",
       element: <Products />,
@@ -151,6 +157,14 @@ const App = () => {
         {
           path: "quanlidonhang",
           element: <QuanLiDonHang />,
+        },
+        {
+          path: "WithdrawalRequests",
+          element: <WithdrawalRequests />,
+        },
+        {
+          path: "quanlidanhgia",
+          element: <AdminReviewManagement />,
         },
       ],
     },

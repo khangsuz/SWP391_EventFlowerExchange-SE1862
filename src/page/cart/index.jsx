@@ -5,12 +5,14 @@ import "../../index.css";
 import Header from "../../component/header";
 import Footer from "../../component/footer";
 import { getFullImageUrl } from '../../utils/imageHelpers';
-import { Notification, notifySuccess, notifyError } from '../../component/alert';
+import { Notification } from '../../component/alert';
+import LoadingComponent from '../../component/loading'; // Import LoadingComponent
 
 function Cart() {
     const navigate = useNavigate();
     const [cartItems, setCartItems] = useState([]);
     const [isCheckingOut, setIsCheckingOut] = useState(false);
+    const [loading, setLoading] = useState(false); // Loading state
     const { updateCartItemCount } = useCart();
 
     useEffect(() => {
@@ -46,7 +48,7 @@ function Cart() {
         return cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
     };
 
-    const handlePayment = () => {
+    const handlePayment = async () => {
         if (cartItems.length === 0) {
             alert('Giỏ hàng của bạn đang trống');
             return;
@@ -58,12 +60,27 @@ function Cart() {
             navigate('/login');
             return;
         }
-    
-        navigate('/checkout');
+
+        setIsCheckingOut(true); // Set loading state for checkout
+        setLoading(true); // Set loading state for payment processing
+        try {
+            // Simulate payment processing (replace with actual payment logic)
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+            navigate('/checkout');
+        } catch (error) {
+            console.error('Payment processing error:', error);
+            alert('Đã xảy ra lỗi trong quá trình thanh toán.');
+        } finally {
+            setIsCheckingOut(false); // Reset checkout state
+            setLoading(false); // Reset loading state
+        }
     };
 
-    
-    
+    // Show loading component if loading is true
+    if (loading) {
+        return <LoadingComponent />;
+    }
+
     return (
         <>
             <Notification />

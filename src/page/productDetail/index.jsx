@@ -1,20 +1,23 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import "../../index.css";
 import { useNavigate } from "react-router-dom";
 import Header from "../../component/header";
 import Footer from "../../component/footer";
-import api from "../../config/axios";
+import api, { baseUrl } from "../../config/axios";
 import { useCart } from "../../contexts/CartContext";
 import { getFullImageUrl } from '../../utils/imageHelpers';
 import { Link } from "react-router-dom";
 import { Notification, notifySuccess, notifyError } from "../../component/alert";
+import UserAvatar from "../user/UserAvatar";
+import LoadingComponent from "../../component/loading";
 
 const ProductDetail = () => {
   const { updateCartItemCount } = useCart();
   const { id } = useParams();
   const [flower, setFlower] = useState(null);
   const [relatedFlowers, setRelatedFlowers] = useState([]);
+  const [imageKey, setImageKey] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
   const [reviews, setReviews] = useState([]);
@@ -26,6 +29,8 @@ const ProductDetail = () => {
   const [seller, setSeller] = useState(null);
   const navigate = useNavigate();
   const imageUrl = flower ? getFullImageUrl(flower.imageUrl) : null;
+  const [starFilter, setStarFilter] = useState(0);
+  const productDetailRef = useRef(null); // Create a ref for the product detail section
 
   const fetchFlowerDetails = async () => {
     try {
@@ -107,6 +112,12 @@ const ProductDetail = () => {
       console.error("Error fetching reviews:", err);
     }
   };
+  const handleImageError = (e) => {
+    console.error("Image load error:", e);
+    console.log("Attempted image URL:", e.target.src);
+    e.target.onerror = null;
+    e.target.src = '/path/to/default/image.jpg';
+  };
 
 
   const checkCanReview = async () => {
@@ -133,6 +144,7 @@ const ProductDetail = () => {
     });
     checkCanReview();
   }, [id]);
+
 
   const addToCart = (item) => {
     const storedCart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -169,7 +181,7 @@ const ProductDetail = () => {
       });
       addToCart(flower);
       updateCartItemCount();
-      alert("Thêm vào giỏ hàng thành công!");
+      notifySuccess("Thêm vào giỏ hàng thành công!");
     } catch (err) {
       console.error("Error adding to cart:", err);
       const errorMessage = err.response?.data?.message || "Thêm vào giỏ hàng thất bại!";
@@ -186,6 +198,21 @@ const ProductDetail = () => {
       rating: reviewToEdit.rating,
       reviewComment: reviewToEdit.reviewComment
     });
+  };
+  const handleDeleteReview = async (reviewId) => {
+    if (window.confirm("Bạn có chắc chắn muốn xóa đánh giá này?")) {
+      try {
+        const token = localStorage.getItem("token");
+        await api.delete(`Reviews/${reviewId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        notifySuccess("Đánh giá đã được xóa thành công!");
+        fetchReviews();
+      } catch (err) {
+        console.error("Error deleting review:", err);
+        notifyError("Không thể xóa đánh giá. Vui lòng thử lại sau!");
+      }
+    }
   };
 
   const handleReviewSubmit = async (e, reviewId = null) => {
@@ -228,25 +255,49 @@ const ProductDetail = () => {
     }
   };
 
-  if (!flower) return <div>Loading...</div>;
+
+  const filteredReviews = reviews.filter(review => {
+    return starFilter === 0 || review.rating === starFilter; // Lọc đánh giá
+  });
+
+  // Tính toán số lượng đánh giá cho từng mức sao
+  const starCounts = Array(6).fill(0);
+  reviews.forEach(review => {
+    starCounts[review.rating]++;
+  });
+
+  const handleRelatedProductClick = () => {
+    if (productDetailRef.current) {
+      productDetailRef.current.scrollIntoView({ behavior: 'smooth' }); // Scroll to the product detail section
+    }
+  };
+
+  if (!flower) return <LoadingComponent />
 
   return (
     <>
       <Notification />
       <Header />
-      <div className="text-gray-700 body-font overflow-hidden bg-white product-detail">
+      <div ref={productDetailRef} className="text-gray-700 body-font overflow-hidden bg-white product-detail">
         <div className="container px-5 py-24 mx-auto">
           <div className="lg:w-3/5 mx-auto flex flex-wrap">
-            <img alt="ecommerce" className="lg:w-3/6 w-full object-cover object-center rounded border border-gray-200" src={imageUrl || "https://i.postimg.cc/Jz0MW07g/top-view-roses-flowers-Photoroom.png"} />
+          <img 
+        key={imageKey}
+        src={imageUrl || "https://i.postimg.cc/Jz0MW07g/top-view-roses-flowers-Photoroom.png"}
+        alt={flower.flowerName}
+        className="lg:w-3/6 w-full object-cover object-center rounded border border-gray-200"
+        onError={handleImageError}
+      />
             <div className="lg:w-1/2 w-full lg:pl-10 lg:py-6 mt-3 lg:mt-0">
-              <h1 className="text-gray-900 text-3xl title-font font-medium mb-1 mt-3">{flower.flowerName}</h1>
-              <span className="title-font font-medium text-xl text-[#bc0000]">{flower.price.toLocaleString()}₫</span>
+              <h1 className="text-gray-900 text-4xl title-font font-medium mb-1 mt-3">{flower.flowerName}</h1>
+              <p className="title-font mt-2 font-medium text-xl text-[#bc0000]">{flower.price.toLocaleString()}₫</p>
               <div className="flex items-center mt-2">
-                <span className="text-yellow-500 text-lg font-semibold">{averageRating.toFixed(1)} sao</span>
+                <span className="text-yellow-500 text-xl font-semibold">{averageRating.toFixed(1)} sao</span>
                 <span className="ml-2 text-gray-500">({reviews.length} đánh giá)</span>
               </div>
+              <div className="mt-2 text-xl">Người bán: <Link to={seller ? `/personal-product/${seller.userId}` : "#"} className="font-bold">{seller ? seller.fullName : "Thông tin người bán không có"}</Link></div>
               <div className="flex mb-4"></div>
-              <p className="leading-relaxed">Lưu ý : Sản phẩm thực tế có thể sẽ khác đôi chút so với sản phẩm mẫu do đặc tính cắm, gói hoa thủ công. Các loại hoa không có sẵn, hoặc hết mùa sẽ được thay thế bằng các loại hoa khác, nhưng vẫn đảm bảo về định lượng hoa, tone màu, kiểu dáng và độ thẩm mỹ như sản phẩm mẫu.</p>
+              <p className="leading-relaxed"><strong className="text-xl">Lưu ý</strong> : Sản phẩm thực tế có thể sẽ khác đôi chút so với sản phẩm mẫu do đặc tính cắm, gói hoa thủ công. Các loại hoa không có sẵn, hoặc hết mùa sẽ được thay thế bằng các loại hoa khác, nhưng vẫn đảm bảo về định lượng hoa, tone màu, kiểu dáng và độ thẩm mỹ như sản phẩm mẫu.</p>
               <div className="flex mt-6 items-center pb-5 border-b-2 border-gray-200 mb-5">
                 <div className="flex ml-6 items-center">
                   <div className="relative">
@@ -276,40 +327,50 @@ const ProductDetail = () => {
           </div>
         </div>
       </div>
-
-      {seller && (
-        <div className="seller-info container mx-auto mt-6 p-7 border border-gray-200 rounded shadow-sm">
-          <div className="flex flex-nowrap items-center">
-            <img src={seller.profileImageUrl} alt={seller.name} className="w-20 h-20 rounded-full mr-2" />
-            <div className="ml-2 mr-2">
-              <p className="text-lg text-center">{seller.name || "Không xác định"}</p>
-              <div className="flex mt-2">
-                <button className="chat-button text-sm border border-gray-300 rounded py-2 px-3 mr-2">Chat Ngay</button>
-                <button className="text-sm border border-gray-300 rounded py-1 px-2" onClick={() => navigate(`/personal-product/${seller.userId}`)}>
-                  Xem Shop
-                </button>
-              </div>
-            </div>
-            <div className="mx-2 border-l h-16"></div>
-            <div className="flex mt-2 ml-6">
-              <div className="mr-6">
-                <span>Đánh Giá: </span><strong>{seller.rating || 0}</strong>
-              </div>
-              <div className="mr-6">
-                <span>Sản Phẩm: </span><strong>{seller.productCount || 0}</strong>
-              </div>
-              <div>
-                <span>Người Theo Dõi: </span><strong>{seller.followers || 0}</strong>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
+  
       {/* Reviews Section */}
       <div className="reviews-section container px-5 py-12 mx-auto">
         <h2 className="text-2xl font-bold mb-6">Đánh giá sản phẩm</h2>
-        <p className="mb-4">Đánh giá trung bình: {averageRating.toFixed(1)} sao</p>
+  
+        {/* Bộ lọc đánh giá */}
+        <div className="filter-section mb-6 flex items-center space-x-4">
+          <span className="text-2xl font-bold text-yellow-500">{(reviews.length > 0 ? (reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length).toFixed(1) : 0)} trên 5</span>
+  
+          {/* Phần hiển thị sao */}
+          <div className="flex items-center">
+            {Array.from({ length: Math.floor(averageRating) }, (_, index) => (
+              <svg key={index} xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" className="w-5 h-5 text-yellow-500">
+                <path d="M12 .587l3.668 7.568 8.332 1.207-6.004 5.848 1.417 8.267L12 18.896l-7.413 3.895 1.417-8.267-6.004-5.848 8.332-1.207z" />
+              </svg>
+            ))}
+            {averageRating % 1 > 0 && (
+              <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" className="w-5 h-5 text-yellow-500">
+                <defs>
+                  <linearGradient id="halfStar" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="50%" stopColor="currentColor" />
+                    <stop offset="50%" stopColor="none" />
+                  </linearGradient>
+                </defs>
+                <path d="M12 .587l3.668 7.568 8.332 1.207-6.004 5.848 1.417 8.267L12 18.896l-7.413 3.895 1.417-8.267-6.004-5.848 8.332-1.207z" fill="url(#halfStar)" />
+              </svg>
+            )}
+            {Array.from({ length: 5 - Math.ceil(averageRating) }, (_, index) => (
+              <svg key={index} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="w-5 h-5 text-yellow-500">
+                <path d="M12 .587l3.668 7.568 8.332 1.207-6.004 5.848 1.417 8.267L12 18.896l-7.413 3.895 1.417-8.267-6.004-5.848 8.332-1.207z" stroke="currentColor" strokeWidth="2" />
+              </svg>
+            ))}
+          </div>
+  
+          {/*Filter Button */}
+          <div className="flex space-x-6">
+            {starCounts.slice(1).reverse().map((count, index) => (
+              <div className="border rounded px-3 py-1 w-32 bg-white-500 border-red-400 text-center"                >
+                {5 - index} Sao ({count})
+              </div>
+            ))}
+          </div>
+        </div>
+        
         {canReview && !userReview && (
           <form onSubmit={(e) => handleReviewSubmit(e)} className="mb-8">
             <div className="mb-4">
@@ -338,71 +399,114 @@ const ProductDetail = () => {
             </button>
           </form>
         )}
-
-        {/* Display Reviews */}
+  
+        {/* Reviews */}
         <div className="reviews-list">
-          {reviews.length > 0 ? (
-            reviews.map((review) => (
-              <div key={review.reviewId} className="review-item border-b py-4">
-                {editingReviewId === review.reviewId ? (
-                  <form onSubmit={(e) => handleReviewSubmit(e, review.reviewId)} className="mb-4">
-                    <div className="mb-2">
-                      <label className="block mb-1">Đánh giá:</label>
-                      <select
-                        value={newReview.rating}
-                        onChange={(e) => setNewReview({ ...newReview, rating: parseInt(e.target.value) })}
-                        className="border rounded p-1"
-                      >
-                        {[1, 2, 3, 4, 5].map((num) => (
-                          <option key={num} value={num}>{num} sao</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="mb-2">
-                      <label className="block mb-1">Nhận xét:</label>
-                      <textarea
-                        value={newReview.reviewComment}
-                        onChange={(e) => setNewReview({ ...newReview, reviewComment: e.target.value })}
-                        className="border rounded p-1 w-full"
-                        rows="3"
-                      ></textarea>
-                    </div>
-                    <button type="submit" className="bg-blue-500 text-white px-3 py-1 rounded mr-2">
-                      Cập nhật
-                    </button>
-                    <button type="button" onClick={() => setEditingReviewId(null)} className="bg-gray-300 text-black px-3 py-1 rounded">
-                      Hủy
-                    </button>
-                  </form>
-                ) : (
-                  <>
-                    <div className="flex items-center mb-2">
-                      <span className="font-bold mr-2">{review.userName}</span>
-                      <span>{review.rating} sao</span>
-                      {review.userId === JSON.parse(localStorage.getItem("user"))?.userId && (
-                        <button
-                          onClick={() => handleEditReview(review.reviewId)}
-                          className="ml-4 text-blue-500 hover:text-blue-700"
-                        >
-                          Chỉnh sửa
-                        </button>
-                      )}
-                    </div>
-                    <p>{review.reviewComment}</p>
-                    <span className="text-sm text-gray-500">{new Date(review.reviewDate).toLocaleDateString()}</span>
-                  </>
-                )}
-              </div>
-            ))
-          ) : (
-            <p>Chưa có đánh giá nào cho sản phẩm này.</p>
-          )}
-        </div>
+          {/* Hiển thị đánh giá của người dùng trước */}
+          {userReview && (
+           <div className="flex border-b py-4">
+           <UserAvatar userId={userReview.userId} userName={userReview.userName} />
+           <div className="review-item w-full ml-3">
+             <div className="flex items-center mb-2">
+               <span className="font-bold mr-2">{userReview.userName ? userReview.userName : "Người dùng ẩn danh"}</span>
+               {/* SVG Stars */}
+               <div className="flex items-center">
+                 {Array.from({ length: userReview.rating }, (_, index) => (
+                   <svg key={index} xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" className="w-5 h-5 text-yellow-500">
+                     <path d="M12 .587l3.668 7.568 8.332 1.207-6.004 5.848 1.417 8.267L12 18.896l-7.413 3.895 1.417-8.267-6.004-5.848 8.332-1.207z" />
+                   </svg>
+                 ))}
+                 {Array.from({ length: 5 - userReview.rating }, (_, index) => (
+                   <svg key={index} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="w-5 h-5 text-yellow-500">
+                     <path d="M12 .587l3.668 7.568 8.332 1.207-6.004 5.848 1.417 8.267L12 18.896l-7.413 3.895 1.417-8.267-6.004-5.848 8.332-1.207z" stroke="currentColor" strokeWidth="2" />
+                   </svg>
+                 ))}
+               </div>
+             </div>
+             {editingReviewId === userReview.reviewId ? (
+               <form onSubmit={(e) => handleReviewSubmit(e, userReview.reviewId)}>
+                 <div className="mb-4">
+                   <label className="block mb-2">Đánh giá:</label>
+                   <select
+                     value={newReview.rating}
+                     onChange={(e) => setNewReview({ ...newReview, rating: parseInt(e.target.value) })}
+                     className="border rounded p-2"
+                   >
+                     {[1, 2, 3, 4, 5].map((num) => (
+                       <option key={num} value={num}>{num} sao</option>
+                     ))}
+                   </select>
+                 </div>
+                 <div className="mb-4">
+                   <label className="block mb-2">Nhận xét:</label>
+                   <textarea
+                     value={newReview.reviewComment}
+                     onChange={(e) => setNewReview({ ...newReview, reviewComment: e.target.value })}
+                     className="border rounded p-2 w-full"
+                     rows="4"
+                   ></textarea>
+                 </div>
+                 <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded mr-2">
+                   Cập nhật
+                 </button>
+                 <button type="button" onClick={() => setEditingReviewId(null)} className="bg-gray-500 text-white px-4 py-2 rounded">
+                   Hủy
+                 </button>
+               </form>
+             ) : (
+               <>
+                 <p>{userReview.reviewComment}</p>
+                 <span className="text-sm text-gray-500">{new Date(userReview.reviewDate).toLocaleDateString()}</span>
+                 <div className="mt-2">
+                   <button onClick={() => handleEditReview(userReview.reviewId)} className="text-blue-500 hover:text-blue-700 mr-2">
+                     Chỉnh sửa
+                   </button>
+                   <button onClick={() => handleDeleteReview(userReview.reviewId)} className="text-red-500 hover:text-red-700">
+                     Xóa
+                   </button>
+                 </div>
+               </>
+             )}
+           </div>
+         </div>
+       )}
+     
+       {/* Hiển thị các đánh giá khác */}
+       {reviews.length > 0 ? (
+         reviews.filter(review => review.userId !== JSON.parse(localStorage.getItem("user"))?.userId).map((review) => (
+           <div key={review.reviewId} className="flex border-b py-4">
+             <UserAvatar userId={review.userId} userName={review.userName} />
+             <div className="review-item w-full ml-3">
+               <div className="flex items-center mb-2">
+                 <span className="font-bold mr-2">{review.userName ? review.userName : "Người dùng ẩn danh"}</span>
+                 {/* SVG Stars */}
+                 <div className="flex items-center">
+                   {Array.from({ length: review.rating }, (_, index) => (
+                     <svg key={index} xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" className="w-5 h-5 text-yellow-500">
+                       <path d="M12 .587l3.668 7.568 8.332 1.207-6.004 5.848 1.417 8.267L12 18.896l-7.413 3.895 1.417-8.267-6.004-5.848 8.332-1.207z" />
+                     </svg>
+                   ))}
+                   {Array.from({ length: 5 - review.rating }, (_, index) => (
+                     <svg key={index} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="w-5 h-5 text-yellow-500">
+                       <path d="M12 .587l3.668 7.568 8.332 1.207-6.004 5.848 1.417 8.267L12 18.896l-7.413 3.895 1.417-8.267-6.004-5.848 8.332-1.207z" stroke="currentColor" strokeWidth="2" />
+                     </svg>
+                   ))}
+                 </div>
+               </div>
+               <p>{review.reviewComment}</p>
+               <span className="text-sm text-gray-500">{new Date(review.reviewDate).toLocaleDateString()}</span>
+             </div>
+           </div>
+         ))
+       ) : (
+         <p>Chưa có đánh giá nào cho sản phẩm này.</p>
+       )}
+     </div>
       </div>
-
+  
       {/* Related Products Section */}
       {relatedFlowers && relatedFlowers.length > 0 && (
-        <div className="related-products container mx-auto px-5 py-12">
+        <div className="related-products container mx-auto px-5 pb-12">
           <h2 className="text-2xl font-bold mb-6 text-center">Sản phẩm liên quan</h2>
           <div className="related-products-grid overflow-x-auto">
             <div className="flex space-x-6">
@@ -411,6 +515,7 @@ const ProductDetail = () => {
                   key={relatedFlower.flowerId}
                   to={`/product/${relatedFlower.flowerId}`}
                   className="related-product-item mb-2 bg-white shadow-lg rounded-lg overflow-hidden transition-transform transform w-1/4 min-w-[200px]"
+                  onClick={handleRelatedProductClick} // Call the scroll function on click
                 >
                   <img
                     src={relatedFlower.imageUrl}
