@@ -103,6 +103,7 @@ const ManageProducts = () => {
     } catch (error) {
       console.error('Lỗi khi cập nhật sản phẩm:', error);
       notifyError({ message: 'Cập nhật sản phẩm thất bại!' });
+      notifyError({ message: 'Cập nhật sản phẩm thất bại!' });
     }
   };
 

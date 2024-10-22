@@ -28,7 +28,7 @@ const ProductDetail = () => {
   const [seller, setSeller] = useState(null);
   const navigate = useNavigate();
   const imageUrl = flower ? getFullImageUrl(flower.imageUrl) : null;
-  const [starFilter, setStarFilter] = useState(0); // Trạng thái cho bộ lọc sao
+  const [starFilter, setStarFilter] = useState(0);
 
   const fetchFlowerDetails = async () => {
     try {

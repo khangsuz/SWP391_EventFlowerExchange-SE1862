@@ -20,9 +20,10 @@ function SearchResult() {
 
     if (query) {
       setProducts([]);
+      setProducts([]);
       const fetchProducts = async () => {
         setLoading(true);
-        setError(null); // Reset lỗi trước khi tìm kiếm mới
+        setError(null); 
         try {
           console.log("Fetching products with query:", query);
           const response = await api.get("Flowers/searchbyname", {

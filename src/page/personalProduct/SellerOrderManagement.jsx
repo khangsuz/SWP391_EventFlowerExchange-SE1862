@@ -8,7 +8,7 @@ const { Option } = Select;
 function SellerOrderManagement() {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
-    const { userId } = useParams();
+    const { userId } = useParams(); 
     const [currentPage, setCurrentPage] = useState(1);
     const [ordersPerPage] = useState(4);
 
@@ -38,7 +38,6 @@ function SellerOrderManagement() {
             message.error('Không thể cập nhật trạng thái giao hàng: ' + (error.response?.data || error.message));
         }
     };
-
     const indexOfLastOrder = currentPage * ordersPerPage;
     const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
     const currentOrders = orders.slice(indexOfFirstOrder, indexOfLastOrder);
@@ -65,7 +64,8 @@ function SellerOrderManagement() {
                                 <div className="text-center text-lg">{order.orderId}</div>
                             </td>
                             
-                            <td className="border p-2"><div><strong>Tên:</strong> {order.recipient?.fullName}</div>
+                            <td className="border p-2">
+                            <div><strong>Tên:</strong> {order.recipient?.fullName}</div>
                                 <div><strong>SĐT:</strong> {order.recipient?.phone}</div>
                                 <div><strong>Email:</strong> {order.recipient?.email}</div>
                                 <div><strong>Địa chỉ:</strong> {order.recipient?.address}</div>
@@ -112,9 +112,10 @@ function SellerOrderManagement() {
                     >
                         {i + 1}
                     </button>
-                ))}</div>
+                ))}
                 </div>
-            );
-        }
-        
-        export default SellerOrderManagement;
+        </div>
+    );
+}
+
+export default SellerOrderManagement;

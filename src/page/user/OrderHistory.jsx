@@ -8,7 +8,7 @@ function OrderHistory() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const [ordersPerPage] = useState(4);
+    const [ordersPerPage] = useState(4);    
 
     useEffect(() => {
         fetchOrderHistory();

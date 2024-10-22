@@ -89,58 +89,75 @@ const Profile = () => {
 
       const handleSave = async () => {
         let isValid = true;
-        if (editedData.name !== userData.name) {
-            const nameRegex = /^[^\s!@#$%^&*()_+={}\[\]:;"'<>,.?~]+$/;
-            if (!nameRegex.test(editedData.name)) {
-                alert("Tên không được chứa dấu cách hoặc ký tự đặc biệt.");
-                isValid = false;
-            }
+        const errors = {};
+    
+        // Validate fullName
+        if (!editedData.fullName || editedData.fullName.trim() === '') {
+            errors.fullName = "Tên đầy đủ không được để trống.";
+            isValid = false;
         }
-
-        if (editedData.email !== userData.email) {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(editedData.email)) {
-                alert("Email không hợp lệ.");
-                isValid = false;
-            }
+    
+        // Validate email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!editedData.email || !emailRegex.test(editedData.email)) {
+            errors.email = "Email không hợp lệ.";
+            isValid = false;
         }
-
-        if (editedData.phone !== userData.phone) {
-            const phoneRegex = /^\d{10,11}$/;
-            if (!phoneRegex.test(editedData.phone)) {
-                alert("Số điện thoại phải có từ 10 đến 11 số.");
-                isValid = false;
-            }
+    
+        // Validate phone
+        const phoneRegex = /^\d{10,11}$/;
+        if (!editedData.phone || !phoneRegex.test(editedData.phone)) {
+            errors.phone = "Số điện thoại phải có 10 hoặc 11 chữ số.";
+            isValid = false;
         }
-
-        if (isValid) {
-            const formData = new FormData();
-            Object.keys(editedData).forEach(key => {
-                if (key !== 'profileImageUrl') {
-                    formData.append(key, editedData[key]);
+    
+        // Validate address
+        if (!editedData.address || editedData.address.trim() === '') {
+            errors.address = "Địa chỉ không được để trống.";
+            isValid = false;
+        }
+    
+        if (!isValid) {
+            setError(Object.values(errors)); // Convert error object to an array of strings
+            return;
+        }
+    
+        const formData = new FormData();
+        formData.append("name", editedData.name);
+        formData.append("fullName", editedData.fullName);
+        formData.append("email", editedData.email);
+        formData.append("phone", editedData.phone);
+        formData.append("address", editedData.address);
+        
+        if (profileImage) {
+            formData.append("profileImageFile", profileImage);
+        }
+    
+        try {
+            const response = await api.put('/Users/profile', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
                 }
             });
-            if (profileImage) {
-                formData.append("profileImage", profileImage);
+    
+            console.log("Response:", response.data);
+            await fetchUserData();
+            setIsEditing(false);
+            setSuccess("Thông tin cá nhân đã được cập nhật thành công!");
+            setError(null);
+            setProfileImage(null);
+            setImageKey(prev => prev + 1);
+            setTimeout(() => setSuccess(null), 3000);
+        } catch (error) {
+            console.error("Lỗi khi cập nhật thông tin người dùng:", error.response?.data || error.message);
+            
+            if (error.response?.status === 400) {
+                // Xử lý lỗi validation từ server
+                setError(error.response.data.errors || "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.");
+            } else {
+                setError(`Không thể cập nhật thông tin: ${error.response?.data?.message || error.message}`);
             }
-            try {
-                const response = await api.put('/Users/profile', formData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
-                });
-                await fetchUserData(); // Tải lại dữ liệu người dùng
-                setIsEditing(false);
-                setSuccess("Profile updated successfully!");
-                setError(null);
-                setProfileImage(null);
-                setImageKey(prev => prev + 1); // Force re-render of image
-                setTimeout(() => setSuccess(null), 3000);
-            } catch (error) {
-                console.error("Error updating user data:", error);
-                setError("Failed to update user data. Please try again.");
-                setSuccess(null);
-            }
+            setSuccess(null);
         }
     };
 
@@ -152,11 +169,15 @@ const Profile = () => {
         <>
             <Header />
             <div className="bg-slate-100 p-20">
-                {error && (
-                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative text-center mb-4" role="alert">
-                        <span className="block sm:inline">{error}</span>
-                    </div>
-                )}
+            {error && (
+    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative text-center mb-4" role="alert">
+        {Array.isArray(error) ? (
+            error.map((err, index) => <span key={index} className="block sm:inline">{err}</span>)
+        ) : (
+            <span className="block sm:inline">{error}</span>
+        )}
+    </div>
+)}
                 {success && (
                     <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative text-center mb-4" role="alert">
                         <span className="block sm:inline">{success}</span>

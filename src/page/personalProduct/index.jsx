@@ -5,6 +5,7 @@ import Footer from "../../component/footer";
 import api from "../../config/axios";
 import ProductCard from "../../component/product-card";
 import { Notification } from "../../component/alert";
+import UserAvatar from "../user/UserAvatar";
 
 const PersonalProduct = () => {
   const navigate = useNavigate();
@@ -86,17 +87,30 @@ const PersonalProduct = () => {
       console.error("Error handling follow/unfollow:", err);
     }
   };
+  const handleRevenue = () => {
+    navigate(`/manage-revenue/${userId}`);
+  };
+
+  const handleOrders = () => {
+    navigate(`/manage-orders/${userId}`);
+  };
+
+  if (loading) return <div>Loading...</div>;
 
   return (
     <>
-    <Notification />
+      <Notification />
       <Header />
       <div className="container mx-auto py-24">
         {sellerProfile && (
           <div className="mb-6 p-4 border border-gray-200 rounded">
             <div className="flex items-center">
-              <img src={sellerProfile.profileImageUrl} alt={sellerProfile.name} className="w-10 h-10 rounded-full mr-2" />
-              <div className="ml-2">
+              <UserAvatar
+                userId={sellerProfile.userId}
+                userName={sellerProfile.name}
+                className="w-16 h-16" // Adjust size as needed
+              />
+              <div className="ml-4">
                 <h2 className="text-xl font-bold">{sellerProfile.name}</h2>
                 <div className="flex mt-2">
                   <div className="mr-6">
@@ -110,11 +124,11 @@ const PersonalProduct = () => {
                   </div>
                 </div>
                 <div className="flex mt-2">
-                {currentUserId === parseInt(userId) && (
-                  <button className="chat-button text-sm border border-gray-300 rounded py-1 px-2 mr-2" onClick={handleManageOrders}>
-                    Quản lí đơn hàng
-                  </button>
-                )}
+                  {currentUserId === parseInt(userId) && (
+                    <button className="chat-button text-sm border border-gray-300 rounded py-1 px-2 mr-2" onClick={handleManageOrders}>
+                      Quản lí đơn hàng
+                    </button>
+                  )}
                   {currentUserId !== parseInt(userId) && (
                     <button className="chat-button text-sm border border-gray-300 rounded py-1 px-2 mr-2" onClick={handleChat}>
                       Chat Ngay
@@ -129,17 +143,28 @@ const PersonalProduct = () => {
                     </button>
                   )}
                   {currentUserId === parseInt(userId) && (
-                  <button className="chat-button text-sm border border-gray-300 rounded py-1 px-2 mr-2" onClick={handleManageProducts}>
-                    Quản lí sản phẩm
-                  </button>
-                )}
+                    <>
+                      <button className="text-sm border border-gray-300 rounded-lg py-2 px-5 mr-2" onClick={handleManageProducts}>
+                        Quản lý sản phẩm
+                      </button>
+                      <button className="text-sm border border-gray-300 rounded-lg py-2 px-5 mr-2" onClick={handleRevenue}>
+                        Xem Doanh Thu
+                      </button>
+                      <button className="text-sm border border-gray-300 rounded-lg py-2 px-5" onClick={handleOrders}>
+                        Xem Đơn Hàng
+                      </button>
+                      <button className="text-sm border border-gray-300 rounded-lg py-2 px-5 mr-2" onClick={handleChat}>
+                        Chat Ngay
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
           </div>
         )}
         <h1 className="text-2xl font-bold mb-6">Sản phẩm của người bán</h1>
-        <div className="product-grid">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {sellerProducts.length > 0 ? (
             sellerProducts.map((product) => (
               <div key={product.flowerId} className="product-grid-item">
@@ -147,7 +172,7 @@ const PersonalProduct = () => {
               </div>
             ))
           ) : (
-            <div className="w-full text-center py-8">
+            <div className="col-span-full text-center py-8">
               <p className="text-lg text-gray-600">Người bán này chưa có sản phẩm nào.</p>
               {currentUserId === parseInt(userId) && (
                 <button

@@ -96,14 +96,32 @@ const QuanLiNguoiBan = () => {
     };
 
     const columns = [
+        { title: 'User ID', dataIndex: 'userId', key: 'userId' }, 
         { title: 'Tên cửa hàng', dataIndex: 'storeName', key: 'storeName' },
         { title: 'Email', dataIndex: 'email', key: 'email' },
         { title: 'Địa chỉ', dataIndex: 'address', key: 'address' },
         { title: 'Số điện thoại', dataIndex: 'phone', key: 'phone' },
-        { title: 'CMND/CCCD', dataIndex: 'idCard', key: 'idCard' }, // Thêm cột mới cho idCard
+        { title: 'CMND/CCCD', dataIndex: 'idCard', key: 'idCard' }, 
         { title: 'Trạng thái', dataIndex: 'status', key: 'status' },
-        { title: 'Ngày yêu cầu', dataIndex: 'requestDate', key: 'requestDate', 
-          render: (text) => new Date(text).toLocaleString() },
+        { 
+            title: 'Ngày yêu cầu', 
+            dataIndex: 'requestDate', 
+            key: 'requestDate', 
+            render: (text) => {
+              const date = new Date(text);
+              // Chuyển đổi thời gian UTC sang múi giờ Việt Nam
+              const vietnamTime = new Date(date.getTime() + (7 * 60 * 60 * 1000)); // Thêm 7 giờ
+              return vietnamTime.toLocaleString('vi-VN', { 
+                timeZone: 'Asia/Ho_Chi_Minh',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+              });
+            }
+          },
         {
             title: 'Hành động',
             key: 'action',
