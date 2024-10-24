@@ -3,8 +3,6 @@ import api from "../../config/axios";
 import { useParams, useNavigate } from "react-router-dom";
 import { Table, Tag, Typography, Space, Button, Modal, Form, Input, message, Select } from "antd";
 import { EditOutlined, DeleteOutlined, HomeOutlined } from '@ant-design/icons';
-import Header from "../../component/header";
-import Footer from "../../component/footer";
 import LoadingComponent from '../../component/loading';
 import Header from "../../component/header";
 import Footer from "../../component/footer";

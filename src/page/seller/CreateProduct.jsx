@@ -3,6 +3,7 @@ import api from "../../config/axios";
 import { useNavigate } from 'react-router-dom';
 import Header from '../../component/header';
 import Footer from '../../component/footer';
+import { FaArrowLeft, FaMoneyCheckAlt } from 'react-icons/fa';
 
 const CreateProduct = () => {
   const [categories, setCategories] = useState([]);
@@ -40,14 +41,14 @@ const CreateProduct = () => {
     const fetchCurrentUser = async () => {
       try {
         const response = await api.get("/Users/current-user");
-        setUserId(response.data.userId); // Lưu userId vào state
+        setUserId(response.data.userId);
       } catch (error) {
         console.error("Error fetching current user:", error);
       }
     };
 
     fetchCategories();
-    fetchCurrentUser(); // Gọi hàm fetchCurrentUser để lấy thông tin người dùng
+    fetchCurrentUser();
     return () => {
       imageFile && URL.revokeObjectURL(imageFile.preview);
     };
@@ -110,19 +111,19 @@ const CreateProduct = () => {
         if (!currentUser || !currentUser.userId) {
           throw new Error('Invalid user information');
         }
-        
+
         await api.post('Notification', {
           Message: `Sản phẩm mới đã được thêm: ${newFlower.flowerName}`,
           NotificationDate: new Date().toISOString(),
           IsRead: false,
-          SellerId: currentUser.userId 
+          SellerId: currentUser.userId
         });
         console.log("Thông báo đã được tạo thành công");
       } catch (notificationError) {
         console.error("Lỗi khi tạo thông báo:", notificationError.message);
       }
 
-      
+
       alert('Sản phẩm đã được tạo thành công!');
       navigate(`/manage-products/${userId}`); // Sử dụng userId đã lưu để điều hướng
     } catch (error) {
@@ -143,7 +144,13 @@ const CreateProduct = () => {
   return (
     <>
       <Header />
-      <div style={{ border: '1px solid red', padding: '20px', margin: '20px' }}>
+      <div className="p-20">
+        <button
+          className="bg-blue-600 text-white font-bold py-2 px-6 rounded transition duration-300 ease-in-out transform hover:bg-blue-500 hover:scale-105 shadow-md hover:shadow-lg"
+          onClick={() => navigate(`/personal-product/${userId}`)}
+        >
+          <FaArrowLeft className="inline-block mr-2" /> Quay Về Cửa Hàng
+        </button>
         <div className="max-w-md mx-auto mt-10">
           <h2 className="text-2xl font-bold mb-5">Tạo Sản Phẩm Mới</h2>
           <form onSubmit={handleSubmit} className="space-y-4">

@@ -6,6 +6,7 @@ import api from "../../config/axios";
 import { getFullImageUrl } from "../../utils/imageHelpers";
 import { Modal, Input, Button, Select, message } from "antd";
 import { ExclamationCircleOutlined } from '@ant-design/icons';
+import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 
 const { Option } = Select;
 const { confirm } = Modal;
@@ -135,22 +136,21 @@ const ManageProducts = () => {
 
   return (
     <>
-    <Header />
+      <Header />
       <div className="container mx-auto py-24">
         <h1 className="text-2xl font-bold mb-6">Quản lý sản phẩm của bạn</h1>
         <button
+          className="bg-blue-600 text-white font-bold py-2 px-6 rounded transition duration-300 ease-in-out transform hover:bg-blue-500 hover:scale-105 shadow-md hover:shadow-lg mr-2"
           onClick={() => navigate(`/personal-product/${userId}`)}
-          className="bg-blue-500 text-white px-4 py-2 rounded mb-4 mr-2"
         >
-          Quay về xem shop
+          <FaArrowLeft className="inline-block mr-2" /> Quay về cửa hàng
         </button>
-        <button 
+        <button
+          className="bg-green-600 text-white font-bold py-2 px-6 rounded transition duration-300 ease-in-out transform hover:bg-green-500 hover:scale-105 shadow-md hover:shadow-lg"
           onClick={() => navigate(`/manage-product`)}
-          className="bg-green-500 text-white px-4 py-2 rounded mb-4"
-        >
-          Tạo Sản Phẩm Mới
+          >
+          <FaArrowRight className="inline-block mr-2" /> Tạo sản phẩm mới
         </button>
-        
         <div className="space-y-4">
           {products.length > 0 ? (
             products.map((product) => (

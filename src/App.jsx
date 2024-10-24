@@ -11,7 +11,7 @@ import ProductDetail from "./page/productDetail";
 import PrivateRoute from "./component/private-route";
 import About from "./page/about";
 import Profile from "./page/user/editProfile";
-import CreateProduct from "./page/seller";
+import CreateProduct from "./page/seller/CreateProduct";
 import ForgotPassword from './page/login/forgetPassword';
 import AdminLayout from "./page/admin/AdminLayout";
 import QuanLiSanPham from "./page/admin/QuanLiSanPham";
