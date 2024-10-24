@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as signalR from '@microsoft/signalr';
 import axios from 'axios';
+import { Loader2 } from 'lucide-react';
 
 const ChatBox = ({ conversationId }) => {
   const [messages, setMessages] = useState([]);
@@ -15,12 +16,15 @@ const ChatBox = ({ conversationId }) => {
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
+    console.log(user);
+    if (user) {
+      setCurrentUser(user);
+    }
     const token = localStorage.getItem("token");
-    if (!user || !token) {
+    if (!token) {
       setError("Vui lòng đăng nhập để sử dụng chat");
       return;
     }
-    setCurrentUser(user);
 
     if (!conversationId || isNaN(parseInt(conversationId))) {
       setError("ConversationId không hợp lệ");
@@ -60,9 +64,9 @@ const ChatBox = ({ conversationId }) => {
 
   useEffect(() => {
     if (connection) {
-      connection.on('ReceiveMessage', (userId, userName, messageContent, msgConversationId) => {
+      connection.on('ReceiveMessage', (userId, fullName, messageContent, msgConversationId) => {
         if (msgConversationId.toString() === conversationId) {
-          setMessages(prevMessages => [...prevMessages, { userId, userName, messageContent, sendTime: new Date() }]);
+          setMessages(prevMessages => [...prevMessages, { userId, fullName, messageContent, sendTime: new Date() }]);
           scrollToBottom();
         }
       });
@@ -134,57 +138,100 @@ const ChatBox = ({ conversationId }) => {
   };
 
   if (error) {
-    return <div className="error-message">{error}</div>;
+    return (
+      <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-center">
+        {error}
+      </div>
+    );
   }
 
   if (!currentUser) {
-    return <div>Vui lòng đăng nhập để chat</div>;
+    return (
+      <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-600 text-center">
+        Vui lòng đăng nhập để chat
+      </div>
+    );
   }
 
   return (
-    <div className="p-4 bg-gray-100 rounded-lg shadow-lg">
-      <h2 className="text-xl font-bold mb-4">Chat</h2>
-      <div className="chat-window h-64 overflow-y-auto mb-4">
+    <div className="flex flex-col h-[600px] bg-white rounded-xl shadow-lg border border-gray-200">
+      {/* Header */}
+      <div className="px-6 py-4 border-b border-gray-200">
+        <h2 className="text-lg font-semibold text-gray-800">
+          {currentUser ? currentUser.fullName : 'Người dùng không xác định'}
+        </h2>
+      </div>
+
+      {/* Messages Container */}
+      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
         {hasMore && (
-          <button onClick={loadChatHistory} className="w-full text-blue-500 hover:text-blue-700">
+          <button 
+            onClick={loadChatHistory} 
+            className="w-full py-2 text-sm text-blue-600 hover:text-blue-800 transition-colors duration-200"
+          >
             Tải thêm tin nhắn cũ
           </button>
         )}
+        
         {messages.length > 0 ? (
-          messages.map((msg, index) => (
-            <div key={index} className={`mb-2 ${parseInt(msg.userId) === parseInt(currentUser.userId) ? 'text-right' : 'text-left'}`}>
-              <span className="text-xs text-gray-500">{msg.userName}</span>
-              <span className={`inline-block p-2 rounded-lg ${parseInt(msg.userId) === parseInt(currentUser.userId) ? 'bg-blue-500 text-white' : 'bg-gray-300'}`}>
-                {msg.messageContent}
-              </span>
-              <span className="text-xs text-gray-500 block">
-                {new Date(msg.sendTime).toLocaleTimeString()}
-              </span>
-            </div>
-          ))
+          messages.map((msg, index) => {
+            const isCurrentUser = parseInt(msg.userId) === parseInt(currentUser.userId);
+            return (
+              <div key={index} className={`flex flex-col ${isCurrentUser ? 'items-end' : 'items-start'}`}>
+                <span className="text-xs text-gray-500 mb-1">{msg.fullName}</span>
+                <div className={`max-w-[80%] break-words ${
+                  isCurrentUser 
+                    ? 'bg-blue-600 text-white rounded-t-2xl rounded-bl-2xl' 
+                    : 'bg-gray-100 text-gray-800 rounded-t-2xl rounded-br-2xl'
+                } px-4 py-2`}>
+                  {msg.messageContent}
+                </div>
+                <span className="text-xs text-gray-400 mt-1">
+                  {new Date(msg.sendTime).toLocaleTimeString()}
+                </span>
+              </div>
+            );
+          })
         ) : (
-          <div className="text-center text-gray-500">
-            Cuộc trò chuyện chưa có tin nhắn nào. Hãy bắt đầu cuộc trò chuyện!
+          <div className="flex items-center justify-center h-full">
+            <p className="text-gray-500 text-center">
+              Cuộc trò chuyện chưa có tin nhắn nào. Hãy bắt đầu cuộc trò chuyện!
+            </p>
           </div>
         )}
         <div ref={messagesEndRef} />
       </div>
-      <div className="flex">
-        <input
-          type="text"
-          className="flex-grow p-2 border border-gray-300 rounded-l"
-          value={message}
-          onChange={e => setMessage(e.target.value)}
-          onKeyPress={e => e.key === 'Enter' && sendMessage()}
-          placeholder="Nhập tin nhắn..."
-        />
-        <button
-          onClick={sendMessage}
-          disabled={isSending}
-          className={`bg-blue-500 text-white p-2 rounded-r hover:bg-blue-600 transition duration-200 ${isSending ? 'opacity-50 cursor-not-allowed' : ''}`}
-        >
-          {isSending ? 'Đang gửi...' : 'Gửi'}
-        </button>
+
+      {/* Input Area */}
+      <div className="px-6 py-4 border-t border-gray-200">
+        <div className="flex space-x-2">
+          <input
+            type="text"
+            className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            value={message}
+            onChange={e => setMessage(e.target.value)}
+            onKeyPress={e => e.key === 'Enter' && sendMessage()}
+            placeholder="Nhập tin nhắn..."
+          />
+          <button
+            onClick={sendMessage}
+            disabled={isSending}
+            className={`px-6 py-2 bg-blue-600 text-white rounded-lg font-medium transition-all duration-200
+              ${isSending 
+                ? 'opacity-50 cursor-not-allowed' 
+                : 'hover:bg-blue-700 active:scale-95'
+              }`}
+          >
+            {isSending ? (
+              <div className="flex items-center space-x-2">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Đang gửi...</span>
+              </div>
+            ) : (
+              'Gửi'
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );

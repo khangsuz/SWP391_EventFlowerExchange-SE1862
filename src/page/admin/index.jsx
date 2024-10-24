@@ -10,8 +10,8 @@ const App = () => {
   const [totalIncome, setTotalIncome] = useState(0);
   const [orderCount, setOrderCount] = useState(0);
   const [productCount, setProductCount] = useState(0);
+  const [orderStatsData, setOrderStatsData] = useState([]);
   const [dailyIncomeData, setDailyIncomeData] = useState([]);
-  const [orderStatsData, setOrderStatsData] = useState([]); // Thêm state cho thống kê đơn hàng
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -81,9 +81,10 @@ const App = () => {
   return (
     <Layout style={{ minHeight: "100vh" }}>
       <Layout>
-        <Header style={{ padding: 0, background: '#fff', boxShadow: '0 2px 8px rgba(0, 21, 41, 0.1)' }} />
+        <Header style={{ padding: 0, background: '#fff', boxShadow: '0 2px 8px rgba(0, 21, 41, 0.1)' }}>
+        <Breadcrumb items={[{ title: 'Admin' }, { title: 'Dashboard' }]} style={{ padding: 24, minHeight: 360 }}/>
+        </Header>
         <Content style={{ margin: "0 16px" }}>
-          <Breadcrumb items={[{ title: 'Admin' }, { title: 'Dashboard' }]} />
           <div style={{ padding: 24, minHeight: 360, background: '#f0f2f5' }}>
             <PrivateRoute>
               {error && <p style={{ color: 'red' }}>{error}</p>}
@@ -95,7 +96,7 @@ const App = () => {
                     <Col span={8}>
                       <Card>
                         <Statistic
-                          title="Tổng thu nhập"
+                          title="Tổng doanh thu"
                           value={totalIncome}
                           valueStyle={{ color: '#3f8600' }}
                           precision={2}
@@ -125,7 +126,7 @@ const App = () => {
 
                   <h2 style={{ marginTop: "24px" }}>Biểu đồ thu nhập hàng ngày</h2>
                   <LineChart
-                    width={800}
+                    width={1100}
                     height={400}
                     data={dailyIncomeData}
                     margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
@@ -157,9 +158,6 @@ const App = () => {
             </PrivateRoute>
           </div>
         </Content>
-        <Footer style={{ textAlign: "center" }}>
-          Ant Design ©{new Date().getFullYear()} Created by Ant UED
-        </Footer>
       </Layout>
     </Layout>
   );

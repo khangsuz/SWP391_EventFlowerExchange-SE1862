@@ -21,12 +21,16 @@ function CheckoutPage() {
         phone: '',
         email: '',
         address: '',
+        districtId: '',
+        wardCode: ''
     });
     const [paymentMethod, setPaymentMethod] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
     const [selectedWardName, setSelectedWardName] = useState('');
     const [selectedDistrictName, setSelectedDistrictName] = useState('');
     const [fullAddress, setFullAddress] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
+    const [note, setNote] = useState('');
 
     useEffect(() => {
         const storedCart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -38,8 +42,10 @@ function CheckoutPage() {
     useEffect(() => {
         if (selectedDistrict) {
             fetchWards(selectedDistrict);
-            setSelectedWard('');
-            setShippingFee(0);
+            if (selectedDistrict !== userInfo.districtId) {
+                setSelectedWard('');
+                setShippingFee(0);
+            }
         }
     }, [selectedDistrict]);
 
@@ -105,6 +111,7 @@ function CheckoutPage() {
     }, [handleShippingFeeCalculation]);
 
     const fetchUserInfo = async () => {
+        setIsLoading(true);
         const token = localStorage.getItem('token');
         if (!token) {
             notifyError('Vui lòng đăng nhập trước khi thanh toán');
@@ -120,12 +127,19 @@ function CheckoutPage() {
             });
             if (response.data) {
                 setUserInfo(response.data);
+                setSelectedDistrict(response.data.districtId ? response.data.districtId.toString() : '');
+                if (response.data.districtId) {
+                    await fetchWards(response.data.districtId);
+                }
+                setSelectedWard(response.data.wardCode || '');
             } else {
                 notifyError('Không thể lấy thông tin người dùng. Vui lòng thử lại sau.');
             }
         } catch (error) {
             console.error('Error fetching user info:', error);
             notifyError('Không thể lấy thông tin người dùng. Vui lòng thử lại sau.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -160,57 +174,9 @@ function CheckoutPage() {
         return total >= 0 ? total : 0;
     };
 
-    const createShippingOrder = async () => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            notifyError('Vui lòng đăng nhập trước khi thanh toán');
-            navigate('/login');
-            return;
-        }
-        const MAX_WEIGHT = 30000;
-        const totalWeight = Math.min(calculateTotalWeight(), MAX_WEIGHT);
-        const shippingOrder = {
-            from_name: 'Shop Hoa ABC',
-            from_phone: '0901234567',
-            from_address: '72 Lê Thánh Tôn, Phường Bến Nghé',
-            from_ward_name: 'Phường Bến Nghé',
-            from_district_name: 'Quận 1',
-            from_province_name: 'TP Hồ Chí Minh',
-            to_name: userInfo.fullName,
-            to_phone: userInfo.phone,
-            to_address: fullAddress,
-            to_ward_name: selectedWardName,
-            to_ward_code: selectedWard,
-            to_district_id: selectedDistrict,
-            weight: totalWeight,
-            length: 30,
-            width: 20,
-            height: 10,
-            required_note: "CHOXEMHANGKHONGTHU",
-            items: cartItems.map(item => ({
-                name: item.flowerName,
-                code: String(item.flowerId),
-                quantity: item.quantity,
-                price: item.price
-            }))
-        };
-
-        try {
-            const response = await api.post('Shipping/create-order', shippingOrder, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            return response.data;
-        } catch (error) {
-            console.error('Error creating shipping order:', error.response ? error.response.data : error.message);
-            notifyError('Không thể tạo đơn hàng giao hàng. Vui lòng thử lại sau.');
-        }
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
+        console.log('Submitting with selectedWard:', selectedWard);
         const token = localStorage.getItem('token');
         if (isButtonDisabled) return;
         if (!token) {
@@ -241,9 +207,15 @@ function CheckoutPage() {
             }));
 
             const checkoutResponse = await api.post(
-                `Orders/checkout?fullAddress=${encodeURIComponent(fullAddress)}`,
+                `Orders/checkout`,
                 cartItemsToSend,
                 {
+                    params: {
+                        fullAddress: fullAddress,
+                        wardCode: selectedWard,
+                        wardName: selectedWardName,
+                        toDistrictId: parseInt(selectedDistrict, 10)
+                    },
                     headers: {
                         Authorization: `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -251,8 +223,6 @@ function CheckoutPage() {
                 }
             );
 
-            const shippingOrderResponse = await createShippingOrder();
-            if (shippingOrderResponse) {
                 const paymentResponse = await api.post(
                     'Payments/createVnpPayment',
                     {
@@ -278,7 +248,6 @@ function CheckoutPage() {
                     notifyError('Invalid response from payment server');
                     setIsButtonDisabled(false); 
                 }
-            }
         } catch (error) {
             handlePaymentError(error);
             setIsButtonDisabled(false);
@@ -300,22 +269,44 @@ function CheckoutPage() {
 
     const handleDistrictChange = (e) => {
         const districtId = e.target.value;
-        setSelectedDistrict(districtId);
-        const district = districts.find(d => d.districtId === parseInt(districtId));
+        setSelectedDistrict(districtId || '');
+        const district = districts.find(d => d.districtId === parseInt(districtId, 10));
         if (district) {
             setSelectedDistrictName(district.districtName);
+        } else {
+            setSelectedDistrictName('');
         }
-        setSelectedWard('');
-        setShippingFee(0);
+        // Chỉ reset selectedWard nếu quận/huyện thực sự thay đổi
+        if (districtId !== selectedDistrict) {
+            setSelectedWard('');
+            setShippingFee(0);
+        }
+        fetchWards(districtId);
     };
 
     const handleWardChange = (e) => {
         const selectedWardCode = e.target.value;
         setSelectedWard(selectedWardCode);
+        setUserInfo(prev => ({ ...prev, wardCode: selectedWardCode }));
         const selectedWardData = wards.find(ward => ward.wardCode === selectedWardCode);
         if (selectedWardData) {
             setSelectedWardName(selectedWardData.wardName);
         }
+    };
+
+    useEffect(() => {
+        console.log('Selected Ward:', selectedWard);
+        console.log('User Info Ward Code:', userInfo.wardCode);
+    }, [selectedWard, userInfo.wardCode]);
+
+    useEffect(() => {
+        if (userInfo.wardCode && !selectedWard) {
+            setSelectedWard(userInfo.wardCode);
+        }
+    }, [userInfo.wardCode, selectedWard]);
+
+    const handleNoteChange = (e) => {
+        setNote(e.target.value);
     };
 
     return (
@@ -370,7 +361,7 @@ function CheckoutPage() {
                             >
                                 <option value="">Chọn quận/huyện</option>
                                 {districts.map((district) => (
-                                    <option key={district.districtId} value={district.districtId}>
+                                    <option key={district.districtId} value={district.districtId.toString()}>
                                         {district.districtName}
                                     </option>
                                 ))}
@@ -384,6 +375,7 @@ function CheckoutPage() {
                                 onChange={handleWardChange}
                                 className="w-full p-2 border rounded"
                                 required
+                                disabled={isLoading}
                             >
                                 <option value="">Chọn phường/xã</option>
                                 {wards.map((ward) => (
@@ -403,6 +395,17 @@ function CheckoutPage() {
                                 className="w-full p-2 border rounded"
                                 placeholder="Ví dụ: Số 20 đường Cầu Giấy"
                                 required
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block font-bold mb-2">Ghi chú</label>
+                            <textarea
+                                name="note"
+                                value={note}
+                                onChange={handleNoteChange}
+                                className="w-full p-2 border rounded"
+                                placeholder="Nhập ghi chú cho đơn hàng (nếu có)"
+                                rows="3"
                             />
                         </div>
                     </form>
@@ -432,6 +435,7 @@ function CheckoutPage() {
                             <span>Tổng</span>
                             <span>{calculateTotal().toLocaleString()}₫</span>
                         </div>
+                        
                     </div>
                     <h3 className="text-xl font-bold mt-6 mb-4">Thanh toán</h3>
                     <div className="flex mb-4">

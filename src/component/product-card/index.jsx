@@ -14,6 +14,7 @@ function ProductCard({ flower }) {
   const [reviews, setReviews] = useState([]);
   const [averageRating, setAverageRating] = useState(0);
   const { updateCartItemCount } = useCart();
+  const [categories, setCategories] = useState({});
 
   const addToCart = (item, quantity) => {
     const storedCart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -97,6 +98,38 @@ function ProductCard({ flower }) {
   const hasHalfStar = averageRating % 1 >= 0.5;
   const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
 
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await api.get("Categories");
+        const categoriesMap = {};
+        response.data.forEach(category => {
+          categoriesMap[category.categoryId] = category.categoryName;
+        });
+        setCategories(categoriesMap);
+      } catch (err) {
+        console.error("Error fetching categories:", err);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  const getCategoryColor = (categoryName) => {
+    switch (categoryName) {
+      case "Hoa sinh nhật":
+        return "bg-pink-500 text-white";
+      case "Hoa văn phòng":
+        return "bg-blue-500 text-white";
+      case "Hoa đám cưới":
+        return "bg-red-500 text-white";
+      case "Hoa thiên nhiên":
+        return "bg-green-500 text-white";
+      default:
+        return "bg-gray-500 text-white";
+    }
+  };
+
   if (!flower) return null;
 
   return (
@@ -107,6 +140,11 @@ function ProductCard({ flower }) {
           alt={flower.flowerName}
           className="w-full h-auto object-cover rounded-md transition-transform duration-300 ease-in-out hover:scale-105"
         />
+        {categories[flower.categoryId] && (
+          <span className={`absolute top-2 left-2 px-2.5 py-1 rounded text-xs font-medium shadow-sm transition-all duration-200 ${getCategoryColor(categories[flower.categoryId])}`} onClick={(e) => e.stopPropagation()}>
+            {categories[flower.categoryId]}
+          </span>
+        )}
         <p className="name text-center mt-3 text-lg font-medium">
           {flower.flowerName} ({flower.quantity})
         </p>

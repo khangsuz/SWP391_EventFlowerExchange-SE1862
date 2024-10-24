@@ -5,6 +5,10 @@ import { Table, Tag, Typography, Space, Button, Modal, Form, Input, message, Sel
 import { EditOutlined, DeleteOutlined, HomeOutlined } from '@ant-design/icons';
 import Header from "../../component/header";
 import Footer from "../../component/footer";
+import LoadingComponent from '../../component/loading';
+import Header from "../../component/header";
+import Footer from "../../component/footer";
+import { Notification, notifySuccess, notifyError } from "../../component/alert";
 
 const { Title } = Typography;
 
@@ -15,7 +19,8 @@ const ManageOrders = () => {
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [currentOrder, setCurrentOrder] = useState(null); 
   const [currentUserId, setCurrentUserId] = useState(null);
-
+  const [loading, setLoading] = useState(true);
+  
   const handleDeliveryStatusChange = async (orderId, newStatus) => {
     try {
         await api.put(`Orders/${orderId}/delivery`, { orderDelivery: newStatus, userId });
@@ -25,7 +30,7 @@ const ManageOrders = () => {
         console.error('Error updating order delivery status:', error);
         message.error('Không thể cập nhật trạng thái giao hàng: ' + (error.response?.data || error.message));
     }
-  };
+};
 
   const fetchCurrentUserId = async () => {
     try {
@@ -45,8 +50,9 @@ const ManageOrders = () => {
       navigate(`/manage-orders/${currentUserId}`); 
     }
   }, [currentUserId, userId, navigate]);
-
+  
   const fetchOrders = async () => {
+    setLoading(true);
     try {
       console.log("Fetching orders for userId:", userId); 
       const response = await api.get(`Orders/orders/seller/${userId}`);
@@ -54,9 +60,10 @@ const ManageOrders = () => {
       setOrders(response.data);
     } catch (err) {
       console.error("Error fetching orders:", err.response?.data || err);
+    } finally {
+      setLoading(false);
     }
   };
-
   const deleteOrder = async (orderId) => {
     try {
         await api.delete(`Orders/${orderId}`); 
@@ -64,10 +71,9 @@ const ManageOrders = () => {
         console.log(`Order ${orderId} deleted successfully.`);
     } catch (err) {
         console.error("Error deleting order:", err.response?.data || err);
-        message.error("Không thể xóa đơn hàng. Vui lòng kiểm tra lại.");
+        notifyError("Không thể xóa đơn hàng. Vui lòng kiểm tra lại.");
     }
   };
-
   const showEditModal = (order) => {
     setCurrentOrder(order); 
     setIsEditModalVisible(true); 
@@ -80,7 +86,7 @@ const ManageOrders = () => {
         quantity: values.quantity,
         buyerEmail: values.buyerEmail,
         buyerPhone: values.buyerPhone,
-      });
+    });
       message.success('Cập nhật đơn hàng thành công!');
       fetchOrders(); 
       setIsEditModalVisible(false); 
@@ -93,7 +99,13 @@ const ManageOrders = () => {
   useEffect(() => {
     fetchOrders();
   }, [userId]);
-
+  const initialValues = {
+    productName: currentOrder?.productName,
+    quantity: currentOrder?.quantity,
+    deliveryAddress: currentOrder?.deliveryAddress,
+    buyerEmail: currentOrder?.buyerEmail, 
+    buyerPhone: currentOrder?.buyerPhone, 
+  };
   const columns = [
     {
       title: 'Mã Đơn Hàng',
@@ -108,16 +120,9 @@ const ManageOrders = () => {
       render: date => new Date(date).toLocaleDateString(),
     },
     {
-      title: 'Thông Tin Người Mua',
-      key: 'buyerInfo',
-      render: (_, record) => (
-        <div className="space-y-1">
-          <div><strong>Người Mua:</strong> {record.buyerName}</div>
-          <div><strong>Email:</strong> {record.buyerEmail}</div>
-          <div><strong>SĐT:</strong> {record.buyerPhone}</div>
-          <div><strong>Địa Chỉ:</strong> {record.deliveryAddress}</div>
-        </div>
-      ),
+      title: 'Địa Chỉ Giao Hàng',
+      dataIndex: 'deliveryAddress',
+      key: 'deliveryAddress',
     },
     {
       title: 'Trạng Thái',
@@ -162,21 +167,39 @@ const ManageOrders = () => {
       dataIndex: 'totalAmount',
       key: 'totalAmount',
       render: amount => {
-        if (amount === null || amount === undefined) {
-          return '0 VNĐ'; 
-        }
-        return `${amount.toLocaleString('vi-VN')} VNĐ`;
+          if (amount === null || amount === undefined) {
+              return '0 VNĐ'; 
+          }
+          return `${amount.toLocaleString('vi-VN')} VNĐ`; 
       },
+  },
+  
+  
+    {
+      title: 'Người Mua',
+      dataIndex: 'buyerName',
+      key: 'buyerName',
+    },
+    {
+      title: 'Email Người Mua',
+      dataIndex: 'buyerEmail',
+      key: 'buyerEmail',
+    },
+    {
+      title: 'Số điện thoại Người Mua',
+      dataIndex: 'buyerPhone',
+      key: 'buyerPhone',
     },
     {
       title: 'Hành Động',
       key: 'action',
       render: (_, record) => (
         <Space size="middle">
-          <Button type="primary" icon={<EditOutlined />} onClick={() => showEditModal(record)} className="bg-blue-500 hover:bg-blue-600 border-none text-white">
+          <Button type="primary" icon={<EditOutlined />} onClick={()  => showEditModal(record)} style={{ backgroundColor: '#1890ff', borderColor: '#1890ff' }}>
             Chỉnh Sửa
           </Button>
-          <Button type="danger" icon={<DeleteOutlined />} onClick={() => deleteOrder(record.orderId)} className="bg-red-500 hover:bg-red-600 border-none text-white">
+          
+          <Button type="danger" icon={<DeleteOutlined />} onClick={() => deleteOrder(record.orderId)}>
             Xóa
           </Button>
         </Space>
@@ -184,83 +207,131 @@ const ManageOrders = () => {
     },
   ];
 
+  if (loading) return <LoadingComponent />; // Show loading component
+
   return (
     <>
       <Header />
-      <div className="container mx-auto">
-        <Title level={2} className="text-center mb-6 mt-6">Quản Lý Đơn Hàng</Title>
+      <div className="container mx-auto py-24">
+        <Title level={2} className="text-center mb-6">Quản Lý Đơn Hàng</Title>
         <Button 
           type="default" 
           icon={<HomeOutlined />} 
           onClick={() => navigate(`/personal-product/${userId}`)} 
-          className="mb-6 bg-blue-500 hover:bg-blue-600 text-white"
+          style={{ marginBottom: '20px', backgroundColor: '#1890ff', color: 'white' }}
         >
           Quay Về Xem Shop
         </Button>
-        <div className="overflow-x-auto">
-          <Table 
-            dataSource={orders} 
-            columns={columns}
-            rowKey="orderId" 
-            pagination={{ pageSize: 5 }}
-            bordered
-            className="w-full bg-white shadow-md rounded-lg"
-            rowClassName={(record, index) => (index % 2 === 0 ? 'bg-gray-100' : 'bg-white')}
-            summary={pageData => {
-              const totalAmount = pageData.reduce((sum, { totalAmount }) => sum + (totalAmount || 0), 0);
-              const totalOrders = pageData.length;
-              return (
-                <Table.Summary fixed>
-                  <Table.Summary.Row>
-                    <Table.Summary.Cell index={0} colSpan={3} className="text-right font-bold">
-                      Tổng Cộng:
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell colSpan={2} className="text-center font-bold">
-                      <span className="text-green-600 text-lg">{totalAmount > 0 ? totalAmount.toLocaleString() : '0 VNĐ'}</span>
-                    </Table.Summary.Cell>
-                  </Table.Summary.Row>
-                  <Table.Summary.Row>
-                    <Table.Summary.Cell index={0} colSpan={3} className="text-right font-bold">
-                      Số Đơn Hàng:
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell colSpan={2} className="text-center font-bold">
-                      <span className="text-green-600 text-lg">{totalOrders}</span>
-                    </Table.Summary.Cell>
-                  </Table.Summary.Row>
-                </Table.Summary>
-              );
-            }}
-          />
-        </div>
+        <Table 
+          dataSource={orders} 
+          columns={columns}
+          rowKey="orderId" 
+          pagination={{ pageSize: 5 }}
+          bordered
+          style={{ backgroundColor: '#ffffff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', borderRadius: '8px' }}
+          rowClassName={(record, index) => (index % 2 === 0 ? 'table-row-light' : 'table-row-dark')}
+          summary={pageData => {
+            const totalAmount = pageData.reduce((sum, { totalAmount }) => sum + (totalAmount || 0), 0);
+            const totalOrders = pageData.length;
+            return (
+              <Table.Summary fixed>
+                <Table.Summary.Row>
+                  <Table.Summary.Cell index={0} colSpan={3} style={{ textAlign: 'right', fontWeight: 'bold' }}>
+                    <span style={{ color: '#000' }}>Tổng Cộng:</span>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell colSpan={2} style={{ textAlign: 'center', fontWeight: 'bold' }}>
+                    <span style={{ color: '#4caf50', fontSize: '18px' }}>
+                      {totalAmount > 0 ? totalAmount.toLocaleString() : '0 VNĐ'} {/* Kiểm tra tổng tiền */}
+                    </span>
+                  </Table.Summary.Cell>
+                </Table.Summary.Row>
+                <Table.Summary.Row>
+                  <Table.Summary.Cell index={0} colSpan={3} style={{ textAlign: 'right', fontWeight: 'bold' }}>
+                    <span style={{ color: '#000' }}>Số Đơn Hàng:</span>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell colSpan={2} style={{ textAlign: 'center', fontWeight: 'bold' }}>
+                    <span style={{ color: '#4caf50', fontSize: '18px' }}>{totalOrders}</span>
+                  </Table.Summary.Cell>
+                </Table.Summary.Row>
+              </Table.Summary>
+            );
+          }}
+        />
       </div>
-      <Footer />
-
-      <Modal
+       {/* Modal chỉnh sửa đơn hàng */}
+       <Modal
         title="Chỉnh Sửa Đơn Hàng"
         visible={isEditModalVisible}
         onCancel={() => setIsEditModalVisible(false)}
         footer={null}
+        key={currentOrder ? currentOrder.orderId : 'modal'}
       >
-        <Form onFinish={handleEditOrder} initialValues={currentOrder}>
-          <Form.Item label="Địa chỉ giao hàng" name="deliveryAddress">
+        <Form
+          initialValues={{
+            productName: currentOrder?.productName,
+            quantity: currentOrder?.quantity,
+            deliveryAddress: currentOrder?.deliveryAddress,
+            buyerEmail: currentOrder?.buyerEmail, 
+            buyerPhone: currentOrder?.buyerPhone, 
+          }}
+          onFinish={handleEditOrder}
+        >
+          <Form.Item
+            label="Tên Sản Phẩm"
+            name="productName"
+            rules={[{ required: true, message: 'Vui lòng nhập tên sản phẩm!' }]}
+          >
             <Input />
           </Form.Item>
-          <Form.Item label="Số lượng" name="quantity">
+          <Form.Item
+            label="Số Lượng"
+            name="quantity"
+            rules={[{ required: true, message: 'Vui lòng nhập số lượng!' }]}
+          >
             <Input type="number" />
           </Form.Item>
-          <Form.Item label="Email Người Mua" name="buyerEmail">
+          <Form.Item
+            label="Địa Chỉ Giao Hàng"
+            name="deliveryAddress"
+            rules={[{ required: true, message: 'Vui lòng nhập địa chỉ giao hàng!' }]}
+          >
             <Input />
           </Form.Item>
-          <Form.Item label="Số điện thoại Người Mua" name="buyerPhone">
+          <Form.Item
+            label="Email Người Nhận"
+            name="buyerEmail"
+            rules={[{ required: true, type: 'email', message: 'Vui lòng nhập email hợp lệ!' }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="Số Điện Thoại Người Nhận"
+            name="buyerPhone"
+            rules={[{ required: true, message: 'Vui lòng nhập số điện thoại!' }]}
+          >
             <Input />
           </Form.Item>
           <Form.Item>
-            <Button type="primary" htmlType="submit" className="bg-blue-500 hover:bg-blue-600 text-white">
-              Cập nhật
+            <Button type="primary" htmlType="submit">
+              Lưu
             </Button>
           </Form.Item>
         </Form>
       </Modal>
+      <Footer />
+      <style jsx>{`
+        .table-row-light {
+          background-color: #f5f5f5;
+        }
+        .table-row-dark {
+          background-color: #ffffff;
+        }
+        .ant-table-thead > tr > th {
+          background: #1890ff;
+          color: white;
+          font-weight: bold;
+        }
+      `}</style>
     </>
   );
 };

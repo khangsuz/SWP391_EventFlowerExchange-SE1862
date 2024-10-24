@@ -34,7 +34,13 @@ import ChangePassword from "./page/user/ChangePassword";
 import OrderHistory from "./page/user/OrderHistory";
 import SellerOrderManagement from "./page/personalProduct/SellerOrderManagement";
 import AdminReviewManagement from "./page/admin/AdminReviewManagement";
-
+import DamCuoi from "./page/events/DamCuoi";
+import KhaiTruong from "./page/events/KhaiTruong";
+import KiNiem from "./page/events/KiNiem";
+import SinhNhat from "./page/events/SinhNhat";
+import Policy from "./component/policy";
+import ChucMung from "./page/events/ChucMung";
+import Address from "./page/user/Address";
 const App = () => {
   const router = createBrowserRouter([
     {
@@ -65,6 +71,10 @@ const App = () => {
           path: "change-password",
           element: <ChangePassword />,
         },
+        {
+          path: "address",
+          element: <Address />,
+        }
       ],
     },
     {
@@ -85,7 +95,29 @@ const App = () => {
     },
     {
       path: "events",
-      element: <Events />
+      element: <Events />,
+      children: [
+        {
+          path: "hoa-sinh-nhat",
+          element: <SinhNhat />
+        },
+        {
+          path: "hoa-khai-truong",
+          element: <KhaiTruong />
+        },
+        {
+          path: "hoa-dam-cuoi",
+          element: <DamCuoi />
+        },
+        {
+          path: "hoa-ki-niem",
+          element: <KiNiem />
+        },
+        {
+          path: "hoa-chuc-mung",
+          element: <ChucMung />
+        },
+      ],
     },
     {
       path: "/search", 
@@ -114,7 +146,7 @@ const App = () => {
       element: <CheckoutPage />
     },  
     {
-      path: "/seller/:userId/orders", 
+      path: "/seller/:userId/orders",
       element: <SellerOrderManagement />
     },  
     {
@@ -181,6 +213,10 @@ const App = () => {
       path: "payment-result", 
       element: <PaymentResult />,
     },
+    {
+      path: "policy",
+      element: <Policy />,
+    }
   ]);
 
   return(

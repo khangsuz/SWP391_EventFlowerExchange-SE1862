@@ -3,7 +3,6 @@ import api from "../../config/axios";
 import { useNavigate } from 'react-router-dom';
 import Header from '../../component/header';
 import Footer from '../../component/footer';
-import UserAvatar from '../user/UserAvatar';
 
 const CreateProduct = () => {
   const [categories, setCategories] = useState([]);
@@ -18,7 +17,6 @@ const CreateProduct = () => {
     CategoryId: '',
   });
   const [userId, setUserId] = useState(null);
-  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -42,15 +40,14 @@ const CreateProduct = () => {
     const fetchCurrentUser = async () => {
       try {
         const response = await api.get("/Users/current-user");
-        setUserId(response.data.userId);
-        setUser(response.data);
+        setUserId(response.data.userId); // Lưu userId vào state
       } catch (error) {
         console.error("Error fetching current user:", error);
       }
     };
 
     fetchCategories();
-    fetchCurrentUser();
+    fetchCurrentUser(); // Gọi hàm fetchCurrentUser để lấy thông tin người dùng
     return () => {
       imageFile && URL.revokeObjectURL(imageFile.preview);
     };
@@ -125,8 +122,9 @@ const CreateProduct = () => {
         console.error("Lỗi khi tạo thông báo:", notificationError.message);
       }
 
+      
       alert('Sản phẩm đã được tạo thành công!');
-      navigate(`/manage-products/${userId}`);
+      navigate(`/manage-products/${userId}`); // Sử dụng userId đã lưu để điều hướng
     } catch (error) {
       console.error('Error creating product:', error);
       if (error.response) {
@@ -147,17 +145,6 @@ const CreateProduct = () => {
       <Header />
       <div style={{ border: '1px solid red', padding: '20px', margin: '20px' }}>
         <div className="max-w-md mx-auto mt-10">
-          {user && (
-            <div className="flex items-center mb-5">
-              <div className="w-16 h-16 mr-4">
-                <UserAvatar userId={user.userId} userName={user.fullName} />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold">{user.fullName}</h3>
-                <p className="text-sm text-gray-600">{user.email}</p>
-              </div>
-            </div>
-          )}
           <h2 className="text-2xl font-bold mb-5">Tạo Sản Phẩm Mới</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>

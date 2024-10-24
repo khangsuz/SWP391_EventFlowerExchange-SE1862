@@ -1,15 +1,14 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import React, { useEffect, useState, useRef } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import "../../index.css";
-import { useNavigate } from "react-router-dom";
 import Header from "../../component/header";
 import Footer from "../../component/footer";
 import api, { baseUrl } from "../../config/axios";
 import { useCart } from "../../contexts/CartContext";
 import { getFullImageUrl } from '../../utils/imageHelpers';
-import { Link } from "react-router-dom";
 import { Notification, notifySuccess, notifyError } from "../../component/alert";
 import UserAvatar from "../user/UserAvatar";
+import LoadingComponent from "../../component/loading";
 
 const ProductDetail = () => {
   const { updateCartItemCount } = useCart();
@@ -29,6 +28,8 @@ const ProductDetail = () => {
   const navigate = useNavigate();
   const imageUrl = flower ? getFullImageUrl(flower.imageUrl) : null;
   const [starFilter, setStarFilter] = useState(0);
+  const productDetailRef = useRef(null); // Create a ref for the product detail section
+  const [categories, setCategories] = useState({});
 
   const fetchFlowerDetails = async () => {
     try {
@@ -253,24 +254,76 @@ const ProductDetail = () => {
     }
   };
 
-
   const filteredReviews = reviews.filter(review => {
-    return starFilter === 0 || review.rating === starFilter; // Lọc đánh giá
+    return starFilter === 0 || review.rating === starFilter;
   });
 
-  // Tính toán số lượng đánh giá cho từng mức sao
-  const starCounts = Array(6).fill(0); // Mảng để đếm số lượng đánh giá từ 0 đến 5 sao
+  const starCounts = Array(6).fill(0);
   reviews.forEach(review => {
     starCounts[review.rating]++;
   });
 
-  if (!flower) return <div>Loading...</div>;
+  const handleRelatedProductClick = () => {
+    if (productDetailRef.current) {
+      productDetailRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await api.get("Categories");
+        const categoriesMap = {};
+        response.data.forEach(category => {
+          categoriesMap[category.categoryId] = category.categoryName;
+        });
+        setCategories(categoriesMap);
+      } catch (err) {
+        console.error("Error fetching categories:", err);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  const removeVietnameseTones = (str) => {
+    str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g,"a"); 
+    str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g,"e"); 
+    str = str.replace(/ì|í|ị|ỉ|ĩ/g,"i"); 
+    str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g,"o"); 
+    str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g,"u"); 
+    str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g,"y"); 
+    str = str.replace(/đ/g,"d");
+    str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "A");
+    str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, "E");
+    str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "I");
+    str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "O");
+    str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U");
+    str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y");
+    str = str.replace(/Đ/g, "D");
+    str = str.replace(/\u0300|\u0301|\u0303|\u0309|\u0323/g, "");
+    str = str.replace(/\u02C6|\u0306|\u031B/g, ""); 
+    str = str.replace(/ + /g," ");
+    str = str.trim();
+    str = str.replace(/!|@|%|\^|\*|\(|\)|\+|\=|\<|\>|\?|\/|,|\.|\:|\;|\'|\"|\&|\#|\[|\]|~|\$|_|`|-|{|}|\||\\/g," ");
+    return str;
+  }
+  const getCategorySlug = (categoryName) => {
+    return removeVietnameseTones(categoryName).toLowerCase().replace(/\s+/g, '-');
+  };
+
+  const handleCategoryClick = (categoryName) => {
+    const slug = getCategorySlug(categoryName);
+    navigate(`/events/${slug}`);
+  };
+
+  if (!flower) return <LoadingComponent />
 
   return (
     <>
       <Notification />
       <Header />
-      <div className="text-gray-700 body-font overflow-hidden bg-white product-detail">
+      <div ref={productDetailRef} className="text-gray-700 body-font overflow-hidden bg-white product-detail">
         <div className="container px-5 py-24 mx-auto">
           <div className="lg:w-3/5 mx-auto flex flex-wrap">
           <img 
@@ -287,7 +340,18 @@ const ProductDetail = () => {
                 <span className="text-yellow-500 text-xl font-semibold">{averageRating.toFixed(1)} sao</span>
                 <span className="ml-2 text-gray-500">({reviews.length} đánh giá)</span>
               </div>
-              <div className="mt-2 text-xl">Người bán: <Link to={seller ? `/personal-product/${seller.userId}` : "#"} className="font-bold">{seller ? seller.fullName : "Thông tin người bán không có"}</Link></div>
+              <div className="mt-2 text-xl">Người bán: <Link to={seller ? `/personal-product/${seller.userId}` : "#"} className="font-bold cursor-pointer hover:underline ml-1">{seller ? seller.fullName : "Thông tin người bán không có"}</Link></div>
+              {categories[flower.categoryId] && (
+                <p className="text-gray-600 text-xl mt-2">
+                  Sự kiện: 
+                  <span 
+                    className="font-bold cursor-pointer hover:underline ml-1"
+                    onClick={() => handleCategoryClick(categories[flower.categoryId])}
+                  >
+                    {categories[flower.categoryId]}
+                  </span>
+                </p>
+              )}
               <div className="flex mb-4"></div>
               <p className="leading-relaxed"><strong className="text-xl">Lưu ý</strong> : Sản phẩm thực tế có thể sẽ khác đôi chút so với sản phẩm mẫu do đặc tính cắm, gói hoa thủ công. Các loại hoa không có sẵn, hoặc hết mùa sẽ được thay thế bằng các loại hoa khác, nhưng vẫn đảm bảo về định lượng hoa, tone màu, kiểu dáng và độ thẩm mỹ như sản phẩm mẫu.</p>
               <div className="flex mt-6 items-center pb-5 border-b-2 border-gray-200 mb-5">
@@ -354,25 +418,15 @@ const ProductDetail = () => {
           </div>
   
           {/*Filter Button */}
-          <button
-            onClick={() => setStarFilter(0)}
-            className={`border rounded px-3 py-1 w-32 ${starFilter === 0 ? 'bg-white-500 border-red-400 text-red-400' : 'bg-white border-color'}`}
-          >
-            Tất cả
-          </button>
           <div className="flex space-x-6">
             {starCounts.slice(1).reverse().map((count, index) => (
-              <button
-                key={5 - index}
-                onClick={() => setStarFilter(5 - index)}
-                className={`border rounded px-3 py-1 w-32 ${starFilter === 5 - index ? 'bg-white-500 border-red-400 text-red-400' : 'bg-white border-color'}`}
-                >
+              <div className="border rounded px-3 py-1 w-32 bg-white-500 border-red-400 text-center"                >
                 {5 - index} Sao ({count})
-              </button>
+              </div>
             ))}
           </div>
         </div>
-  
+        
         {canReview && !userReview && (
           <form onSubmit={(e) => handleReviewSubmit(e)} className="mb-8">
             <div className="mb-4">
@@ -517,6 +571,7 @@ const ProductDetail = () => {
                   key={relatedFlower.flowerId}
                   to={`/product/${relatedFlower.flowerId}`}
                   className="related-product-item mb-2 bg-white shadow-lg rounded-lg overflow-hidden transition-transform transform w-1/4 min-w-[200px]"
+                  onClick={handleRelatedProductClick} // Call the scroll function on click
                 >
                   <img
                     src={relatedFlower.imageUrl}

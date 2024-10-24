@@ -4,6 +4,7 @@ import Header from "../../component/header";
 import Footer from "../../component/footer";
 import api from "../../config/axios";
 import { useCart } from "../../contexts/CartContext";
+import { notifySuccess, notifyError } from "../../component/alert";
 
 function PaymentResult() {
     const location = useLocation();
@@ -11,6 +12,69 @@ function PaymentResult() {
     const [paymentStatus, setPaymentStatus] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const { updateCartItemCount } = useCart();
+
+    const createShippingOrder = async (orderDetails) => {
+        if (!orderDetails || !orderDetails.orderId) {
+            console.error('Order details are missing or invalid');
+            notifyError('Không thể tạo đơn hàng giao hàng do thiếu thông tin đơn hàng.');
+            return;
+        }
+
+        try {
+            const shippingOrder = {
+                from_name: 'Shop Hoa ABC',
+                from_phone: '0901234567',
+                from_address: '72 Lê Thánh Tôn, Phường Bến Nghé',
+                from_ward_name: 'Phường Bến Nghé',
+                from_district_name: 'Quận 1',
+                from_province_name: 'TP Hồ Chí Minh',
+                to_name: orderDetails.fullName,
+                to_phone: orderDetails.phone,
+                to_address: orderDetails.deliveryAddress,
+                to_ward_name: orderDetails.wardName,
+                to_ward_code: orderDetails.wardCode,
+                to_district_id: parseInt(orderDetails.toDistrictId, 10),
+                client_order_code: orderDetails.orderId.toString(),
+                weight: orderDetails.totalWeight,
+                length: 30,
+                width: 20,
+                height: 10,
+                required_note: "CHOXEMHANGKHONGTHU",
+                items: (orderDetails.items || []).map(item => ({
+                    name: item.flowerName,
+                    code: item.flowerId.toString(),
+                    quantity: item.quantity,
+                    price: parseInt(item.price),
+                    weight: 5000
+                }))
+            };
+
+            console.log('Shipping order data:', JSON.stringify(shippingOrder, null, 2));
+
+            const response = await api.post('Shipping/create-order', shippingOrder);
+            console.log('GHN Shipping order response:', JSON.stringify(response.data, null, 2));
+            console.log('GHN Shipping order created:', response.data);
+            notifySuccess('Đơn hàng giao hàng đã được tạo thành công');
+        } catch (error) {
+            console.error('Error creating shipping order:', error.response?.data || error.message);
+            notifyError('Không thể tạo đơn hàng giao hàng. Vui lòng liên hệ hỗ trợ.');
+        }
+    };
+
+    const getOrderDetails = async (orderId) => {
+        try {
+            const response = await api.get(`Orders/details/${orderId}`);
+            console.log('Order details:', JSON.stringify(response.data, null, 2));
+            return {
+                ...response.data,
+                orderItems: response.data.orderItems || [] // Đảm bảo orderItems luôn là một mảng
+            };
+        } catch (error) {
+            console.error('Error fetching order details:', error);
+            notifyError('Không thể lấy thông tin đơn hàng');
+            return null;
+        }
+    };
 
     useEffect(() => {
         const processPaymentResult = async () => {
@@ -21,54 +85,36 @@ function PaymentResult() {
                 const response = await api.get(`Payments/vnpay-return${location.search}`);
                 console.log('Payment result processed:', response.data);
 
-                switch(vnp_ResponseCode) {
-                    case '00':
-                        setPaymentStatus('Giao dịch thành công!');
-                        localStorage.setItem('cart', JSON.stringify([]));
-                        updateCartItemCount(0);
-                        break;
-                    case '07':
-                        setPaymentStatus('Trừ tiền thành công. Giao dịch bị nghi ngờ (liên quan tới lừa đảo, giao dịch bất thường).');
-                        break;
-                    case '09':
-                        setPaymentStatus('Giao dịch không thành công do: Thẻ/Tài khoản của khách hàng chưa đăng ký dịch vụ InternetBanking tại ngân hàng.');
-                        break;
-                    case '10':
-                        setPaymentStatus('Giao dịch không thành công do: Tài khoản của khách hàng không đủ số dư để thực hiện giao dịch.');
-                        break;
-                    case '11':
-                        setPaymentStatus('Giao dịch không thành công do: Đã hết hạn chờ thanh toán. Xin quý khách vui lòng thực hiện lại giao dịch.');
-                        break;
-                    case '12':
-                        setPaymentStatus('Giao dịch không thành công do: Thẻ/Tài khoản của khách hàng bị khóa.');
-                        break;
-                    case '13':
-                        setPaymentStatus('Giao dịch không thành công do Quý khách nhập sai mật khẩu xác thực giao dịch (OTP). Xin quý khách vui lòng thực hiện lại giao dịch.');
-                        break;
-                    case '24':
-                        setPaymentStatus('Giao dịch không thành công do: Khách hàng hủy giao dịch');
-                        break;
-                    case '51':
-                        setPaymentStatus('Giao dịch không thành công do: Tài khoản của quý khách không đủ số dư để thực hiện giao dịch.');
-                        break;
-                    case '65':
-                        setPaymentStatus('Giao dịch không thành công do: Tài khoản của Quý khách đã vượt quá hạn mức giao dịch trong ngày.');
-                        break;
-                    case '75':
-                        setPaymentStatus('Ngân hàng thanh toán đang bảo trì.');
-                        break;
-                    case '79':
-                        setPaymentStatus('Giao dịch không thành công do: KH nhập sai mật khẩu thanh toán quá số lần quy định. Xin quý khách vui lòng thực hiện lại giao dịch');
-                        break;
-                    case '99':
-                        setPaymentStatus('Các lỗi khác (lỗi còn lại, không có trong danh sách mã lỗi đã liệt kê)');
-                        break;
-                    default:
-                        setPaymentStatus('Giao dịch không thành công!');
+                if (vnp_ResponseCode === '00') {
+                    setPaymentStatus('Giao dịch thành công!');
+                    localStorage.setItem('cart', JSON.stringify([]));
+                    updateCartItemCount(0);
+                    
+                    // Lấy orderId từ localStorage
+                    const orderId = localStorage.getItem('pendingOrderId');
+                    if (orderId) {
+                        const orderDetails = await getOrderDetails(orderId);
+                        if (orderDetails) {
+                            console.log('Order details for shipping:', JSON.stringify(orderDetails, null, 2));
+                            console.log('toDistrictId for shipping:', orderDetails.toDistrictId);
+                            console.log('items:', JSON.stringify(orderDetails.items, null, 2));
+                            if (orderDetails.toDistrictId && orderDetails.items && orderDetails.items.length > 0) {
+                                await createShippingOrder(orderDetails);
+                                localStorage.removeItem('pendingOrderId');
+                            } else {
+                                notifyError('Thiếu thông tin quận/huyện hoặc sản phẩm cho đơn hàng giao hàng.');
+                            }
+                        } else {
+                            notifyError('Không thể tạo đơn hàng giao hàng do không tìm thấy thông tin đơn hàng.');
+                        }
+                    } else {
+                        notifyError('Không tìm thấy thông tin đơn hàng.');
+                    }
                 }
+                // ... xử lý các trường hợp khác
             } catch (error) {
-                console.error('Error processing payment result:', error.response?.data || error.message);
-                setPaymentStatus(error.response?.data?.message || 'Có lỗi xảy ra khi xử lý kết quả thanh toán.');
+                console.error('Error processing payment result:', error);
+                setPaymentStatus('Có lỗi xảy ra khi xử lý kết quả thanh toán.');
             } finally {
                 setIsLoading(false);
             }

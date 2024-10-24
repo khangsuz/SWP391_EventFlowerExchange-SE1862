@@ -13,21 +13,18 @@ const SignUp = () => {
 
   const handleSignUp = async (values) => {
     console.log("Form values:", values);
-    setError(null); // Reset error state before each submission
-  
+    setError(null);
+
     try {
       const response = await api.post("Users/register", values);
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data));
       navigate("/login");
     } catch (err) {
       console.error("Registration error:", err.response?.data);
+      console.error("Registration error:", err.response?.data);
       if (err.response && err.response.data) {
         if (typeof err.response.data === 'string') {
-          // If the error is a string, display it directly
           setError(err.response.data);
         } else if (err.response.data.errors) {
-          // If there are field-specific errors, display them and set a general message
           const errorFields = err.response.data.errors.map(error => ({
             name: error.field,
             errors: error.errors,
@@ -35,10 +32,8 @@ const SignUp = () => {
           form.setFields(errorFields);
           setError("Please correct the errors in the form.");
         } else if (err.response.data.message) {
-          // If there's a general error message
           setError(err.response.data.message);
         } else {
-          // Fallback error message
           setError("An error occurred during registration.");
         }
       } else {
@@ -191,7 +186,6 @@ const SignUp = () => {
               >
                 <Input type="password" placeholder="..." />
               </Form.Item>
-
               <Form.Item>
                 <Button
                   className="w-full bg-blue-500 text-white p-3 rounded-md font-semibold hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-300 ease-in-out transform hover:scale-105 mt-2"
@@ -201,7 +195,6 @@ const SignUp = () => {
                   Đăng ký
                 </Button>
               </Form.Item>
-
               <p className="mt-4 text-center text-sm text-gray-600">
                 Đã có tài khoản?{" "}
                 <Link

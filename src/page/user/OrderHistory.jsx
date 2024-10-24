@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from "../../config/axios";
 import Header from '../../component/header';
 import Footer from '../../component/footer';
+import { Modal, Form, Input, Button, message } from 'antd';
 
 function OrderHistory() {
     const [orders, setOrders] = useState([]);
@@ -9,6 +10,9 @@ function OrderHistory() {
     const [error, setError] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [ordersPerPage] = useState(4);    
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [selectedOrderId, setSelectedOrderId] = useState(null);
+    const [form] = Form.useForm();
 
     useEffect(() => {
         fetchOrderHistory();
@@ -49,6 +53,23 @@ function OrderHistory() {
 
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
+    const handleReportClick = (orderId) => {
+        setSelectedOrderId(orderId);
+        setIsModalVisible(true);
+    };
+
+    const handleModalCancel = () => {
+        setIsModalVisible(false);
+        form.resetFields();
+    };
+
+    const onFinish = (values) => {
+        console.log(`Báo cáo cho đơn hàng ${selectedOrderId}:`, values.reportContent);
+        // Xử lý gửi báo cáo ở đây
+        message.success('Báo cáo đã được gửi thành công!');
+        handleModalCancel();
+    };
+
     if (loading) return <div>Loading...</div>;
     if (error) return <div>{error}</div>;
 
@@ -63,6 +84,7 @@ function OrderHistory() {
                         <th className="border p-2">Sản phẩm</th>
                         <th className="border p-2">Tổng tiền</th>
                         <th className="border p-2">Trạng thái</th>
+                        <th className="border p-2">Hành động</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -79,6 +101,7 @@ function OrderHistory() {
                                 <div><strong>Email:</strong> {order.recipient?.email}</div>
                                 <div><strong>Địa chỉ:</strong> {order.recipient?.address}</div>
                                 <div><strong>Ngày tạo:</strong> {new Date(order.orderDate).toLocaleDateString()}</div>
+                                <div><strong>Ghi chú:</strong> {order.note}</div>
                             </td>
                             <td className="border p-2">
                                 <ul>
@@ -100,12 +123,20 @@ function OrderHistory() {
                                     {getStatusText(order.orderDelivery)}
                                 </span>
                             </td>
+                            <td className="border p-2 text-center">
+                                <Button 
+                                    type="link"
+                                    onClick={() => handleReportClick(order.orderId)}
+                                >
+                                    Help
+                                </Button>
+                            </td>
                         </tr>
                     ))}
                 </tbody>
             </table>
             <div className="flex justify-center mt-4">
-                {Array.from({ length: Math.ceil(orders.length / ordersPerPage) }, (_, i) => (
+            {Array.from({ length: Math.ceil(orders.length / ordersPerPage) }, (_, i) => (
                     <button
                         key={i + 1}
                         onClick={() => paginate(i + 1)}
@@ -115,6 +146,27 @@ function OrderHistory() {
                     </button>
                 ))}
             </div>
+            <Modal
+                title="Báo cáo vấn đề đơn hàng"
+                visible={isModalVisible}
+                onCancel={handleModalCancel}
+                footer={null}
+            >
+                <Form form={form} onFinish={onFinish} layout="vertical">
+                    <Form.Item
+                        name="reportContent"
+                        label="Mô tả vấn đề của bạn"
+                        rules={[{ required: true, message: 'Vui lòng nhập nội dung báo cáo!' }]}
+                    >
+                        <Input.TextArea rows={4} />
+                    </Form.Item>
+                    <Form.Item>
+                        <Button type="primary" htmlType="submit">
+                            Gửi báo cáo
+                        </Button>
+                    </Form.Item>
+                </Form>
+            </Modal>
         </div>
     );
 }

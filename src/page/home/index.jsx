@@ -5,9 +5,11 @@ import api from "../../config/axios";
 import Footer from "../../component/footer";
 import ProductCard from "../../component/product-card";
 import { Link } from "react-router-dom";
+import LoadingComponent from '../../component/loading'; // Import LoadingComponent
 
 const Home = () => {
   const [bestSellingFlowers, setBestSellingFlowers] = useState([]);
+  const [loading, setLoading] = useState(true); // Loading state
 
   const fetchBestSellingFlowers = async () => {
     try {
@@ -15,12 +17,18 @@ const Home = () => {
       setBestSellingFlowers(response.data);
     } catch (err) {
       console.log(err);
+    } finally {
+      setLoading(false); // Set loading to false after fetching
     }
   };
 
   useEffect(() => {
     fetchBestSellingFlowers();
   }, []);
+
+  if (loading) {
+    return <LoadingComponent />; // Show loading component
+  }
 
   return (
     <div className="home">

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Table, Select, message } from 'antd';
 import { useParams } from 'react-router-dom';
 import api from "../../config/axios";
+import Header from '../../component/header';
+import Footer from '../../component/footer';
 
 const { Option } = Select;
 
@@ -44,6 +46,8 @@ function SellerOrderManagement() {
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     return (
+        <>
+        <Header />
         <div className="container mx-auto px-4 py-8">
             <table className="w-full border-collapse">
                 <thead>
@@ -115,6 +119,8 @@ function SellerOrderManagement() {
                 ))}
                 </div>
         </div>
+        <Footer />
+        </>
     );
 }
 

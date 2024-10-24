@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import { Routes, Route, Link, useNavigate, useLocation } from "react-router-dom";
 import Header from "../../component/header";
 import "../../index.css";
-// import api from "../../config/axios";
+import api from "../../config/axios";
 import Footer from "../../component/footer";
 import { useCart } from "../../contexts/CartContext";
 import RegisterSeller from "./RegisterSeller";
 import OrderHistory from "./OrderHistory";
 import ChangePassword from "./ChangePassword";
-import api, { baseUrl } from "../../config/axios";
+import UserAvatar from "./UserAvatar";
+import Address from "./Address";
 
 const Profile = () => {
     const navigate = useNavigate();
@@ -21,14 +22,13 @@ const Profile = () => {
     const { updateCartItemCount } = useCart();
     const [profileImage, setProfileImage] = useState(null);
     const location = useLocation();
-    const [imageKey, setImageKey] = useState(0);
-    const [imageError, setImageError] = useState(false);
 
     const fetchUserData = async () => {
         try {
             const response = await api.get('/Users/profile');
             setUserData(response.data);
             setEditedData(response.data);
+            const storedImage = localStorage.getItem('profileImageUrl');
         } catch (error) {
             console.error("Error fetching user data:", error);
             setError("Failed to load user data. Please try again later.");
@@ -70,9 +70,7 @@ const Profile = () => {
         setProfileImage(null);
         setError(null);
         setSuccess(null);
-        setImageError(false); // Reset image error when cancelling edit
-        URL.revokeObjectURL(editedData.profileImageUrl);
-      };
+    };
 
     const handleChange = (e) => {
         setEditedData({ ...editedData, [e.target.name]: e.target.value });
@@ -81,83 +79,62 @@ const Profile = () => {
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-          setProfileImage(file);
-          setEditedData({ ...editedData, profileImage: file });
-          setImageError(false); // Reset image error when a new image is selected
+            setProfileImage(file);
+            setEditedData({ ...editedData, profileImageUrl: URL.createObjectURL(file) });
         }
-      };
+    };
 
-      const handleSave = async () => {
+    const handleSave = async () => {
         let isValid = true;
-        const errors = {};
-    
-        // Validate fullName
-        if (!editedData.fullName || editedData.fullName.trim() === '') {
-            errors.fullName = "Tên đầy đủ không được để trống.";
-            isValid = false;
-        }
-    
-        // Validate email
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!editedData.email || !emailRegex.test(editedData.email)) {
-            errors.email = "Email không hợp lệ.";
-            isValid = false;
-        }
-    
-        // Validate phone
-        const phoneRegex = /^\d{10,11}$/;
-        if (!editedData.phone || !phoneRegex.test(editedData.phone)) {
-            errors.phone = "Số điện thoại phải có 10 hoặc 11 chữ số.";
-            isValid = false;
-        }
-    
-        // Validate address
-        if (!editedData.address || editedData.address.trim() === '') {
-            errors.address = "Địa chỉ không được để trống.";
-            isValid = false;
-        }
-    
-        if (!isValid) {
-            setError(Object.values(errors)); // Convert error object to an array of strings
-            return;
-        }
-    
-        const formData = new FormData();
-        formData.append("name", editedData.name);
-        formData.append("fullName", editedData.fullName);
-        formData.append("email", editedData.email);
-        formData.append("phone", editedData.phone);
-        formData.append("address", editedData.address);
-        
-        if (profileImage) {
-            formData.append("profileImageFile", profileImage);
-        }
-    
-        try {
-            const response = await api.put('/Users/profile', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
-    
-            console.log("Response:", response.data);
-            await fetchUserData();
-            setIsEditing(false);
-            setSuccess("Thông tin cá nhân đã được cập nhật thành công!");
-            setError(null);
-            setProfileImage(null);
-            setImageKey(prev => prev + 1);
-            setTimeout(() => setSuccess(null), 3000);
-        } catch (error) {
-            console.error("Lỗi khi cập nhật thông tin người dùng:", error.response?.data || error.message);
-            
-            if (error.response?.status === 400) {
-                // Xử lý lỗi validation từ server
-                setError(error.response.data.errors || "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.");
-            } else {
-                setError(`Không thể cập nhật thông tin: ${error.response?.data?.message || error.message}`);
+        if (editedData.name !== userData.name) {
+            const nameRegex = /^[^\s!@#$%^&*()_+={}\[\]:;"'<>,.?~]+$/;
+            if (!nameRegex.test(editedData.name)) {
+                alert("Tên không được chứa dấu cách hoặc ký tự đặc biệt.");
+                isValid = false;
             }
-            setSuccess(null);
+        }
+
+        if (editedData.email !== userData.email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(editedData.email)) {
+                alert("Email không hợp lệ.");
+                isValid = false;
+            }
+        }
+
+        if (editedData.phone !== userData.phone) {
+            const phoneRegex = /^\d{10,11}$/;
+            if (!phoneRegex.test(editedData.phone)) {
+                alert("Số điện thoại phải có từ 10 đến 11 số.");
+                isValid = false;
+            }
+        }
+
+        if (isValid) {
+            const formData = new FormData();
+            // Cập nhật các trường dữ liệu theo yêu cầu của backend
+            formData.append("FullName", editedData.fullName); // Thay đổi tên trường
+            formData.append("Email", editedData.email);
+            formData.append("Address", editedData.address); // Thêm địa chỉ
+            formData.append("Phone", editedData.phone); // Thêm số điện thoại
+
+            // Chỉ thêm profileImage nếu có
+            if (profileImage) {
+                formData.append("image", profileImage); // Thay đổi tên trường cho hình ảnh
+            }
+
+            try {
+                const response = await api.put('/Users/profile', formData); // Cập nhật API endpoint
+                setUserData(response.data); // Cập nhật state với dữ liệu mới
+                setIsEditing(false);
+                setSuccess("Profile updated successfully!");
+                setError(null);
+                setTimeout(() => setSuccess(null), 3000);
+            } catch (error) {
+                console.error("Error updating user data:", error.response ? error.response.data : error.message);
+                setError("Failed to update user data. Please try again.");
+                setSuccess(null);
+            }
         }
     };
 
@@ -169,15 +146,11 @@ const Profile = () => {
         <>
             <Header />
             <div className="bg-slate-100 p-20">
-            {error && (
-    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative text-center mb-4" role="alert">
-        {Array.isArray(error) ? (
-            error.map((err, index) => <span key={index} className="block sm:inline">{err}</span>)
-        ) : (
-            <span className="block sm:inline">{error}</span>
-        )}
-    </div>
-)}
+                {error && (
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative text-center mb-4" role="alert">
+                        <span className="block sm:inline">{error}</span>
+                    </div>
+                )}
                 {success && (
                     <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative text-center mb-4" role="alert">
                         <span className="block sm:inline">{success}</span>
@@ -186,26 +159,9 @@ const Profile = () => {
                 <div className="flex max-w-6xl mx-auto">
                     <div className="w-1/4 bg-white shadow-md rounded-lg p-5">
                         <div className="text-center mb-5">
-                            {!imageError ? (
-                                <img
-                                    key={imageKey}
-                                    src={isEditing && profileImage
-                                        ? URL.createObjectURL(profileImage)
-                                        : (userData.profileImageUrl
-                                            ? `${baseUrl}Users/profile-image/${userData.userId}?${new Date().getTime()}`
-                                            : '/path/to/default/image.jpg')}
-                                    alt={userData.name}
-                                    className="w-24 h-24 rounded-full mx-auto mb-2 object-cover"
-                                    onError={(e) => {
-                                        console.error("Image load error:", e);
-                                        setImageError(true);
-                                    }}
-                                />
-                            ) : (
-                                <div className="w-24 h-24 rounded-full mx-auto mb-2 bg-gray-300 flex items-center justify-center text-gray-600 font-bold text-xl">
-                                    {userData.fullName ? userData.fullName.charAt(0).toUpperCase() : '?'}
-                                </div>
-                            )}
+                            <div className="w-10 h-10 mx-auto mb-3">
+                                <UserAvatar userId={userData.userId} userName={userData.fullName} />
+                            </div>
                             {isEditing && (
                                 <input
                                     type="file"
@@ -229,6 +185,12 @@ const Profile = () => {
                                 className={`block p-2 rounded ${location.pathname === '/profile/order-history' ? 'bg-gray-200' : 'text-gray-700 hover:bg-gray-200'}`}
                             >
                                 Danh sách đơn hàng
+                            </Link>
+                            <Link
+                                to="/profile/address"
+                                className={`block p-2 rounded ${location.pathname === '/profile/address' ? 'bg-gray-200' : 'text-gray-700 hover:bg-gray-200'}`}
+                            >
+                                Địa chỉ
                             </Link>
                             <Link
                                 to="/profile/change-password"
@@ -336,6 +298,7 @@ const Profile = () => {
                             <Route path="change-password" element={<ChangePassword />} />
                             <Route path="register-seller" element={<RegisterSeller userData={userData} />} />
                             <Route path="order-history" element={<OrderHistory />} />
+                            <Route path="address" element={<Address />} />
                         </Routes>
                     </div>
                 </div>

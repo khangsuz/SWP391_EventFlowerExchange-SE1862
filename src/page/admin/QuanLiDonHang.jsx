@@ -177,7 +177,7 @@ const QuanLiDonHang = () => {
             <>
               <Button onClick={() => showUpdateStatusModal(record)}>Cập nhật trạng thái</Button>
               <Button onClick={() => showDetailModal(record)}>Chi tiết</Button>
-              <Button danger onClick={() => handleDeleteOrder(record.orderId)}>Xóa</Button>
+              {/* <Button danger onClick={() => handleDeleteOrder(record.orderId)}>Xóa</Button> */}
             </>
           )}
         />
