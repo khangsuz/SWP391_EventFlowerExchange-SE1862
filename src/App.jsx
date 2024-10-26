@@ -34,6 +34,11 @@ import ChangePassword from "./page/user/ChangePassword";
 import OrderHistory from "./page/user/OrderHistory";
 import SellerOrderManagement from "./page/personalProduct/SellerOrderManagement";
 import AdminReviewManagement from "./page/admin/AdminReviewManagement";
+import DamCuoi from "./page/events/DamCuoi";
+import KhaiTruong from "./page/events/KhaiTruong";
+import KiNiem from "./page/events/KiNiem";
+import SinhNhat from "./page/events/SinhNhat";
+import ChucMung from "./page/events/ChucMung";
 
 const App = () => {
   const router = createBrowserRouter([
@@ -85,7 +90,29 @@ const App = () => {
     },
     {
       path: "events",
-      element: <Events />
+      element: <Events />,
+      children: [
+        {
+          path: "hoa-sinh-nhat",
+          element: <SinhNhat />
+        },
+        {
+          path: "hoa-khai-truong",
+          element: <KhaiTruong />
+        },
+        {
+          path: "hoa-dam-cuoi",
+          element: <DamCuoi />
+        },
+        {
+          path: "hoa-ki-niem",
+          element: <KiNiem />
+        },
+        {
+          path: "hoa-chuc-mung",
+          element: <ChucMung />
+        },
+      ],
     },
     {
       path: "/search", 

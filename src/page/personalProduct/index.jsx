@@ -134,9 +134,9 @@ const PersonalProduct = () => {
                   <button className="chat-button text-sm border border-gray-300 rounded py-1 px-2 mr-2" onClick={handleChat}>
                     Chat Ngay
                   </button>
-                  <button className="chat-button text-sm border border-gray-300 rounded py-1 px-2 mr-2" onClick={handleManageOrders}>
+                  {/* <button className="chat-button text-sm border border-gray-300 rounded py-1 px-2 mr-2" onClick={handleManageOrders}>
                     Giao hàng
-                  </button>
+                  </button> */}
                   <button
                     className={`text-sm border border-gray-300 rounded py-1 px-2 ${isFollowing ? 'bg-red-500 text-white' : ''}`}
                     onClick={handleFollow}

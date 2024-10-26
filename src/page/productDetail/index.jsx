@@ -27,8 +27,39 @@ const ProductDetail = () => {
   const navigate = useNavigate();
   const imageUrl = flower ? getFullImageUrl(flower.imageUrl) : null;
   const [starFilter, setStarFilter] = useState(0);
+  const [categories, setCategories] = useState({});
+  const [isExpired, setIsExpired] = useState(false);
 
-  
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        
+        const response = await api.get("Categories");
+        const categoriesMap = {};
+        response.data.forEach(category => {
+          categoriesMap[category.categoryId] = category.categoryName;
+        });
+        setCategories(categoriesMap);
+      } catch (err) {
+        console.error("Error fetching categories:", err);
+      }
+    };
+
+
+
+    fetchCategories();
+  }, []);
+  const getCategorySlug = (categoryName) => {
+    const removeAccents = (str) => {
+      return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    };
+    return removeAccents(categoryName).toLowerCase().replace(/ /g, '-');
+  };
+
+  const handleCategoryClick = (categoryName) => {
+    const slug = getCategorySlug(categoryName);
+    navigate(`/events/${slug}`);
+  };
   const fetchFlowerDetails = async () => {
     try {
       const response = await api.get(`Flowers/${id}`);
@@ -42,6 +73,8 @@ const ProductDetail = () => {
       if (response.data && response.data.categoryId) {
         fetchRelatedFlowers(response.data.categoryId);
       }
+      const timeRemaining = renderTimeRemaining(response.data.listingDate);
+      setIsExpired(timeRemaining === 'Hết hạn');
     } catch (err) {
       console.error("Error fetching flower details:", err);
     }
@@ -268,7 +301,22 @@ const ProductDetail = () => {
   reviews.forEach(review => {
     starCounts[review.rating]++;
   });
+  const renderTimeRemaining = (listingDate) => {
+    const listingTime = new Date(listingDate).getTime();
+    const currentTime = new Date().getTime();
 
+    const localListingTime = listingTime + 7 * 60 * 60 * 1000;
+
+    const timeRemaining = 24 * 60 * 60 * 1000 - (currentTime - localListingTime);
+
+    if (timeRemaining > 0) {
+        const hours = Math.floor(timeRemaining / (1000 * 60 * 60));
+        const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+        return `${hours}h ${minutes}m còn lại`;
+    }
+
+    return 'Hết hạn';
+};
   if (!flower) return <div>Loading...</div>;
 
   return (
@@ -289,11 +337,29 @@ const ProductDetail = () => {
                 <span className="text-yellow-500 text-xl font-semibold">{averageRating.toFixed(1)} sao</span>
                 <span className="ml-2 text-gray-500">({reviews.length} đánh giá)</span>
               </div>
-              <div className="mt-2 text-xl">Người bán: <Link to={seller ? `/personal-product/${seller.userId}` : "#"} className="font-bold">{seller ? seller.fullName : "Thông tin người bán không có"}</Link></div>
+             
+              <div className="mt-2 text-xl">Người bán: <Link to={seller ? `/personal-product/${seller.userId}` : "#"} className="font-bold cursor-pointer hover:underline ml-1">{seller ? seller.fullName : "Thông tin người bán không có"}</Link></div>
+              {categories[flower.categoryId] && (
+                <p className="text-gray-600 text-xl mt-2">
+                  Sự kiện: 
+                  <span 
+                    className="font-bold cursor-pointer hover:underline ml-1"
+                    onClick={() => handleCategoryClick(categories[flower.categoryId])}
+                  >
+                    {categories[flower.categoryId]}
+                  </span>
+                 
+                </p>
+                
+              )}
+               <p className="text-gray-600 text-xl mt-2">Độ tươi: {flower.condition}%</p>
               <div className="flex mb-4"></div>
               {/* <p className="leading-relaxed">Lưu ý : Sản phẩm thực tế có thể sẽ khác đôi chút so với sản phẩm mẫu do đặc tính cắm, gói hoa thủ công. Các loại hoa không có sẵn, hoặc hết mùa sẽ được thay thế bằng các loại hoa khác, nhưng vẫn đảm bảo về định lượng hoa, tone màu, kiểu dáng và độ thẩm mỹ như sản phẩm mẫu.</p> */}
               <p className="leading-relaxed"><strong className="text-xl">Lưu ý</strong> : Sản phẩm thực tế có thể sẽ khác đôi chút so với sản phẩm mẫu do đặc tính cắm, gói hoa thủ công. Các loại hoa không có sẵn, hoặc hết mùa sẽ được thay thế bằng các loại hoa khác, nhưng vẫn đảm bảo về định lượng hoa, tone màu, kiểu dáng và độ thẩm mỹ như sản phẩm mẫu.</p>
               <div className="flex mt-6 items-center pb-5 border-b-2 border-gray-200 mb-5">
+              <div className="time-remaining text-[#bc0000] text-xl mt-2">
+                {renderTimeRemaining(flower.listingDate)}
+              </div>
                 <div className="flex ml-6 items-center">
                   <div className="relative">
                     <span className="absolute right-0 top-0 h-full w-10 text-center text-gray-600 pointer-events-none flex items-center justify-center">
@@ -302,21 +368,27 @@ const ProductDetail = () => {
                 </div>
               </div>
               <div className="flex">
-                <button className="px-4 text-lg border-2 py-2 text-gray-800 font-bold rounded hover:bg-gray-300 transition duration-300 ease-in-out disabled:cursor-not-allowed"
-                  onClick={() => setQuantity(quantity - 1)}
-                  disabled={quantity <= 1}>
-                  -
-                </button>
-                <span className="mt-1 mx-4 text-4xl font-semibold">{quantity}</span>
-                <button className="px-4 text-lg border-2 py-2  text-gray-800 font-bold rounded hover:bg-gray-300 transition duration-300 ease-in-out"
-                  onClick={() => setQuantity(quantity + 1)}>
-                  +
-                </button>
-                <button className="flex ml-2 text-lg border-2 border-0 py-2 px-6 focus:outline-none hover:bg-gray-300 rounded"
-                  onClick={handleAddToCart}
-                  disabled={loading}>
-                  {loading ? "Đang thêm..." : "Thêm vào giỏ"}
-                </button>
+                {isExpired ? ( // Kiểm tra xem sản phẩm đã hết hạn chưa
+                  <span className="text-red-500 font-bold">Sản phẩm đã hết hạn</span>
+                ) : (
+                  <>
+                    <button className="px-4 text-lg border-2 py-2 text-gray-800 font-bold rounded hover:bg-gray-300 transition duration-300 ease-in-out disabled:cursor-not-allowed"
+                      onClick={() => setQuantity(quantity - 1)}
+                      disabled={quantity <= 1}>
+                      -
+                    </button>
+                    <span className="mt-1 mx-4 text-4xl font-semibold">{quantity}</span>
+                    <button className="px-4 text-lg border-2 py-2 text-gray-800 font-bold rounded hover:bg-gray-300 transition duration-300 ease-in-out"
+                      onClick={() => setQuantity(quantity + 1)}>
+                      +
+                    </button>
+                    <button className="flex ml-2 text-lg border-2 border-0 py-2 px-6 focus:outline-none hover:bg-gray-300 rounded"
+                      onClick={handleAddToCart}
+                      disabled={loading}>
+                      {loading ? "Đang thêm..." : "Thêm vào giỏ"}
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -606,3 +678,4 @@ const ProductDetail = () => {
 }
 
 export default ProductDetail;
+

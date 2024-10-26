@@ -201,12 +201,15 @@ const ManageProducts = () => {
           onChange={(e) => setUpdatedProduct({ ...updatedProduct, quantity: e.target.value })}
           style={{ marginBottom: 10 }}
         />
-        <Input
+        <Select
           placeholder="Trạng thái"
           value={updatedProduct.status}
-          onChange={(e) => setUpdatedProduct({ ...updatedProduct, status: e.target.value })}
-          style={{ marginBottom: 10 }}
-        />
+          onChange={(value) => setUpdatedProduct({ ...updatedProduct, status: value })}
+          style={{ marginBottom: 10, width: '100%' }}
+        >
+          <Option value="Available">Available</Option>
+          <Option value="Sold">Sold</Option>
+        </Select>
         <Select
           placeholder="Chọn danh mục"
           value={updatedProduct.category}

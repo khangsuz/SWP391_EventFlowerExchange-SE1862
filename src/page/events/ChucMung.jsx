@@ -3,19 +3,19 @@ import api from "../../config/axios";
 import ProductCard from "../../component/product-card";
 import { notifyError } from "../../component/alert";
 import { Link } from "react-router-dom";
-import LoadingComponent from '../../component/loading'; // Import LoadingComponent
+import LoadingComponent from '../../component/loading'; 
 
-function DamCuoi() {
+function ChucMung() {
   const [flowers, setFlowers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const flowersPerPage = 5;
+  const [flowersPerPage] = useState(12); 
 
   useEffect(() => {
     const fetchFlowers = async () => {
       try {
         const response = await api.get('/Flowers');
-        const filteredFlowers = response.data.filter(flower => flower.categoryId === 4);
+        const filteredFlowers = response.data.filter(flower => flower.categoryId === 2);
         setFlowers(filteredFlowers);
       } catch (error) {
         console.error("Error fetching flowers:", error);
@@ -44,8 +44,8 @@ function DamCuoi() {
   }
 
   return (
-    <div className="dam-cuoi container mx-auto p-20">
-      <h1 className="text-2xl mb-6 font-bold text-center">Danh Sách Hoa Đám Cưới</h1>
+    <div className="thien-nhien container mx-auto p-20">
+      <h1 className="text-2xl mb-6 font-bold text-center">Danh Sách Hoa Chúc Mừng</h1>
       <div className="grid grid-cols-4 gap-4">
         {currentFlowers.map(flower => (
           <Link to={flower.flowerId} key={flower.flowerId} className="product-grid-item">
@@ -71,4 +71,4 @@ function DamCuoi() {
   );
 }
 
-export default DamCuoi;
+export default ChucMung;

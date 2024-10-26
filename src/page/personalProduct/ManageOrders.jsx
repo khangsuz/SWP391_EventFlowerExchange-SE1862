@@ -2,12 +2,27 @@ import React, { useEffect, useState } from "react";
 import api from "../../config/axios";
 import { useParams, useNavigate } from "react-router-dom";
 import { Table, Tag, Typography, Space, Button, Modal, Form, Input, message, Select } from "antd";
-import { EditOutlined, DeleteOutlined, HomeOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, HomeOutlined, CheckOutlined } from '@ant-design/icons';
 import Header from "../../component/header";
 import Footer from "../../component/footer";
 
 const { Title } = Typography;
+const { Option } = Select;
 
+const deliveryStatuses = [
+  "ChờXửLý",
+  "ĐangXửLý",
+  "ĐãGửiHàng",
+  "ĐãHủy",
+  "ĐãGiaoHàng",
+];
+const getAvailableStatuses = (currentStatus) => {
+  if (currentStatus === "ĐãHủy") {
+    return ["ĐãHủy"];
+  }
+  const currentIndex = deliveryStatuses.indexOf(currentStatus);
+  return deliveryStatuses.slice(currentIndex);
+};
 const ManageOrders = () => {
   const { userId } = useParams();
   const navigate = useNavigate();
@@ -15,17 +30,49 @@ const ManageOrders = () => {
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [currentOrder, setCurrentOrder] = useState(null); 
   const [currentUserId, setCurrentUserId] = useState(null);
+  const [isShippingModalVisible, setIsShippingModalVisible] = useState(false);
+  const [shippingForm] = Form.useForm();
+  const [tempOrderId, setTempOrderId] = useState(null);
+  const [editingStatus, setEditingStatus] = useState({});
+
+
+
   
-  const handleDeliveryStatusChange = async (orderId, newStatus) => {
+  const handleDeliveryStatusChange = (orderId, newStatus) => {
+    setEditingStatus(prev => ({
+      ...prev,
+      [orderId]: newStatus
+    }));
+  };
+  const confirmStatusChange = async (orderId) => {
+    const newStatus = editingStatus[orderId];
+    if (!newStatus) return;
+
     try {
-        await api.put(`Orders/${orderId}/delivery`, { orderDelivery: newStatus, userId });
-        message.success('Cập nhật trạng thái giao hàng thành công');
-        fetchOrders();
+      await updateOrderStatus(orderId, newStatus);
+      message.success('Cập nhật trạng thái giao hàng thành công');
+      setEditingStatus(prev => ({
+        ...prev,
+        [orderId]: undefined
+      }));
+      fetchOrders();
     } catch (error) {
-        console.error('Error updating order delivery status:', error);
-        message.error('Không thể cập nhật trạng thái giao hàng: ' + (error.response?.data || error.message));
+      console.error('Error updating order delivery status:', error);
+      message.error('Không thể cập nhật trạng thái giao hàng: ' + (error.response?.data || error.message));
     }
-};
+  };
+
+  const updateOrderStatus = async (orderId, newStatus) => {
+    const data = { orderDelivery: newStatus, userId: currentUserId };
+    await api.put(`Orders/${orderId}/delivery`, data);
+  };
+
+
+  const handleShippingSubmit = (values) => {
+    updateOrderStatus(tempOrderId, "ĐãGửiHàng", values.shippingCode);
+    setIsShippingModalVisible(false);
+    shippingForm.resetFields();
+  };
 
   const fetchCurrentUserId = async () => {
     try {
@@ -130,19 +177,37 @@ const ManageOrders = () => {
       title: 'Trạng Thái Giao Hàng',
       dataIndex: 'orderDelivery',
       key: 'orderDelivery',
-      render: (text, order) => (
-        <Select
-          defaultValue={text}
-          style={{ width: 150 }}
-          onChange={(value) => handleDeliveryStatusChange(order.orderId, value)}
-        >
-          <Option value="ChờXửLý">Chờ xử lý</Option>
-          <Option value="ĐangXửLý">Đang xử lý</Option>
-          <Option value="ĐãGửiHàng">Đã gửi hàng</Option>
-          <Option value="ĐãGiaoHàng">Đã giao hàng</Option>
-          <Option value="ĐãHủy">Đã hủy</Option>
-        </Select>
-      ),
+      render: (text, order) => {
+        const availableStatuses = getAvailableStatuses(text);
+        return (
+          <Space>
+            <Select
+              value={editingStatus[order.orderId] || text}
+              style={{ width: 150 }}
+              onChange={(value) => handleDeliveryStatusChange(order.orderId, value)}
+            >
+              {availableStatuses.map(status => (
+                <Option 
+                  key={status} 
+                  value={status} 
+                  disabled={status === "ĐãGiaoHàng" && text !== "ĐãGửiHàng"}
+                >
+                  {status}
+                </Option>
+              ))}
+            </Select>
+            {editingStatus[order.orderId] && editingStatus[order.orderId] !== text && (
+              <Button 
+                type="primary" 
+                icon={<CheckOutlined />} 
+                onClick={() => confirmStatusChange(order.orderId)}
+              >
+                Xác nhận
+              </Button>
+            )}
+          </Space>
+        );
+      },
     },
     {
       title: 'Sản Phẩm',
@@ -308,6 +373,7 @@ const ManageOrders = () => {
           </Form.Item>
         </Form>
       </Modal>
+      
       <Footer />
       <style jsx>{`
         .table-row-light {

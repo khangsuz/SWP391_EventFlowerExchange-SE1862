@@ -13,8 +13,19 @@ const WithdrawalRequests = () => {
         headers: { Authorization: `Bearer ${token}` },
         timeout: 5000,
       });
-
-      setWithdrawalRequests(response.data);
+      const requestsWithIncome = await Promise.all(response.data.map(async (request) => {
+        try {
+          const incomeResponse = await axios.get(`https://localhost:7288/api/Users/api/users/${request.userId}/revenue`, {
+            headers: { Authorization: `Bearer ${token}` },
+            timeout: 5000,
+          });
+          return { ...request, currentIncome: incomeResponse.data.currentIncome };
+        } catch (error) {
+          console.error(`Error fetching income for user ${request.userId}:`, error);
+          return { ...request, currentIncome: 'N/A' };
+        }
+      }));
+      setWithdrawalRequests(requestsWithIncome);
     } catch (error) {
       console.error("Error fetching withdrawal requests:", error);
       setError("Lỗi khi tải danh sách yêu cầu rút tiền.");
@@ -54,24 +65,40 @@ const WithdrawalRequests = () => {
     { title: 'Tên người dùng', dataIndex: 'fullName', key: 'fullName' },
     { title: 'Số tài khoản', dataIndex: 'accountNumber', key: 'accountNumber' },
     { title: 'Số điện thoại', dataIndex: 'phone', key: 'phone' },
-    { title: 'Số tiền', dataIndex: 'amount', key: 'amount' },
-    { title: 'Ngày yêu cầu', dataIndex: 'requestDate', key: 'requestDate' },
+    { 
+      title: 'Số tiền yêu cầu rút', 
+      dataIndex: 'amount', 
+      key: 'amount',
+      render: (text) => `${Number(text).toLocaleString('vi-VN')} VNĐ`
+    },
+    { 
+      title: 'Thu nhập hiện tại', 
+      dataIndex: 'currentIncome', 
+      key: 'currentIncome',
+      render: (text) => typeof text === 'number' ? `${text.toLocaleString('vi-VN')} VNĐ` : text
+    },
+    { 
+      title: 'Ngày yêu cầu', 
+      dataIndex: 'requestDate', 
+      key: 'requestDate',
+      render: (text) => new Date(text).toLocaleString('vi-VN')
+    },
     { title: 'Trạng thái', dataIndex: 'status', key: 'status' },
     { title: 'Ghi chú', dataIndex: 'remarks', key: 'remarks' },
     {
-        title: 'Hành động',
-        key: 'action',
-        render: (text, record) => (
-          <Button 
-            type="primary" 
-            onClick={() => handleApprove(record.requestId)}
-            disabled={record.status !== 'Pending'}
-          >
-            Duyệt
-          </Button>
-        ),
-      },
-    ];
+      title: 'Hành động',
+      key: 'action',
+      render: (text, record) => (
+        <Button 
+          type="primary" 
+          onClick={() => handleApprove(record.requestId)}
+          disabled={record.status !== 'Pending'}
+        >
+          Duyệt
+        </Button>
+      ),
+    },
+  ];
 
   return (
     <div>

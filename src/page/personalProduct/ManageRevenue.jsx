@@ -152,12 +152,29 @@ const ManageRevenue = () => {
     }
   };
 
-  const showModal = () => setIsModalVisible(true);
+  const showModal = () => {
+    setWithdrawRequest(prev => ({
+      ...prev,
+      amount: currentIncome
+    }));
+    setIsModalVisible(true);
+  };
   const handleCancel = () => setIsModalVisible(false);
   
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setWithdrawRequest({ ...withdrawRequest, [name]: value });
+    if (name === 'amount') {
+      const numericValue = value.replace(/[^0-9]/g, '');
+      setWithdrawRequest({ 
+        ...withdrawRequest, 
+        [name]: numericValue 
+      });
+    } else {
+      setWithdrawRequest({ ...withdrawRequest, [name]: value });
+    }
+  };
+  const formatCurrency = (value) => {
+    return Number(value).toLocaleString('vi-VN');
   };
 
   return (
@@ -318,9 +335,8 @@ const ManageRevenue = () => {
         
         <p>Số tiền:</p>
         <Input
-          type="number"
           name="amount"
-          value={withdrawRequest.amount}
+          value={formatCurrency(withdrawRequest.amount)}
           onChange={handleInputChange}
         />
         
@@ -353,14 +369,14 @@ const ManageRevenue = () => {
                 title: 'Hành Động',
                 key: 'action',
                 render: (text, record) => (
-                    record.status !== "Approved" ? ( // Kiểm tra trạng thái
+                    record.status !== "Approved" ? ( 
                             <Button 
                                 type="danger" 
                                 onClick={() => handleCancelRequest(record.requestId)}
                             >
                                 Hủy
                             </Button>
-                        ) : null // Không hiển thị nút nếu đã được duyệt
+                        ) : null 
                     ),
                 },
             ]}

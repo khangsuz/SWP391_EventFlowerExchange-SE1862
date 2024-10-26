@@ -8,6 +8,7 @@ import { useCart } from "../../contexts/CartContext";
 import RegisterSeller from "./RegisterSeller";
 import OrderHistory from "./OrderHistory";
 import ChangePassword from "./ChangePassword";
+import UserAvatar from "./UserAvatar";
 
 const Profile = () => {
     const navigate = useNavigate();
@@ -20,7 +21,8 @@ const Profile = () => {
     const { updateCartItemCount } = useCart();
     const [profileImage, setProfileImage] = useState(null);
     const location = useLocation();
-    
+    const [favorites, setFavorites] = useState([]);
+
     const fetchUserData = async () => {
         try {
             const response = await api.get('/Users/profile');
@@ -32,7 +34,14 @@ const Profile = () => {
             setError("Failed to load user data. Please try again later.");
         }
     };
-
+    const fetchFavorites = async () => {
+        try {
+            const response = await api.get('/SellerFollow/favorites');
+            setFavorites(response.data);
+        } catch (error) {
+            console.error("Error fetching favorites:", error);
+        }
+    };
     useEffect(() => {
         const user = JSON.parse(localStorage.getItem('user'));
         if (user) {
@@ -157,11 +166,15 @@ const Profile = () => {
                 <div className="flex max-w-6xl mx-auto">
                     <div className="w-1/4 bg-white shadow-md rounded-lg p-5">
                         <div className="text-center mb-5">
-                        <img
-                            src={`https://localhost:7288${userData.profileImageUrl}`} // Đảm bảo URL đầy đủ
-                            alt={userData.name}
-                            className="w-24 h-24 rounded-full mx-auto mb-2"
-                        />
+                        {userData.profileImageUrl ? (
+                                <img
+                                    src={`https://localhost:7288${userData.profileImageUrl}`} 
+                                    alt={userData.name}
+                                    className="w-24 h-24 rounded-full mx-auto mb-2"
+                                />
+                            ) : (
+                                <UserAvatar userId={userData.userId} userName={userData.name} />
+                            )}
                             {isEditing && (
                                 <input
                                     type="file"

@@ -83,12 +83,19 @@ const Login = () => {
   
   const handleCompleteRegistration = async (values) => {
     try {
+      console.log("Registration data being sent:", {
+        email: newUserEmail,
+        fullName: values.fullName,
+        phone: values.phone,
+        address: values.address
+      });
       const result = await api.post("LoginGoogle/complete-registration", {
         email: newUserEmail,
         fullName: values.fullName,
         phone: values.phone,
         address: values.address
       });
+      console.log('Complete registration result:', result.data);
   
       if (result.data.token && result.data.user) {
         localStorage.setItem("token", result.data.token);

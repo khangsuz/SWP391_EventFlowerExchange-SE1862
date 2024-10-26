@@ -15,6 +15,7 @@ const CreateProduct = () => {
     Price: 0,
     Quantity: 0,
     CategoryId: '',
+    Condition: '', 
   });
   const [userId, setUserId] = useState(null);
 
@@ -86,6 +87,7 @@ const CreateProduct = () => {
       formData.append('FlowerName', flower.FlowerName);
       formData.append('Price', flower.Price.toString());
       formData.append('Quantity', flower.Quantity.toString());
+      formData.append('Condition', flower.Condition);
       formData.append('CategoryId', flower.CategoryId.toString());
       if (imageFile) {
         formData.append('image', imageFile);
@@ -183,6 +185,21 @@ const CreateProduct = () => {
                 min="1"
               />
             </div>
+            <div>
+            <label className="block mb-1">Condition:</label>
+              <select
+              name="Condition"
+              value={flower.Condition}
+              onChange={handleChange}
+              className="w-full border rounded px-3 py-2"
+              required
+            >
+              <option value="">Chọn điều kiện</option>
+              <option value="100">100%</option>
+              <option value="80">80%</option>
+              <option value="60">60%</option>
+            </select>
+          </div>
             <div>
               <label className="block mb-1">Danh mục:</label>
               {loading ? (
