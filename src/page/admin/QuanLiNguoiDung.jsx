@@ -21,7 +21,6 @@ const QuanLiNguoiDung = () => {
     password: '',
   });
 
-  // Fetch users on component mount
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -58,7 +57,6 @@ const QuanLiNguoiDung = () => {
     });
   };
 
-  // Function to open the modal for editing user details
   const openEditModal = (user) => {
     setCurrentUser(user);
     setUpdatedUser({
@@ -67,12 +65,11 @@ const QuanLiNguoiDung = () => {
       phone: user.phone,
       address: user.address,
       userType: user.userType,
-      password: '', // Khởi tạo trường mật khẩu
+      password: '',
     });
     setIsModalVisible(true);
   };
 
-  // Function to update user information
   const updateUser = async () => {
     const token = localStorage.getItem("token");
 
@@ -82,7 +79,7 @@ const QuanLiNguoiDung = () => {
       userType: updatedUser.userType,
       phone: updatedUser.phone,
       address: updatedUser.address,
-      password: updatedUser.password || undefined // Chỉ gửi nếu không phải là null hoặc trống
+      password: updatedUser.password || undefined
     };
 
     try {

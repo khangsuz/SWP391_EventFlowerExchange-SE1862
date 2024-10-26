@@ -103,29 +103,27 @@ const Profile = () => {
         }
 
         if (editedData.phone !== userData.phone) {
-            const phoneRegex = /^\d{10,11}$/;
+            const phoneRegex = /^\d{10}$/;
             if (!phoneRegex.test(editedData.phone)) {
-                alert("Số điện thoại phải có từ 10 đến 11 số.");
+                alert("Số điện thoại phải có 10 số.");
                 isValid = false;
             }
         }
 
         if (isValid) {
             const formData = new FormData();
-            // Cập nhật các trường dữ liệu theo yêu cầu của backend
-            formData.append("FullName", editedData.fullName); // Thay đổi tên trường
+            formData.append("FullName", editedData.fullName);
             formData.append("Email", editedData.email);
-            formData.append("Address", editedData.address); // Thêm địa chỉ
-            formData.append("Phone", editedData.phone); // Thêm số điện thoại
+            formData.append("Address", editedData.address);
+            formData.append("Phone", editedData.phone);
 
-            // Chỉ thêm profileImage nếu có
             if (profileImage) {
-                formData.append("image", profileImage); // Thay đổi tên trường cho hình ảnh
+                formData.append("image", profileImage);
             }
 
             try {
-                const response = await api.put('/Users/profile', formData); // Cập nhật API endpoint
-                setUserData(response.data); // Cập nhật state với dữ liệu mới
+                const response = await api.put('/Users/profile', formData);
+                setUserData(response.data);
                 setIsEditing(false);
                 setSuccess("Profile updated successfully!");
                 setError(null);
@@ -226,7 +224,7 @@ const Profile = () => {
                         <Routes>
                             <Route path="/" element={
                                 <>
-                                    <h1 className="text-center text-2xl font-semibold mb-5 mt-8">Thông tin tài khoản</h1>
+                                    <h1 className="text-center text-2xl font-semibold mb-8 mt-8">Thông tin tài khoản</h1>
                                     <div className="flex mb-3">
                                         <h2 className="text-2xl p-2 w-56">Tên đầy đủ:</h2>
                                         {isEditing ? (
@@ -269,30 +267,33 @@ const Profile = () => {
                                             <p className="p-2 text-2xl">{userData.phone}</p>
                                         )}
                                     </div>
-                                    <div className="flex mb-3">
-                                        <h2 className="text-2xl p-2 w-56">Địa chỉ:</h2>
-                                        {isEditing ? (
-                                            <input
-                                                type="text"
-                                                name="address"
-                                                value={editedData.address}
-                                                onChange={handleChange}
-                                                className="text-2xl p-2 border rounded"
-                                            />
-                                        ) : (
-                                            <p className="p-2 text-2xl">{userData.address}</p>
-                                        )}
-                                    </div>
-                                    <div className="">
-                                        {isEditing ? (
-                                            <>
-                                                <button onClick={handleSave} className="bg-blue-500 text-white px-4 py-2 rounded mr-2">Lưu</button>
-                                                <button onClick={handleCancel} className="bg-gray-300 text-black px-4 py-2 rounded">Hủy</button>
-                                            </>
-                                        ) : (
-                                            <button onClick={handleEdit} className="bg-green-500 text-white px-4 py-2 rounded">Chỉnh sửa hồ sơ</button>
-                                        )}
-                                    </div>
+
+                                    <div className="flex gap-4 pt-4">
+                                            {isEditing ? (
+                                                <>
+                                                    <button 
+                                                        onClick={handleSave}
+                                                        className="px-6 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                                    >
+                                                        Lưu thay đổi
+                                                    </button>
+                                                    <button 
+                                                        onClick={handleCancel}
+                                                        className="px-6 py-2.5 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                                                    >
+                                                        Hủy
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <button 
+                                                    onClick={handleEdit}
+                                                    className="px-6 py-2.5 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                                                >
+                                                    Chỉnh sửa hồ sơ
+                                                </button>
+                                            )}
+                                        </div>
+
                                 </>
                             } />
                             <Route path="change-password" element={<ChangePassword />} />

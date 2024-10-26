@@ -9,6 +9,7 @@ import { getFullImageUrl } from '../../utils/imageHelpers';
 import { Notification, notifySuccess, notifyError } from "../../component/alert";
 import UserAvatar from "../user/UserAvatar";
 import LoadingComponent from "../../component/loading";
+import ChatButton from "../../component/chatButton";
 
 const ProductDetail = () => {
   const { updateCartItemCount } = useCart();

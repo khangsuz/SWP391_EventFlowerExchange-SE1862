@@ -11,7 +11,7 @@ import ProductDetail from "./page/productDetail";
 import PrivateRoute from "./component/private-route";
 import About from "./page/about";
 import Profile from "./page/user/editProfile";
-import CreateProduct from "./page/seller";
+import CreateProduct from "./page/seller/CreateProduct";
 import ForgotPassword from './page/login/forgetPassword';
 import AdminLayout from "./page/admin/AdminLayout";
 import QuanLiSanPham from "./page/admin/QuanLiSanPham";
@@ -25,7 +25,7 @@ import CheckoutPage from './page/payment/checkOutPage';
 import PersonalProduct from "./page/personalProduct";
 import ManageProducts from "./page/personalProduct/ManageProducts";
 import RegisterSeller from "./page/user/RegisterSeller";
-import ChatPage from "./page/chat/chatPage";
+import ChatPage from "./page/chat/ChatPage";
 import Events from "./page/events";
 import SearchResult from "./page/searchResult";
 import ManageRevenue from "./page/personalProduct/ManageRevenue";
@@ -41,6 +41,8 @@ import SinhNhat from "./page/events/SinhNhat";
 import Policy from "./component/policy";
 import ChucMung from "./page/events/ChucMung";
 import Address from "./page/user/Address";
+import FloatingButton from "./page/chat/FloatingButton";
+
 const App = () => {
   const router = createBrowserRouter([
     {
@@ -56,7 +58,7 @@ const App = () => {
       element: <SignUp />,
     },
     {
-      path: "profile",
+      path: "profile/*",
       element: <Profile />,
       children: [
         {
@@ -90,10 +92,6 @@ const App = () => {
       element: <ProductDetail />,
     },
     {
-      path: "profile/change-password",
-      element: <ChangePassword />,
-    },
-    {
       path: "events",
       element: <Events />,
       children: [
@@ -120,12 +118,12 @@ const App = () => {
       ],
     },
     {
-      path: "/search", 
-      element: <SearchResult />, 
+      path: "/search",
+      element: <SearchResult />,
     },
     {
-      path: "personal-product/:userId", 
-      element: <PersonalProduct />, 
+      path: "personal-product/:userId",
+      element: <PersonalProduct />,
     },
     {
       path: "manage-products/:userId",
@@ -144,21 +142,29 @@ const App = () => {
     {
       path: "/checkout",
       element: <CheckoutPage />
-    },  
+    },
     {
       path: "/seller/:userId/orders",
       element: <SellerOrderManagement />
-    },  
+    },
     {
-      path: "/chat/:conversationId",
-      element: <ChatPage />,
+      path: "chat",
+      element: <PrivateRoute>
+        <ChatPage />
+      </PrivateRoute>
+    },
+    {
+      path: "chat/:conversationId",
+      element: <PrivateRoute>
+        <ChatPage />
+      </PrivateRoute>
     },
     {
       path: "/forgot-password",
       element: <ForgotPassword />,
     },
     {
-      path: "manage-product", 
+      path: "manage-product",
       element: <PrivateRoute requiredRole="Seller">
         <CreateProduct />
       </PrivateRoute>
@@ -166,8 +172,8 @@ const App = () => {
     {
       path: "admin",
       element: (
-        <PrivateRoute requiredRole="Admin"> 
-          <AdminLayout /> 
+        <PrivateRoute requiredRole="Admin">
+          <AdminLayout />
         </PrivateRoute>
       ),
       children: [
@@ -176,8 +182,8 @@ const App = () => {
           element: <Dashboard />,
         },
         {
-          path: "personal-product/:userId", 
-          element: <PersonalProduct />, 
+          path: "personal-product/:userId",
+          element: <PersonalProduct />,
         },
         {
           path: "quanlinguoidung",
@@ -189,7 +195,7 @@ const App = () => {
         },
         {
           path: "quanlisanpham",
-          element: <QuanLiSanPham />, 
+          element: <QuanLiSanPham />,
         },
         {
           path: "quanlidonhang",
@@ -210,7 +216,7 @@ const App = () => {
       element: <PaymentButton />,
     },
     {
-      path: "payment-result", 
+      path: "payment-result",
       element: <PaymentResult />,
     },
     {
@@ -219,10 +225,10 @@ const App = () => {
     }
   ]);
 
-  return(
-    <CartProvider>
-      <RouterProvider router={router} />
-    </CartProvider>
+  return (
+      <CartProvider>
+        <RouterProvider router={router} />
+      </CartProvider>
   );
 };
 

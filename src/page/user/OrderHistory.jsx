@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from "../../config/axios";
 import Header from '../../component/header';
 import Footer from '../../component/footer';
-import { Modal, Form, Input, Button, message } from 'antd';
+import { Modal, Form, Input, Button, message, Select } from 'antd';
 
 function OrderHistory() {
     const [orders, setOrders] = useState([]);
@@ -13,6 +13,7 @@ function OrderHistory() {
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [selectedOrderId, setSelectedOrderId] = useState(null);
     const [form] = Form.useForm();
+    const [statusFilter, setStatusFilter] = useState('all');
 
     useEffect(() => {
         fetchOrderHistory();
@@ -33,8 +34,7 @@ function OrderHistory() {
         try {
             const response = await api.get('Orders/history');
             if (Array.isArray(response.data)) {
-                const completedOrders = response.data.filter(order => order.orderStatus === "Completed");
-                setOrders(completedOrders);
+                setOrders(response.data);
             } else {
                 console.error('Data is not an array:', response.data);
                 setError('Invalid data format received');
@@ -47,9 +47,14 @@ function OrderHistory() {
         }
     };
 
+    const filteredOrders = orders.filter(order => {
+        if (statusFilter === 'all') return true;
+        return order.orderDelivery === Number(statusFilter);
+    });
+
     const indexOfLastOrder = currentPage * ordersPerPage;
     const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
-    const currentOrders = orders.slice(indexOfFirstOrder, indexOfLastOrder);
+    const currentOrders = filteredOrders.slice(indexOfFirstOrder, indexOfLastOrder);
 
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
@@ -75,6 +80,24 @@ function OrderHistory() {
 
     return (
         <div className="container mx-auto">
+            <div className="mb-4">
+                <Select
+                    defaultValue="all"
+                    className="w-1/5"
+                    onChange={(value) => {
+                        setStatusFilter(value);
+                        setCurrentPage(1);
+                    }}
+                >
+                    <Select.Option value="all">Tất cả trạng thái</Select.Option>
+                    <Select.Option value="0">Chờ xử lý</Select.Option>
+                    <Select.Option value="1">Đã xác nhận</Select.Option>
+                    <Select.Option value="2">Đang giao hàng</Select.Option>
+                    <Select.Option value="3">Đã giao hàng</Select.Option>
+                    <Select.Option value="4">Đã hủy</Select.Option>
+                </Select>
+            </div>
+            
             <table className="w-full border-collapse">
                 <thead>
                     <tr className="bg-gray-100">
@@ -119,7 +142,7 @@ function OrderHistory() {
                             </td>
                             <td className="border p-2 text-red-500 text-center">{order.totalAmount?.toLocaleString()}đ</td>
                             <td className="border p-2 text-center">
-                                <span className={`px-2 py-1 rounded ${(order.orderDelivery)}`}>
+                                <span className={`${(order.orderDelivery)}`}>
                                     {getStatusText(order.orderDelivery)}
                                 </span>
                             </td>
@@ -136,7 +159,7 @@ function OrderHistory() {
                 </tbody>
             </table>
             <div className="flex justify-center mt-4">
-            {Array.from({ length: Math.ceil(orders.length / ordersPerPage) }, (_, i) => (
+            {Array.from({ length: Math.ceil(filteredOrders.length / ordersPerPage) }, (_, i) => (
                     <button
                         key={i + 1}
                         onClick={() => paginate(i + 1)}

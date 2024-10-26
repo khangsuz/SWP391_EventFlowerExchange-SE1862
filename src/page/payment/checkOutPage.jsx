@@ -195,6 +195,18 @@ function CheckoutPage() {
             return;
         }
 
+        if (!validatePhoneNumber(userInfo.phone)) {
+            notifyError('Số điện thoại không hợp lệ.');
+            return;
+        }
+
+        if (!validateEmail(userInfo.email)) {
+            notifyError('Email không hợp lệ.');
+            return;
+        }
+
+        const orderNote = note || '';
+
         setIsProcessing(true);
         setIsButtonDisabled(true); 
 
@@ -211,10 +223,11 @@ function CheckoutPage() {
                 cartItemsToSend,
                 {
                     params: {
-                        fullAddress: fullAddress,
+                        fullAddress: userInfo.address,
                         wardCode: selectedWard,
                         wardName: selectedWardName,
-                        toDistrictId: parseInt(selectedDistrict, 10)
+                        toDistrictId: parseInt(selectedDistrict, 10),
+                        note: orderNote
                     },
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -249,6 +262,8 @@ function CheckoutPage() {
                     setIsButtonDisabled(false); 
                 }
         } catch (error) {
+            console.error('Checkout error:', error);
+            console.error('Error response:', error.response);
             handlePaymentError(error);
             setIsButtonDisabled(false);
         } finally {
@@ -259,10 +274,13 @@ function CheckoutPage() {
     const handlePaymentError = (error) => {
         console.error('Payment error:', error);
         if (error.response) {
+            console.error('Error response data:', error.response.data);
             notifyError(`Thanh toán thất bại: ${error.response.data}`);
         } else if (error.request) {
+            console.error('Error request:', error.request);
             notifyError('Lỗi mạng. Vui lòng kiểm tra kết nối và thử lại.');
         } else {
+            console.error('Error message:', error.message);
             notifyError('Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.');
         }
     };
@@ -276,7 +294,6 @@ function CheckoutPage() {
         } else {
             setSelectedDistrictName('');
         }
-        // Chỉ reset selectedWard nếu quận/huyện thực sự thay đổi
         if (districtId !== selectedDistrict) {
             setSelectedWard('');
             setShippingFee(0);
@@ -306,8 +323,18 @@ function CheckoutPage() {
     }, [userInfo.wardCode, selectedWard]);
 
     const handleNoteChange = (e) => {
-        setNote(e.target.value);
+        setNote(e.target.value || '');
     };
+
+    const validatePhoneNumber = (phone) => {
+        const phoneRegex = /^(03|05|07|08|09)\d{8}$/;
+        return phoneRegex.test(phone);
+    };
+
+    const validateEmail = (email) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+      };
 
     return (
         <>
@@ -335,7 +362,7 @@ function CheckoutPage() {
                                 name="phone"
                                 value={userInfo.phone}
                                 onChange={handleInputChange}
-                                className="w-full p-2 border rounded"
+                                className={`w-full p-2 border rounded ${!validatePhoneNumber(userInfo.phone) && userInfo.phone ? 'border-red-500' : ''}`}
                                 required
                             />
                         </div>
@@ -346,7 +373,7 @@ function CheckoutPage() {
                                 name="email"
                                 value={userInfo.email}
                                 onChange={handleInputChange}
-                                className="w-full p-2 border rounded"
+                                className={`w-full p-2 border rounded ${!validateEmail(userInfo.email) && userInfo.email ? 'border-red-500' : ''}`}
                                 required
                             />
                         </div>
@@ -401,7 +428,7 @@ function CheckoutPage() {
                             <label className="block font-bold mb-2">Ghi chú</label>
                             <textarea
                                 name="note"
-                                value={note}
+                                value={note || ''}
                                 onChange={handleNoteChange}
                                 className="w-full p-2 border rounded"
                                 placeholder="Nhập ghi chú cho đơn hàng (nếu có)"

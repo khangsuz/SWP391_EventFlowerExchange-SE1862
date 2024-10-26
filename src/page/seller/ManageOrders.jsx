@@ -3,8 +3,6 @@ import api from "../../config/axios";
 import { useParams, useNavigate } from "react-router-dom";
 import { Table, Tag, Typography, Space, Button, Modal, Form, Input, message, Select } from "antd";
 import { EditOutlined, DeleteOutlined, HomeOutlined } from '@ant-design/icons';
-import Header from "../../component/header";
-import Footer from "../../component/footer";
 import LoadingComponent from '../../component/loading';
 import Header from "../../component/header";
 import Footer from "../../component/footer";
@@ -23,12 +21,28 @@ const ManageOrders = () => {
   
   const handleDeliveryStatusChange = async (orderId, newStatus) => {
     try {
-        await api.put(`Orders/${orderId}/delivery`, { orderDelivery: newStatus, userId });
-        message.success('Cập nhật trạng thái giao hàng thành công');
-        fetchOrders();
+        console.log(`Updating order ${orderId} to status: ${newStatus}`);
+        
+        const payload = {
+            orderDelivery: newStatus,
+            userId: 1
+        };
+        
+        console.log('Sending payload:', payload);
+
+        const response = await api.put(`Orders/${orderId}/delivery`, payload);
+        
+        console.log('Server response:', response.data);
+
+        if (response.data.message) {
+            message.success('Cập nhật trạng thái đơn hàng thành công');
+            // Refresh data if needed
+            // await fetchOrders();
+        }
     } catch (error) {
-        console.error('Error updating order delivery status:', error);
-        message.error('Không thể cập nhật trạng thái giao hàng: ' + (error.response?.data || error.message));
+        console.error('Error updating order:', error);
+        console.error('Error details:', error.response?.data);
+        message.error('Không thể cập nhật trạng thái đơn hàng');
     }
 };
 

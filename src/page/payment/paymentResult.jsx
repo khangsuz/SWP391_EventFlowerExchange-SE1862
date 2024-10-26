@@ -4,7 +4,7 @@ import Header from "../../component/header";
 import Footer from "../../component/footer";
 import api from "../../config/axios";
 import { useCart } from "../../contexts/CartContext";
-import { notifySuccess, notifyError } from "../../component/alert";
+import { Notification ,notifySuccess, notifyError } from "../../component/alert";
 
 function PaymentResult() {
     const location = useLocation();
@@ -24,7 +24,7 @@ function PaymentResult() {
             const shippingOrder = {
                 from_name: 'Shop Hoa ABC',
                 from_phone: '0901234567',
-                from_address: '72 Lê Thánh Tôn, Phường Bến Nghé',
+                from_address: '72 Lê Thánh Tôn, Phường Bến Ngh��',
                 from_ward_name: 'Phường Bến Nghé',
                 from_district_name: 'Quận 1',
                 from_province_name: 'TP Hồ Chí Minh',
@@ -35,6 +35,7 @@ function PaymentResult() {
                 to_ward_code: orderDetails.wardCode,
                 to_district_id: parseInt(orderDetails.toDistrictId, 10),
                 client_order_code: orderDetails.orderId.toString(),
+                note: orderDetails.note || 'Không có ghi chú',
                 weight: orderDetails.totalWeight,
                 length: 30,
                 width: 20,
@@ -52,7 +53,6 @@ function PaymentResult() {
             console.log('Shipping order data:', JSON.stringify(shippingOrder, null, 2));
 
             const response = await api.post('Shipping/create-order', shippingOrder);
-            console.log('GHN Shipping order response:', JSON.stringify(response.data, null, 2));
             console.log('GHN Shipping order created:', response.data);
             notifySuccess('Đơn hàng giao hàng đã được tạo thành công');
         } catch (error) {
@@ -90,7 +90,6 @@ function PaymentResult() {
                     localStorage.setItem('cart', JSON.stringify([]));
                     updateCartItemCount(0);
                     
-                    // Lấy orderId từ localStorage
                     const orderId = localStorage.getItem('pendingOrderId');
                     if (orderId) {
                         const orderDetails = await getOrderDetails(orderId);
@@ -110,11 +109,16 @@ function PaymentResult() {
                     } else {
                         notifyError('Không tìm thấy thông tin đơn hàng.');
                     }
+                } else {
+                    // Xử lý các trường hợp khác
+                    setPaymentStatus('Thanh toán thất bại');
+                    notifyError('Giao dịch không thành công hoặc đã bị hủy.');
+                    // Có thể thêm logic để xử lý đơn hàng chưa thanh toán ở đây
                 }
-                // ... xử lý các trường hợp khác
             } catch (error) {
                 console.error('Error processing payment result:', error);
                 setPaymentStatus('Có lỗi xảy ra khi xử lý kết quả thanh toán.');
+                notifyError('Có lỗi xảy ra khi xử lý kết quả thanh toán.');
             } finally {
                 setIsLoading(false);
             }
@@ -129,6 +133,7 @@ function PaymentResult() {
 
     return (
         <>
+        <Notification />
             <Header />
             <div className="flex flex-col items-center justify-center p-6 bg-white rounded-lg mb-20 mt-20">
                 {isLoading ? (
