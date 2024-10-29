@@ -5,7 +5,13 @@ import { getFullImageUrl } from "../../utils/imageHelpers";
 import { Modal, Input, Button, Select, notification } from "antd";
 import Header from "../../component/header";
 import Footer from "../../component/footer";
+<<<<<<< HEAD
 import LoadingComponent from '../../component/loading'; // Import LoadingComponent
+=======
+import LoadingComponent from '../../component/loading';
+import { FaArrowLeft, FaMoneyCheckAlt } from 'react-icons/fa';
+
+>>>>>>> w8
 const { Option } = Select;
 
 const ManageProducts = () => {
@@ -85,13 +91,21 @@ const ManageProducts = () => {
       if (updatedProduct.imageUrl instanceof File) {
         formData.append('image', updatedProduct.imageUrl);
       }
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> w8
       const response = await api.put(`Flowers/${currentProduct.flowerId}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> w8
       if (response.status === 204) {
         await fetchProducts();
         setIsModalVisible(false);
@@ -124,25 +138,42 @@ const ManageProducts = () => {
   return (
     <>
       {loading ? (
+<<<<<<< HEAD
         <LoadingComponent /> // Show loading component
+=======
+        <LoadingComponent />
+>>>>>>> w8
       ) : (
         <>
           <Header />
           <div className="container mx-auto py-24">
             <h1 className="text-2xl font-bold mb-6">Quản lý sản phẩm của bạn</h1>
             <button
+<<<<<<< HEAD
               onClick={() => navigate(`/personal-product/${userId}`)}
               className="bg-blue-500 text-white px-4 py-2 rounded mb-4 mr-2"
             >
               Quay về xem shop
             </button>
             <button 
+=======
+              className="bg-blue-600 text-white font-bold py-2 px-6 rounded transition duration-300 ease-in-out transform hover:bg-blue-500 hover:scale-105 shadow-md hover:shadow-lg"
+              onClick={() => navigate(`/personal-product/${userId}`)}
+            >
+              <FaArrowLeft className="inline-block mr-2" /> Quay Về Cửa Hàng
+            </button>
+            <button
+>>>>>>> w8
               onClick={() => navigate(`/manage-product`)}
               className="bg-green-500 text-white px-4 py-2 rounded mb-4"
             >
               Tạo Sản Phẩm Mới
             </button>
+<<<<<<< HEAD
             
+=======
+
+>>>>>>> w8
             <div className="space-y-4">
               {products.length > 0 ? (
                 products.map((product) => (

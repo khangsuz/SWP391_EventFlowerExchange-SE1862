@@ -15,6 +15,7 @@ const App = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Hàm fetch tổng thu nhập, số đơn hàng và số sản phẩm từ API
   const fetchDashboardStats = async (token) => {
     try {
       const response = await axios.get('https://localhost:7288/api/admin/dashboard/stats', {
@@ -39,24 +40,10 @@ const App = () => {
         timeout: 5000,
       });
 
-      setDailyIncomeData(response.data);
+      setDailyIncomeData(processDailyIncomeData(response.data));
     } catch (error) {
       console.error("Error fetching daily income:", error);
       setError("Lỗi khi tải dữ liệu thu nhập hàng ngày.");
-    }
-  };
-
-  const fetchOrderStats = async (token) => {
-    try {
-      const response = await axios.get('https://localhost:7288/api/admin/dashboard/orders', {
-        headers: { Authorization: `Bearer ${token}` },
-        timeout: 5000,
-      });
-
-      setOrderStatsData(response.data); 
-    } catch (error) {
-      console.error("Error fetching order stats:", error);
-      setError("Lỗi khi tải dữ liệu thống kê đơn hàng.");
     }
   };
 

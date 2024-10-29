@@ -7,8 +7,13 @@ import { useCart } from "../../contexts/CartContext";
 import RegisterSeller from "./RegisterSeller";
 import OrderHistory from "./OrderHistory";
 import ChangePassword from "./ChangePassword";
+<<<<<<< HEAD
 import api, { baseUrl } from "../../config/axios";
 import LoadingComponent from "../../component/loading";
+=======
+import UserAvatar from "./UserAvatar";
+import Address from "./Address";
+>>>>>>> w8
 
 const Profile = () => {
     const navigate = useNavigate();
@@ -22,8 +27,11 @@ const Profile = () => {
     const { updateCartItemCount } = useCart();
     const [profileImage, setProfileImage] = useState(null);
     const location = useLocation();
+<<<<<<< HEAD
     const [imageKey, setImageKey] = useState(0);
     const [imageError, setImageError] = useState(false);
+=======
+>>>>>>> w8
 
     const fetchUserData = async () => {
         setLoading(true);
@@ -31,6 +39,10 @@ const Profile = () => {
             const response = await api.get('/Users/profile');
             setUserData(response.data);
             setEditedData(response.data);
+<<<<<<< HEAD
+=======
+            const storedImage = localStorage.getItem('profileImageUrl');
+>>>>>>> w8
         } catch (error) {
             console.error("Error fetching user data:", error);
             setError("Failed to load user data. Please try again later.");
@@ -85,9 +97,14 @@ const Profile = () => {
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
+<<<<<<< HEAD
           setProfileImage(file);
           setEditedData({ ...editedData, profileImage: file });
           setImageError(false); // Reset image error when a new image is selected
+=======
+            setProfileImage(file);
+            setEditedData({ ...editedData, profileImageUrl: URL.createObjectURL(file) });
+>>>>>>> w8
         }
       };
 
@@ -111,30 +128,44 @@ const Profile = () => {
         }
 
         if (editedData.phone !== userData.phone) {
-            const phoneRegex = /^\d{10,11}$/;
+            const phoneRegex = /^\d{10}$/;
             if (!phoneRegex.test(editedData.phone)) {
-                alert("Số điện thoại phải có từ 10 đến 11 số.");
+                alert("Số điện thoại phải có 10 số.");
                 isValid = false;
             }
         }
 
         if (isValid) {
             const formData = new FormData();
+<<<<<<< HEAD
             Object.keys(editedData).forEach(key => {
                 if (key !== 'profileImageUrl') {
                     formData.append(key, editedData[key]);
                 }
             });
+=======
+            formData.append("FullName", editedData.fullName);
+            formData.append("Email", editedData.email);
+            formData.append("Address", editedData.address);
+            formData.append("Phone", editedData.phone);
+
+>>>>>>> w8
             if (profileImage) {
-                formData.append("profileImage", profileImage);
+                formData.append("image", profileImage);
             }
+
             try {
+<<<<<<< HEAD
                 const response = await api.put('/Users/profile', formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data'
                     }
                 });
                 await fetchUserData(); // Tải lại dữ liệu người dùng
+=======
+                const response = await api.put('/Users/profile', formData);
+                setUserData(response.data);
+>>>>>>> w8
                 setIsEditing(false);
                 setSuccess("Profile updated successfully!");
                 setError(null);
@@ -142,7 +173,7 @@ const Profile = () => {
                 setImageKey(prev => prev + 1); // Force re-render of image
                 setTimeout(() => setSuccess(null), 3000);
             } catch (error) {
-                console.error("Error updating user data:", error);
+                console.error("Error updating user data:", error.response ? error.response.data : error.message);
                 setError("Failed to update user data. Please try again.");
                 setSuccess(null);
             }
@@ -171,6 +202,7 @@ const Profile = () => {
                 <div className="flex max-w-6xl mx-auto">
                     <div className="w-1/4 bg-white shadow-md rounded-lg p-5">
                         <div className="text-center mb-5">
+<<<<<<< HEAD
                             {!imageError ? (
                                 <img
                                     key={imageKey}
@@ -191,6 +223,11 @@ const Profile = () => {
                                     {userData.fullName ? userData.fullName.charAt(0).toUpperCase() : '?'}
                                 </div>
                             )}
+=======
+                            <div className="w-10 h-10 mx-auto mb-3">
+                                <UserAvatar userId={userData.userId} userName={userData.fullName} />
+                            </div>
+>>>>>>> w8
                             {isEditing && (
                                 <input
                                     type="file"
@@ -214,6 +251,12 @@ const Profile = () => {
                                 className={`block p-2 rounded ${location.pathname === '/profile/order-history' ? 'bg-gray-200' : 'text-gray-700 hover:bg-gray-200'}`}
                             >
                                 Danh sách đơn hàng
+                            </Link>
+                            <Link
+                                to="/profile/address"
+                                className={`block p-2 rounded ${location.pathname === '/profile/address' ? 'bg-gray-200' : 'text-gray-700 hover:bg-gray-200'}`}
+                            >
+                                Địa chỉ
                             </Link>
                             <Link
                                 to="/profile/change-password"
@@ -249,7 +292,11 @@ const Profile = () => {
                         <Routes>
                             <Route path="/" element={
                                 <>
+<<<<<<< HEAD
                                     <h1 className="text-center text-2xl font-semibold mb-5 mt-8">Thông tin tài khoản</h1>
+=======
+                                    <h1 className="text-center text-2xl font-semibold mb-8 mt-8">Thông tin tài khoản</h1>
+>>>>>>> w8
                                     <div className="flex mb-3">
                                         <h2 className="text-2xl p-2 w-56">Tên đầy đủ:</h2>
                                         {isEditing ? (
@@ -292,6 +339,7 @@ const Profile = () => {
                                             <p className="p-2 text-2xl">{userData.phone}</p>
                                         )}
                                     </div>
+<<<<<<< HEAD
                                     <div className="flex mb-3">
                                         <h2 className="text-2xl p-2 w-56">Địa chỉ:</h2>
                                         {isEditing ? (
@@ -316,11 +364,41 @@ const Profile = () => {
                                             <button onClick={handleEdit} className="bg-green-500 text-white px-4 py-2 rounded">Chỉnh sửa hồ sơ</button>
                                         )}
                                     </div>
+=======
+
+                                    <div className="flex gap-4 pt-4">
+                                            {isEditing ? (
+                                                <>
+                                                    <button 
+                                                        onClick={handleSave}
+                                                        className="px-6 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                                    >
+                                                        Lưu thay đổi
+                                                    </button>
+                                                    <button 
+                                                        onClick={handleCancel}
+                                                        className="px-6 py-2.5 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                                                    >
+                                                        Hủy
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <button 
+                                                    onClick={handleEdit}
+                                                    className="px-6 py-2.5 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                                                >
+                                                    Chỉnh sửa hồ sơ
+                                                </button>
+                                            )}
+                                        </div>
+
+>>>>>>> w8
                                 </>
                             } />
                             <Route path="change-password" element={<ChangePassword />} />
                             <Route path="register-seller" element={<RegisterSeller userData={userData} />} />
                             <Route path="order-history" element={<OrderHistory />} />
+                            <Route path="address" element={<Address />} />
                         </Routes>
                     </div>
                 </div>

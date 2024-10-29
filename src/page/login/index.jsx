@@ -17,7 +17,7 @@ const Login = () => {
 
   const handleLogin = async (values) => {
     try {
-      console.log("Login data being sent:", values);  
+      console.log("Login data being sent:", values);
       const response = await api.post("Users/login", {
         name: values.name,
         password: values.password
@@ -55,9 +55,9 @@ const Login = () => {
         const result = await api.post("LoginGoogle/google-login", {
           accessToken: tokenResponse.access_token
         });
-  
+
         console.log("Google login result:", result.data);
-  
+
         if (result.data.isNewUser) {
           setIsNewUser(true);
           setNewUserEmail(result.data.email);
@@ -80,7 +80,7 @@ const Login = () => {
     flow: 'implicit',
     scope: "email profile",
   });
-  
+
   const handleCompleteRegistration = async (values) => {
     try {
       const result = await api.post("LoginGoogle/complete-registration", {
@@ -89,7 +89,7 @@ const Login = () => {
         phone: values.phone,
         address: values.address
       });
-  
+
       if (result.data.token && result.data.user) {
         localStorage.setItem("token", result.data.token);
         localStorage.setItem("user", JSON.stringify(result.data.user));
@@ -106,7 +106,7 @@ const Login = () => {
 
   return (
     <>
-    <Notification />
+      <Notification />
       <Header />
       <div className="login">
         <div className="login__image mt-1 mb-1">
@@ -120,17 +120,24 @@ const Login = () => {
             {isNewUser ? (
               <Form onFinish={handleCompleteRegistration} initialValues={{ fullName: googleUserInfo?.name }}>
                 <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">Hoàn tất đăng ký</h2>
+<<<<<<< HEAD
                 {/* <Form.Item label="Email" name="email" className="font-bold">
                   <Input value={newUserEmail} disabled />
                 </Form.Item> */}
                 <Form.Item 
                   label="Họ và tên" 
                   name="fullName" 
+=======
+                <Form.Item
+                  label="Họ và tên"
+                  name="fullName"
+>>>>>>> w8
                   className="font-bold"
                   rules={[{ required: true, message: 'Vui lòng nhập họ và tên' }]}
                 >
                   <Input />
                 </Form.Item>
+<<<<<<< HEAD
                 <Form.Item 
                   label="Số điện thoại" 
                   name="phone"
@@ -141,6 +148,28 @@ const Login = () => {
                 </Form.Item>
                 <Form.Item 
                   label="Địa chỉ" 
+=======
+                <Form.Item
+                  label="Số điện thoại"
+                  name="phone"
+                  className="font-bold"
+                  rules={[
+                    { required: true, message: 'Vui lòng nhập số điện thoại' },
+                    {
+                      validator: (_, value) => {
+                        if (!value || value.match(/^\d{10}$/)) {
+                          return Promise.resolve();
+                        }
+                        return Promise.reject('Số điện thoại phải có đúng 10 chữ số');
+                      }
+                    }
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  label="Địa chỉ"
+>>>>>>> w8
                   name="address"
                   className="font-bold"
                   rules={[{ required: true, message: 'Vui lòng nhập địa chỉ' }]}
@@ -161,7 +190,7 @@ const Login = () => {
               >
                 <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">Đăng nhập</h2>
                 <div className="flex justify-center space-x-4 mb-6">
-                  <button 
+                  <button
                     className="p-2 rounded-full bg-red-500 text-white hover:bg-red-600 transition duration-300 ease-in-out transform hover:scale-110"
                     onClick={() => loginGoogle()}
                     type="button"
@@ -179,7 +208,7 @@ const Login = () => {
                 >
                   <Input type="text" placeholder="username" />
                 </Form.Item>
-            
+
                 <Form.Item
                   className="block text-gray-700 text-sm font-bold mb-2"
                   label="Mật khẩu"
@@ -198,7 +227,9 @@ const Login = () => {
                     Đăng nhập
                   </Button>
                 </Form.Item>
-
+                <div className="mt-4 text-center text-sm text-gray-600">
+                  <Link to="/forgot-password" className="text-blue-500 hover:text-blue-600">Quên mật khẩu?</Link>
+                </div>
                 <p className="mt-4 text-center text-sm text-gray-600">
                   Chưa có tài khoản? <Link to={"/signup"} className="text-blue-500 hover:text-blue-600 font-semibold">Đăng ký</Link>
                 </p>

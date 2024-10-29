@@ -1,15 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../../config/axios";
-<<<<<<< HEAD
 import { Table, Modal, Input, Button } from "antd";
-=======
-import { Table, Modal, Input, Button, message } from "antd";
->>>>>>> w8
 import { Line } from 'react-chartjs-2'; 
 import Header from "../../component/header";
 import Footer from "../../component/footer";
-import LoadingComponent from "../../component/loading"; // Import LoadingComponent
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -26,7 +21,7 @@ ChartJS.register(CategoryScale, LinearScale, LineElement, PointElement, Tooltip,
 const ManageRevenue = () => {
   const { userId } = useParams();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true); // Loading state
+  
   const [revenue, setRevenue] = useState(0);
   const [currentIncome, setCurrentIncome] = useState(0); 
   const [totalWithdrawn, setTotalWithdrawn] = useState(0); 
@@ -37,31 +32,20 @@ const ManageRevenue = () => {
   const [withdrawalRequests, setWithdrawalRequests] = useState([]); 
   const [isHistoryModalVisible, setIsHistoryModalVisible] = useState(false);
 
+
   const handleCancelRequest = async (requestId) => {
     if (!requestId) {
-<<<<<<< HEAD
       alert('Yêu cầu không hợp lệ!');
-=======
-      message.error('Yêu cầu không hợp lệ!');
->>>>>>> w8
       return;
     }
     
     try {
       await api.delete(`Users/api/withdrawal-requests/${requestId}`); 
-<<<<<<< HEAD
       alert('Yêu cầu rút tiền đã được hủy!');
       fetchWithdrawalRequests();
     } catch (error) {
       console.error("Error canceling withdrawal request:", error);
       alert('Hủy yêu cầu không thành công!');
-=======
-      message.success('Yêu cầu rút tiền đã được hủy!');
-      fetchWithdrawalRequests();
-    } catch (error) {
-      console.error("Error canceling withdrawal request:", error);
-      message.error('Hủy yêu cầu không thành công!');
->>>>>>> w8
     }
   };
   const showHistoryModal = () => {
@@ -72,14 +56,11 @@ const ManageRevenue = () => {
     setIsHistoryModalVisible(false); 
   };
   const fetchWithdrawalRequests = async () => {
-    setLoading(true); // Set loading to true
     try {
       const response = await api.get(`Users/api/withdrawal-requests/${userId}`); 
       setWithdrawalRequests(response.data); 
     } catch (err) {
       console.error("Error fetching withdrawal requests:", err);
-    } finally {
-      setLoading(false); // Set loading to false
     }
   };
   const fetchCurrentUserId = async () => {
@@ -110,49 +91,17 @@ const ManageRevenue = () => {
   });
 
   const fetchRevenue = async () => {
-<<<<<<< HEAD
-    setLoading(true); // Set loading to true
-    try {
-      const response = await api.get(`Users/revenue/${userId}`);
-      console.log("Revenue Response:", response.data); 
-      setRevenue(response.data.totalRevenue); 
-      setRevenueData(response.data.details || []);
-    } catch (err) {
-      console.error("Error fetching revenue:", err);
-    } finally {
-      setLoading(false); // Set loading to false
-    }
-  };
-
-  const fetchCurrentIncome = async () => {
-    setLoading(true); // Set loading to true
-=======
-    setLoading(true);
     try {
         const response = await api.get(`Users/revenue/${userId}`);
-        console.log("Revenue Response:", response.data);
-        
-        setRevenue(response.data.netRevenue);
-        setCommission(response.data.commission);
-        
-        const details = response.data.details;
-        setRevenueData(details.map(item => ({
-            date: item.date || 'Không có ngày',
-            amount: item.amount || 0
-        })));
-        
+        console.log("Revenue Response:", response.data); 
+        setRevenue(response.data.totalRevenue); 
+        setRevenueData(response.data.details || []);
     } catch (err) {
         console.error("Error fetching revenue:", err);
-        const errorMessage = err.response?.data?.message || 'Không thể tải dữ liệu doanh thu. Vui lòng thử lại sau.';
-        message.error(errorMessage);
-    } finally {
-        setLoading(false);
     }
 };
 
   const fetchCurrentIncome = async () => {
-    setLoading(true);
->>>>>>> w8
     try {
       const response = await api.get(`Users/api/users/${userId}/revenue`); 
       setCurrentIncome(response.data.currentIncome); 
@@ -160,14 +109,6 @@ const ManageRevenue = () => {
       setCommission(response.data.commission); 
     } catch (err) {
       console.error("Error fetching current income:", err);
-<<<<<<< HEAD
-    } finally {
-      setLoading(false); // Set loading to false
-=======
-      message.error('Không thể tải dữ liệu thu nhập hiện tại. Vui lòng thử lại sau.');
-    } finally {
-      setLoading(false);
->>>>>>> w8
     }
   };
 
@@ -176,8 +117,6 @@ const ManageRevenue = () => {
     fetchCurrentIncome(); 
     fetchWithdrawalRequests();
   }, [userId]);
-
-  if (loading) return <LoadingComponent />; // Show loading component
 
   const chartData = {
     labels: revenueData.map(item => item.date),
@@ -195,33 +134,21 @@ const ManageRevenue = () => {
 
   const handleWithdraw = async () => {
     if (withdrawRequest.amount > revenue) {
-<<<<<<< HEAD
       alert('Số tiền rút không được lớn hơn doanh thu thu được.');
-=======
-      message.error('Số tiền rút không được lớn hơn doanh thu thu được.');
->>>>>>> w8
       return; 
     }
     
     try {
       const response = await api.post('Users/api/withdrawal', withdrawRequest);
       console.log("Withdraw Response:", response.data);
-<<<<<<< HEAD
       alert('Yêu cầu rút tiền đã được gửi!');
-=======
-      message.success('Yêu cầu rút tiền đã được gửi!');
->>>>>>> w8
       setIsModalVisible(false);
       fetchRevenue(); 
       fetchCurrentIncome(); 
       fetchWithdrawalRequests();
     } catch (error) {
       console.error("Error during withdrawal:", error);
-<<<<<<< HEAD
       alert('Rút tiền không thành công!');
-=======
-      message.error('Rút tiền không thành công!');
->>>>>>> w8
     }
   };
 
@@ -426,22 +353,14 @@ const ManageRevenue = () => {
                 title: 'Hành Động',
                 key: 'action',
                 render: (text, record) => (
-<<<<<<< HEAD
                     record.status !== "Approved" ? ( // Kiểm tra trạng thái
-=======
-                    record.status !== "Approved" ? (
->>>>>>> w8
                             <Button 
                                 type="danger" 
                                 onClick={() => handleCancelRequest(record.requestId)}
                             >
                                 Hủy
                             </Button>
-<<<<<<< HEAD
                         ) : null // Không hiển thị nút nếu đã được duyệt
-=======
-                        ) : null
->>>>>>> w8
                     ),
                 },
             ]}

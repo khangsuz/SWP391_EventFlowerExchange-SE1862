@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, message, Modal } from 'antd';
+import { Table, Button, message, Modal, Card, Space, Input, Tag, Typography, Row, Col, Statistic } from 'antd';
+import { UserOutlined, ShopOutlined, SearchOutlined, ReloadOutlined, CheckCircleOutlined, CloseCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import axios from 'axios';
+
+const { Title, Text } = Typography;
+const { Search } = Input;
 
 const API_URL = 'https://localhost:7288/api';
 
@@ -95,21 +99,103 @@ const QuanLiNguoiBan = () => {
         }
     };
 
+    const getStatusTag = (status) => {
+        switch (status) {
+            case 'Pending':
+                return <Tag icon={<ExclamationCircleOutlined />} color="warning">Đang chờ</Tag>;
+            case 'Approved':
+                return <Tag icon={<CheckCircleOutlined />} color="success">Đã duyệt</Tag>;
+            case 'Rejected':
+                return <Tag icon={<CloseCircleOutlined />} color="error">Đã từ chối</Tag>;
+            default:
+                return <Tag color="default">{status}</Tag>;
+        }
+    };
+
     const columns = [
-        { title: 'Tên cửa hàng', dataIndex: 'storeName', key: 'storeName' },
-        { title: 'Email', dataIndex: 'email', key: 'email' },
-        { title: 'Địa chỉ', dataIndex: 'address', key: 'address' },
-        { title: 'Số điện thoại', dataIndex: 'phone', key: 'phone' },
-        { title: 'CMND/CCCD', dataIndex: 'idCard', key: 'idCard' }, // Thêm cột mới cho idCard
-        { title: 'Trạng thái', dataIndex: 'status', key: 'status' },
-        { title: 'Ngày yêu cầu', dataIndex: 'requestDate', key: 'requestDate', 
-          render: (text) => new Date(text).toLocaleString() },
+        { 
+            title: 'User ID', 
+            dataIndex: 'userId', 
+            key: 'userId',
+            width: 100 
+        },
+        { 
+            title: 'Tên cửa hàng', 
+            dataIndex: 'storeName', 
+            key: 'storeName',
+            width: 200,
+            render: (text) => (
+                <Space>
+                    <ShopOutlined />
+                    <Text strong>{text}</Text>
+                </Space>
+            )
+        },
+        { 
+            title: 'Email', 
+            dataIndex: 'email', 
+            key: 'email',
+            width: 200
+        },
+        { 
+            title: 'Địa chỉ', 
+            dataIndex: 'address', 
+            key: 'address',
+            width: 250,
+            ellipsis: true
+        },
+        { 
+            title: 'Số điện thoại', 
+            dataIndex: 'phone', 
+            key: 'phone',
+            width: 150
+        },
+        { 
+            title: 'CMND/CCCD', 
+            dataIndex: 'idCard', 
+            key: 'idCard',
+            width: 150
+        },
+        { 
+            title: 'Trạng thái', 
+            dataIndex: 'status', 
+            key: 'status',
+            width: 150,
+            render: (status) => getStatusTag(status)
+        },
+        { 
+            title: 'Ngày yêu cầu', 
+            dataIndex: 'requestDate', 
+            key: 'requestDate', 
+            render: (text) => {
+              const date = new Date(text);
+              // Chuyển đổi thời gian UTC sang múi giờ Việt Nam
+              const vietnamTime = new Date(date.getTime() + (7 * 60 * 60 * 1000)); // Thêm 7 giờ
+              return vietnamTime.toLocaleString('vi-VN', { 
+                timeZone: 'Asia/Ho_Chi_Minh',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+              });
+            }
+          },
         {
             title: 'Hành động',
             key: 'action',
+            fixed: 'right',
+            width: 120,
             render: (_, record) => (
                 record.status === 'Pending' && (
-                    <Button onClick={() => showApprovalModal(record.requestId, record.userId)}>Xử lý</Button>
+                    <Button 
+                        type="primary"
+                        icon={<CheckCircleOutlined />}
+                        onClick={() => showApprovalModal(record.requestId, record.userId)}
+                    >
+                        Xử lý
+                    </Button>
                 )
             ),
         },
@@ -122,25 +208,94 @@ const QuanLiNguoiBan = () => {
     };
 
     return (
-        <div className="admin-seller-requests">
-            <h2>Yêu cầu đăng ký làm người bán</h2>
-            <Table
-                columns={columns}
-                dataSource={requests}
-                loading={loading}
-                rowKey="requestId"
-            />
+        <div className="admin-seller-requests" style={{ padding: '24px' }}>
+            <Card className="page-header">
+                <Title level={2}>
+                    <Space>
+                        <ShopOutlined />
+                        Quản Lý Đăng Ký Người Bán
+                    </Space>
+                </Title>
+            </Card>
+
+            <Card style={{ marginTop: '16px' }}>
+                <Space style={{ marginBottom: '16px' }}>
+                    <Search
+                        placeholder="Tìm kiếm theo tên cửa hàng..."
+                        style={{ width: 300 }}
+                        allowClear
+                        prefix={<SearchOutlined />}
+                    />
+                    <Button 
+                        icon={<ReloadOutlined />}
+                        onClick={fetchRequests}
+                        loading={loading}
+                    >
+                        Làm mới
+                    </Button>
+                </Space>
+
+                <Table
+                    columns={columns}
+                    dataSource={requests}
+                    loading={loading}
+                    rowKey="requestId"
+                    scroll={{ x: 'max-content' }}
+                    pagination={{
+                        pageSize: 10,
+                        showSizeChanger: true,
+                        showTotal: (total) => `Tổng ${total} yêu cầu`
+                    }}
+                />
+            </Card>
+
             <Modal
-                title="Xử lý yêu cầu đăng ký"
+                title={
+                    <Space>
+                        <ExclamationCircleOutlined />
+                        Xử lý yêu cầu đăng ký
+                    </Space>
+                }
                 open={modalVisible}
                 onCancel={() => setModalVisible(false)}
                 footer={[
-                    <Button key="reject" onClick={() => handleApprove(false)}>Từ chối</Button>,
-                    <Button key="approve" type="primary" onClick={() => handleApprove(true)}>Phê duyệt</Button>
+                    <Button 
+                        key="reject" 
+                        danger 
+                        icon={<CloseCircleOutlined />}
+                        onClick={() => handleApprove(false)}
+                    >
+                        Từ chối
+                    </Button>,
+                    <Button 
+                        key="approve" 
+                        type="primary" 
+                        icon={<CheckCircleOutlined />}
+                        onClick={() => handleApprove(true)}
+                    >
+                        Phê duyệt
+                    </Button>
                 ]}
             >
                 <p>Bạn có chắc chắn muốn xử lý yêu cầu này?</p>
             </Modal>
+
+            <style jsx>{`
+                .page-header {
+                    background: #fff;
+                    margin-bottom: 16px;
+                    border-radius: 8px;
+                    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+                }
+                .ant-card {
+                    border-radius: 8px;
+                    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+                }
+                .ant-table-thead > tr > th {
+                    background: #fafafa;
+                    font-weight: 600;
+                }
+            `}</style>
         </div>
     );
 };

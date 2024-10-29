@@ -1,16 +1,22 @@
 import React, { useEffect, useState, useRef } from "react";
+<<<<<<< HEAD
 import { useParams } from "react-router-dom";
+=======
+import { useParams, useNavigate, Link } from "react-router-dom";
+>>>>>>> w8
 import "../../index.css";
-import { useNavigate } from "react-router-dom";
 import Header from "../../component/header";
 import Footer from "../../component/footer";
 import api, { baseUrl } from "../../config/axios";
 import { useCart } from "../../contexts/CartContext";
 import { getFullImageUrl } from '../../utils/imageHelpers';
-import { Link } from "react-router-dom";
 import { Notification, notifySuccess, notifyError } from "../../component/alert";
 import UserAvatar from "../user/UserAvatar";
 import LoadingComponent from "../../component/loading";
+<<<<<<< HEAD
+=======
+import ChatButton from "../../component/chatButton";
+>>>>>>> w8
 
 const ProductDetail = () => {
   const { updateCartItemCount } = useCart();
@@ -31,6 +37,10 @@ const ProductDetail = () => {
   const imageUrl = flower ? getFullImageUrl(flower.imageUrl) : null;
   const [starFilter, setStarFilter] = useState(0);
   const productDetailRef = useRef(null); // Create a ref for the product detail section
+<<<<<<< HEAD
+=======
+  const [categories, setCategories] = useState({});
+>>>>>>> w8
 
   const fetchFlowerDetails = async () => {
     try {
@@ -163,18 +173,24 @@ const ProductDetail = () => {
     }
   };
 
-  const handleAddToCart = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-
+  const handleAddToCart = async () => {
     const token = localStorage.getItem("token");
+    if (!token) {
+      notifyError("Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng!");
+      return;
+    }
 
+    setLoading(true);
     try {
-      await api.post("Orders/addtocart", null, {
-        params: {
-          flowerId: flower.flowerId,
-          quantity: quantity,
+      const response = await api.post(
+        "Cart/add-item",
+        {
+          FlowerId: flower.flowerId,
+          Quantity: quantity,
+          Price: flower.price,
+          IsCustomOrder: false
         },
+<<<<<<< HEAD
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -182,10 +198,26 @@ const ProductDetail = () => {
       addToCart(flower);
       updateCartItemCount();
       notifySuccess("Thêm vào giỏ hàng thành công!");
+=======
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (response.data.success) {
+        notifySuccess(`${flower.flowerName} đã được thêm vào giỏ hàng!`);
+        updateCartItemCount();
+      } else {
+        notifyError(response.data.message || "Thêm vào giỏ hàng thất bại!");
+      }
+>>>>>>> w8
     } catch (err) {
       console.error("Error adding to cart:", err);
       const errorMessage = err.response?.data?.message || "Thêm vào giỏ hàng thất bại!";
-      alert(errorMessage);
+      notifyError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -255,12 +287,19 @@ const ProductDetail = () => {
     }
   };
 
+<<<<<<< HEAD
 
   const filteredReviews = reviews.filter(review => {
     return starFilter === 0 || review.rating === starFilter; // Lọc đánh giá
   });
 
   // Tính toán số lượng đánh giá cho từng mức sao
+=======
+  const filteredReviews = reviews.filter(review => {
+    return starFilter === 0 || review.rating === starFilter;
+  });
+
+>>>>>>> w8
   const starCounts = Array(6).fill(0);
   reviews.forEach(review => {
     starCounts[review.rating]++;
@@ -268,10 +307,65 @@ const ProductDetail = () => {
 
   const handleRelatedProductClick = () => {
     if (productDetailRef.current) {
+<<<<<<< HEAD
       productDetailRef.current.scrollIntoView({ behavior: 'smooth' }); // Scroll to the product detail section
     }
   };
 
+=======
+      productDetailRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await api.get("Categories");
+        const categoriesMap = {};
+        response.data.forEach(category => {
+          categoriesMap[category.categoryId] = category.categoryName;
+        });
+        setCategories(categoriesMap);
+      } catch (err) {
+        console.error("Error fetching categories:", err);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  const removeVietnameseTones = (str) => {
+    str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g,"a"); 
+    str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g,"e"); 
+    str = str.replace(/ì|í|ị|ỉ|ĩ/g,"i"); 
+    str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g,"o"); 
+    str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g,"u"); 
+    str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g,"y"); 
+    str = str.replace(/đ/g,"d");
+    str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "A");
+    str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, "E");
+    str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "I");
+    str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "O");
+    str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U");
+    str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y");
+    str = str.replace(/Đ/g, "D");
+    str = str.replace(/\u0300|\u0301|\u0303|\u0309|\u0323/g, "");
+    str = str.replace(/\u02C6|\u0306|\u031B/g, ""); 
+    str = str.replace(/ + /g," ");
+    str = str.trim();
+    str = str.replace(/!|@|%|\^|\*|\(|\)|\+|\=|\<|\>|\?|\/|,|\.|\:|\;|\'|\"|\&|\#|\[|\]|~|\$|_|`|-|{|}|\||\\/g," ");
+    return str;
+  }
+  const getCategorySlug = (categoryName) => {
+    return removeVietnameseTones(categoryName).toLowerCase().replace(/\s+/g, '-');
+  };
+
+  const handleCategoryClick = (categoryName) => {
+    const slug = getCategorySlug(categoryName);
+    navigate(`/events/${slug}`);
+  };
+
+>>>>>>> w8
   if (!flower) return <LoadingComponent />
 
   return (
@@ -295,7 +389,22 @@ const ProductDetail = () => {
                 <span className="text-yellow-500 text-xl font-semibold">{averageRating.toFixed(1)} sao</span>
                 <span className="ml-2 text-gray-500">({reviews.length} đánh giá)</span>
               </div>
+<<<<<<< HEAD
               <div className="mt-2 text-xl">Người bán: <Link to={seller ? `/personal-product/${seller.userId}` : "#"} className="font-bold">{seller ? seller.fullName : "Thông tin người bán không có"}</Link></div>
+=======
+              <div className="mt-2 text-xl">Người bán: <Link to={seller ? `/personal-product/${seller.userId}` : "#"} className="font-bold cursor-pointer hover:underline ml-1">{seller ? seller.fullName : "Thông tin người bán không có"}</Link></div>
+              {categories[flower.categoryId] && (
+                <p className="text-gray-600 text-xl mt-2">
+                  Sự kiện: 
+                  <span 
+                    className="font-bold cursor-pointer hover:underline ml-1"
+                    onClick={() => handleCategoryClick(categories[flower.categoryId])}
+                  >
+                    {categories[flower.categoryId]}
+                  </span>
+                </p>
+              )}
+>>>>>>> w8
               <div className="flex mb-4"></div>
               <p className="leading-relaxed"><strong className="text-xl">Lưu ý</strong> : Sản phẩm thực tế có thể sẽ khác đôi chút so với sản phẩm mẫu do đặc tính cắm, gói hoa thủ công. Các loại hoa không có sẵn, hoặc hết mùa sẽ được thay thế bằng các loại hoa khác, nhưng vẫn đảm bảo về định lượng hoa, tone màu, kiểu dáng và độ thẩm mỹ như sản phẩm mẫu.</p>
               <div className="flex mt-6 items-center pb-5 border-b-2 border-gray-200 mb-5">
@@ -307,20 +416,43 @@ const ProductDetail = () => {
                 </div>
               </div>
               <div className="flex">
-                <button className="px-4 text-lg border-2 py-2 text-gray-800 font-bold rounded hover:bg-gray-300 transition duration-300 ease-in-out disabled:cursor-not-allowed"
+                <button 
+                  className="px-4 text-lg border-2 py-2 text-gray-800 font-bold rounded hover:bg-gray-300 transition duration-300 ease-in-out disabled:cursor-not-allowed"
                   onClick={() => setQuantity(quantity - 1)}
-                  disabled={quantity <= 1}>
+                  disabled={quantity <= 1 || loading}
+                >
                   -
                 </button>
                 <span className="mt-1 mx-4 text-4xl font-semibold">{quantity}</span>
-                <button className="px-4 text-lg border-2 py-2  text-gray-800 font-bold rounded hover:bg-gray-300 transition duration-300 ease-in-out"
-                  onClick={() => setQuantity(quantity + 1)}>
+                <button 
+                  className="px-4 text-lg border-2 py-2 text-gray-800 font-bold rounded hover:bg-gray-300 transition duration-300 ease-in-out"
+                  onClick={() => setQuantity(quantity + 1)}
+                  disabled={loading}
+                >
                   +
                 </button>
-                <button className="flex ml-2 text-lg border-2 border-0 py-2 px-6 focus:outline-none hover:bg-gray-300 rounded"
+                <button 
+                  className={`flex ml-2 text-white font-bold text-lg py-2 px-6 rounded transition duration-300 ease-in-out ${
+                    loading 
+                      ? 'bg-gray-400 cursor-not-allowed' 
+                      : 'bg-indigo-600 hover:bg-indigo-700'
+                  }`}
                   onClick={handleAddToCart}
-                  disabled={loading}>
-                  {loading ? "Đang thêm..." : "Thêm vào giỏ"}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <span className="flex items-center">
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Đang thêm...
+                    </span>
+                  ) : (
+                    <span className="flex items-center">
+                      Thêm vào giỏ
+                    </span>
+                  )}
                 </button>
               </div>
             </div>

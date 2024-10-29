@@ -1,9 +1,21 @@
 import React, { useEffect, useState } from "react";
-import { Table, Spin, Button, Modal, Form, Select, message } from 'antd';
-import axios from "axios";
+import { Table, Spin, Button, Modal, Form, Select, message, Space, Tag, Card, Typography, Row, Col, Statistic, Input } from 'antd';
+import { 
+  EyeOutlined, 
+  EditOutlined, 
+  ShoppingCartOutlined, 
+  SearchOutlined, 
+  ReloadOutlined,
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+  CloseCircleOutlined 
+} from '@ant-design/icons';
+import api from '../../config/axios';
 
+const { Title, Text } = Typography;
 const { Column } = Table;
 const { Option } = Select;
+const { Search } = Input;
 
 const QuanLiDonHang = () => {
   const [orders, setOrders] = useState([]);
@@ -17,116 +29,52 @@ const QuanLiDonHang = () => {
 
 
   useEffect(() => {
+    const fetchOrders = async () => {
+      const token = localStorage.getItem("token");
+      try {
+        const response = await axios.get('https://localhost:7288/api/admin/orders', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setOrders(response.data);
+      } catch (error) {
+        setError("Lỗi khi tải dữ liệu đơn hàng.");
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchOrders();
   }, []);
 
-  const fetchOrders = async () => {
-    const token = localStorage.getItem("token");
-    try {
-      const response = await axios.get('https://localhost:7288/api/admin/orders', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setOrders(response.data);
-    } catch (error) {
-      setError("Lỗi khi tải dữ liệu đơn hàng.");
-    } finally {
-      setLoading(false);
-    }
-  };
-  const formatDate = (dateString) => {
-    const options = { 
-      year: 'numeric', 
-      month: '2-digit', 
-      day: '2-digit', 
-      hour: '2-digit', 
-      minute: '2-digit', 
-      hour12: false 
-    };
-    return new Date(dateString).toLocaleString('vi-VN', options);
-  };
-
-  const handleDeliveryStatusChange = async (orderId, newStatus) => {
-    const token = localStorage.getItem("token");
-    try {
-      await axios.put(`https://localhost:7288/api/admin/orders/${orderId}/delivery`, 
-        { orderDelivery: newStatus }, 
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-        }
-      );
-      message.success("Cập nhật trạng thái giao hàng thành công!");
-      fetchOrders(); 
-    } catch (error) {
-      console.error("Error updating delivery status:", error); 
-        message.error("Lỗi khi cập nhật trạng thái giao hàng.");
-    }
-  };
   const handleUpdateStatus = async () => {
-    const token = localStorage.getItem("token");
     try {
       if (!newStatus) {
         message.error("Vui lòng chọn trạng thái mới.");
         return;
       }
   
-      await axios.put(`https://localhost:7288/api/admin/orders/${selectedOrder.orderId}/status`, 
-        JSON.stringify(newStatus), 
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-        }
-      );
+      await api.put(`/admin/orders/${selectedOrder.orderId}/status`, {
+        orderStatus: newStatus
+      });
   
       message.success("Cập nhật trạng thái đơn hàng thành công!");
       setIsUpdateStatusModalVisible(false);
-      
-      const response = await axios.get('https://localhost:7288/api/admin/orders', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setOrders(response.data);
+      fetchOrders();
     } catch (error) {
+      console.error('Error updating order status:', error);
       message.error("Lỗi khi cập nhật trạng thái đơn hàng.");
-    }
-  };
-
-  const handleDeleteOrder = async (orderId) => {
-    const token = localStorage.getItem("token");
-    try {
-      await axios.delete(`https://localhost:7288/api/admin/orders/${orderId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      message.success("Đơn hàng đã được xóa thành công!");
-      const response = await axios.get('https://localhost:7288/api/admin/orders', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setOrders(response.data);
-    } catch (error) {
-      message.error("Lỗi khi xóa đơn hàng.");
     }
   };
 
   const showUpdateStatusModal = (order) => {
     setSelectedOrder(order);
+    setNewStatus(order.orderStatus);
     setIsUpdateStatusModalVisible(true);
   };
 
-  const showDetailModal = async (order) => {
-    const token = localStorage.getItem("token");
-    try {
-        const response = await axios.get(`https://localhost:7288/api/admin/orders/${order.orderId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
-        setSelectedOrder(response.data);
-        setIsDetailModalVisible(true);
-    } catch (error) {
-        message.error("Lỗi khi lấy chi tiết đơn hàng.");
-    }
-};
+  const showDetailModal = (order) => {
+    setSelectedOrder(order);
+    setIsDetailModalVisible(true);
+  };
 
   const handleCancelUpdateStatus = () => {
     setIsUpdateStatusModalVisible(false);
@@ -136,6 +84,31 @@ const QuanLiDonHang = () => {
     setIsDetailModalVisible(false);
   };
 
+  const getOrderStatusColor = (status) => {
+    const statusColors = {
+      'Pending': 'gold',
+      'Completed': 'green',
+      'Cancelled': 'red'
+    };
+    return statusColors[status] || 'default';
+  };
+
+  const getDeliveryStatusColor = (status) => {
+    const statusColors = {
+      'ChờXửLý': 'default',
+      'ĐangXửLý': 'processing',
+      'ĐãGửiHàng': 'warning',
+      'ĐãGiaoHàng': 'success',
+      'ĐãHủy': 'error'
+    };
+    return statusColors[status] || 'default';
+  };
+
+  // Thêm hàm kiểm tra trạng thái
+  const isOrderEditable = (status) => {
+    return status !== 'Completed' && status !== 'Cancelled';
+  };
+
   if (loading) return <Spin />;
   if (error) return <p style={{ color: 'red' }}>{error}</p>;
 
@@ -143,32 +116,9 @@ const QuanLiDonHang = () => {
     <>
       <Table dataSource={orders} rowKey="orderId">
         <Column title="ID" dataIndex="orderId" key="orderId" />
-        <Column title="Người mua" dataIndex="userName" key="userName" />
-        <Column 
-            title="Ngày đặt hàng" 
-            dataIndex="orderDate" 
-            key="orderDate" 
-            render={(text) => formatDate(text)}
-          />
+        <Column title="Người mua" dataIndex="userId" key="userId" />
+        <Column title="Ngày đặt hàng" dataIndex="orderDate" key="orderDate" />
         <Column title="Trạng thái" dataIndex="orderStatus" key="orderStatus" />
-        <Column 
-          title="Trạng thái Giao Hàng" 
-          dataIndex="orderDelivery" 
-          key="orderDelivery" 
-          render={(text, record) => (
-            <Select
-              defaultValue={text}
-              style={{ width: 150 }}
-              onChange={(value) => handleDeliveryStatusChange(record.orderId, value)}
-            >
-              <Option value="ChờXửLý">Chờ xử lý</Option>
-              <Option value="ĐangXửLý">Đang xử lý</Option>
-              <Option value="ĐãGửiHàng">Đã gửi hàng</Option>
-              <Option value="ĐãGiaoHàng">Đã giao hàng</Option>
-              <Option value="ĐãHủy">Đã hủy</Option>
-            </Select>
-          )}
-        />
         <Column title="Địa chỉ giao hàng" dataIndex="deliveryAddress" key="deliveryAddress" />
         <Column
           title="Hành động"
@@ -183,41 +133,99 @@ const QuanLiDonHang = () => {
         />
       </Table>
 
-      <Modal
-        title="Cập nhật trạng thái đơn hàng"
-        open={isUpdateStatusModalVisible}
-        onOk={handleUpdateStatus}
-        onCancel={handleCancelUpdateStatus}
-      >
-        <Form>
-          <Form.Item label="Trạng thái mới">
-            <Select value={newStatus} onChange={setNewStatus}>
-              <Option value="Pending">Đang chờ</Option>
-              <Option value="Completed">Đã hoàn thành</Option>
-              <Option value="Cancelled">Đã hủy</Option>
-            </Select>
-          </Form.Item>
-        </Form>
-      </Modal>
-
-      {/* Modal hiển thị chi tiết đơn hàng */}
-        {selectedOrder && (
-            <Modal
-                title={`Chi tiết đơn hàng ${selectedOrder.orderId}`}
-                open={isDetailModalVisible}
-                onCancel={handleCancelDetail}
-                footer={null}
+        <Modal
+          title="Cập nhật trạng thái đơn hàng"
+          open={isUpdateStatusModalVisible}
+          onOk={handleUpdateStatus}
+          onCancel={handleCancelUpdateStatus}
+          okText="Cập nhật"
+          cancelText="Hủy"
+        >
+          <Form layout="vertical">
+            <Form.Item
+              label="Trạng thái mới"
+              required
             >
-                <Table dataSource={selectedOrder.orderItems} rowKey="orderItemId">
-                    <Column title="ID mục đơn hàng" dataIndex="orderItemId" key="orderItemId" />
-                    <Column title="ID sản phẩm" dataIndex="flowerId" key="flowerId" />
-                    <Column title="Số lượng" dataIndex="quantity" key="quantity" />
-                    <Column title="Giá" dataIndex="price" key="price" />
-                    <Column title="Tên hoa" dataIndex="flowerName" key="flowerName" />
-                </Table>
-            </Modal>
-            )}
-    </>
+              <Select
+                value={newStatus}
+                onChange={setNewStatus}
+              >
+                <Option value="Pending">Đang chờ</Option>
+                <Option value="Completed">Đã hoàn thành</Option>
+                <Option value="Cancelled">Đã hủy</Option>
+              </Select>
+            </Form.Item>
+          </Form>
+        </Modal>
+
+        {selectedOrder && (
+         <Modal
+         title={`Chi tiết đơn hàng #${selectedOrder.orderId}`}
+         open={isDetailModalVisible}
+         onCancel={handleCancelDetail}
+         width={800}
+         footer={null}
+       >
+         <div className="mb-4">
+           <p><strong>Người mua:</strong> {selectedOrder.userName || 'Không có tên'}</p>
+           <p><strong>Địa chỉ:</strong> {selectedOrder.deliveryAddress && selectedOrder.wardName ? 
+             `${selectedOrder.deliveryAddress}, ${selectedOrder.wardName}` : 'Chưa có địa chỉ'}</p>
+           <p><strong>Ngày đặt:</strong> {formatDate(selectedOrder.orderDate)}</p>
+           <p><strong>Ghi chú:</strong> {selectedOrder.note || 'Không có'}</p>
+           {/* Thêm 2 dòng này */}
+           <p><strong>Trạng thái đơn hàng:</strong> 
+             <Tag color={getOrderStatusColor(selectedOrder.orderStatus)} className="ml-2">
+               {selectedOrder.orderStatus}
+             </Tag>
+           </p>
+           <p><strong>Trạng thái giao hàng:</strong> 
+             <Tag color={getDeliveryStatusColor(selectedOrder.orderDelivery)} className="ml-2">
+               {selectedOrder.orderDelivery}
+             </Tag>
+           </p>
+         </div>
+         <Table
+           dataSource={selectedOrder.orderItems}
+           rowKey="orderItemId"
+           pagination={false}
+         >
+           <Column title="ID" dataIndex="orderItemId" width={80} />
+           <Column 
+             title="Tên hoa" 
+             dataIndex="flowerName"
+             key="flowerName"
+             render={(text) => text || 'Không có tên'}
+           />
+           <Column
+             title="Số lượng"
+             dataIndex="quantity"
+             width={100}
+             align="right"
+           />
+           <Column
+             title="Đơn giá"
+             dataIndex="price"
+             width={120}
+             align="right"
+             render={(price) => formatCurrency(price)}
+           />
+           <Column
+             title="Thành tiền"
+             key="total"
+             width={120}
+             align="right"
+             render={(_, record) => formatCurrency(record.quantity * record.price)}
+           />
+         </Table>
+         <div className="mt-4 text-right">
+           <p className="text-lg font-medium">
+             Tổng tiền: {formatCurrency(selectedOrder.totalAmount)}
+           </p>
+         </div>
+       </Modal>
+        )}
+      </Card>
+    </div>
   );
 };
 

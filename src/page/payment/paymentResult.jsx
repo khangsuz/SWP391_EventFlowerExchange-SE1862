@@ -4,6 +4,10 @@ import Header from "../../component/header";
 import Footer from "../../component/footer";
 import api from "../../config/axios";
 import { useCart } from "../../contexts/CartContext";
+<<<<<<< HEAD
+=======
+import { Notification ,notifySuccess, notifyError } from "../../component/alert";
+>>>>>>> w8
 
 function PaymentResult() {
     const location = useLocation();
@@ -11,6 +15,57 @@ function PaymentResult() {
     const [paymentStatus, setPaymentStatus] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const { updateCartItemCount } = useCart();
+<<<<<<< HEAD
+=======
+
+    const createShippingOrder = async (orderDetails) => {
+        if (!orderDetails || !orderDetails.orderId) {
+            console.error('Order details are missing or invalid');
+            notifyError('Không thể tạo đơn hàng giao hàng do thiếu thông tin đơn hàng.');
+            return;
+        }
+
+        try {
+            const shippingOrder = {
+                from_name: 'Shop Hoa ABC',
+                from_phone: '0901234567',
+                from_address: '72 Lê Thánh Tôn, Phường Bến Ngh  ',
+                from_ward_name: 'Phường Bến Nghé',
+                from_district_name: 'Quận 1',
+                from_province_name: 'TP Hồ Chí Minh',
+                to_name: orderDetails.fullName,
+                to_phone: orderDetails.phone,
+                to_address: orderDetails.deliveryAddress,
+                to_ward_name: orderDetails.wardName,
+                to_ward_code: orderDetails.wardCode,
+                to_district_id: parseInt(orderDetails.toDistrictId, 10),
+                client_order_code: orderDetails.orderId.toString(),
+                note: orderDetails.note || 'Không có ghi chú',
+                weight: orderDetails.totalWeight,
+                length: 30,
+                width: 20,
+                height: 10,
+                required_note: "CHOXEMHANGKHONGTHU",
+                items: (orderDetails.items || []).map(item => ({
+                    name: item.flowerName,
+                    code: item.flowerId.toString(),
+                    quantity: item.quantity,
+                    price: parseInt(item.price),
+                    weight: 5000
+                }))
+            };
+
+            console.log('Shipping order data:', JSON.stringify(shippingOrder, null, 2));
+
+            const response = await api.post('Shipping/create-order', shippingOrder);
+            console.log('GHN Shipping order created:', response.data);
+            notifySuccess('Đơn hàng giao hàng đã được tạo thành công');
+        } catch (error) {
+            console.error('Error creating shipping order:', error.response?.data || error.message);
+            notifyError('Không thể tạo đơn hàng giao hàng. Vui lòng liên hệ hỗ trợ.');
+        }
+    };
+>>>>>>> w8
 
     useEffect(() => {
         const processPaymentResult = async () => {
@@ -21,6 +76,7 @@ function PaymentResult() {
                 const response = await api.get(`Payments/vnpay-return${location.search}`);
                 console.log('Payment result processed:', response.data);
 
+<<<<<<< HEAD
                 switch(vnp_ResponseCode) {
                     case '00':
                         setPaymentStatus('Giao dịch thành công!');
@@ -69,6 +125,36 @@ function PaymentResult() {
             } catch (error) {
                 console.error('Error processing payment result:', error.response?.data || error.message);
                 setPaymentStatus(error.response?.data?.message || 'Có lỗi xảy ra khi xử lý kết quả thanh toán.');
+=======
+                if (vnp_ResponseCode === '00') {
+                    setPaymentStatus('Giao dịch thành công!');
+                    
+                    // Get current cart and items being purchased
+                    const currentCart = JSON.parse(localStorage.getItem('cart') || '[]');
+                    const purchasedItems = JSON.parse(localStorage.getItem('itemsBeingPurchased') || '{}');
+                    
+                    // Filter out only the purchased items
+                    const updatedCart = currentCart.filter(item => 
+                        item.sellerName !== purchasedItems.sellerName ||
+                        !purchasedItems.itemIds.includes(item.flowerId)
+                    );
+                    
+                    // Update cart with remaining items
+                    localStorage.setItem('cart', JSON.stringify(updatedCart));
+                    updateCartItemCount(updatedCart.length);
+                    
+                    // Clean up
+                    localStorage.removeItem('itemsBeingPurchased');
+                    localStorage.removeItem('pendingOrderId');
+                }else {
+                    setPaymentStatus('Thanh toán thất bại');
+                    notifyError('Giao dịch không thành công hoặc đã bị hủy.');
+                }
+            } catch (error) {
+                console.error('Error processing payment result:', error);
+                setPaymentStatus('Có lỗi xảy ra khi xử lý kết quả thanh toán.');
+                notifyError('Có lỗi xảy ra khi xử lý kết quả thanh toán.');
+>>>>>>> w8
             } finally {
                 setIsLoading(false);
             }
@@ -83,6 +169,7 @@ function PaymentResult() {
 
     return (
         <>
+        <Notification />
             <Header />
             <div className="flex flex-col items-center justify-center p-6 bg-white rounded-lg mb-20 mt-20">
                 {isLoading ? (

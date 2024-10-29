@@ -29,3 +29,73 @@
     text-align: left;
     color: green;
 }
+
+.ant-modal-content {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.ant-btn-primary {
+  height: 40px;
+  padding: 0 20px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.avatar-uploader {
+  .ant-upload {
+    width: 128px;
+    height: 128px;
+    border-radius: 8px;
+    
+    &:hover {
+      border-color: #1890ff;
+    }
+  }
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+}
+
+.custom-order-badge {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800;
+}
+
+.message-bubble {
+  @apply break-words rounded-2xl px-4 py-2 shadow-sm max-w-[70%];
+  
+  &.current-user {
+    @apply bg-blue-50 text-gray-800 rounded-br-none ml-auto;
+  }
+  
+  &.other-user {
+    @apply bg-gray-50 text-gray-800 rounded-bl-none;
+  }
+}
+
+.custom-order-form {
+  @apply space-y-4;
+  
+  input, textarea {
+    @apply w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500;
+  }
+  
+  .ant-upload {
+    @apply rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-500;
+  }
+}

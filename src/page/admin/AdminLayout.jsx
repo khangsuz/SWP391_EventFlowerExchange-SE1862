@@ -37,11 +37,11 @@ const AdminLayout = () => {
       icon: <TeamOutlined />,
       label: <Link to="/admin/QuanLiNguoiDung">Quản lý người dùng</Link>,
     },
-    {
-      key: "3",
-      icon: <ShopOutlined />,
-      label: <Link to="/admin/quanlisanpham">Quản lý sản phẩm</Link>,
-    },
+    // {
+    //   key: "3",
+    //   icon: <ShopOutlined />,
+    //   label: <Link to="/admin/quanlisanpham">Quản lý sản phẩm</Link>,
+    // },
     {
       key: "4",
       icon: <ShopOutlined />,
@@ -52,17 +52,6 @@ const AdminLayout = () => {
       icon: <ShopOutlined />,
       label: <Link to="/admin/quanlinguoiban">Quản lý người bán</Link>,
     },
-    {
-      key: "6",
-      icon: <ShopOutlined />,
-      label: <Link to="/admin/WithdrawalRequests">Quản lý rút tiền</Link>,
-    },
-    {
-      key: "7",
-      icon: <CustomerServiceOutlined />,
-      label: <Link to="/admin/quanlidanhgia">Quản lý đánh giá</Link>,
-    },
-
   ];
 
   return (
