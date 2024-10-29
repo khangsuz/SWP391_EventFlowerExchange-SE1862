@@ -1,41 +1,23 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import Header from "../../component/header";
-import Footer from "../../component/footer";
+import React, { useState, useEffect } from 'react';
 import api from "../../config/axios";
-<<<<<<< HEAD
-import ProductCard from "../../component/product-card";
-import { Notification } from "../../component/alert";
-import LoadingComponent from '../../component/loading'; // Import LoadingComponent
-=======
 import { useNavigate } from 'react-router-dom';
 import Header from '../../component/header';
 import Footer from '../../component/footer';
-import UserAvatar from '../user/UserAvatar';
->>>>>>> w8
 
-const PersonalProduct = () => {
-  const navigate = useNavigate();
-<<<<<<< HEAD
-  const { userId } = useParams();
-  const [sellerProducts, setSellerProducts] = useState([]);
-  const [sellerProfile, setSellerProfile] = useState(null);
+const CreateProduct = () => {
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isFollowing, setIsFollowing] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState(null);
-  const [totalReviews, setTotalReviews] = useState(0);
-
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-=======
+  const [error, setError] = useState(null);
+  const [imageFile, setImageFile] = useState();
+  const navigate = useNavigate();
   const [flower, setFlower] = useState({
     FlowerName: '',
     Price: 0,
     Quantity: 0,
     CategoryId: '',
+    Condition: '', 
   });
   const [userId, setUserId] = useState(null);
-  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -59,15 +41,14 @@ const PersonalProduct = () => {
     const fetchCurrentUser = async () => {
       try {
         const response = await api.get("/Users/current-user");
-        setUserId(response.data.userId);
-        setUser(response.data);
+        setUserId(response.data.userId); // Lưu userId vào state
       } catch (error) {
         console.error("Error fetching current user:", error);
       }
     };
 
     fetchCategories();
-    fetchCurrentUser();
+    fetchCurrentUser(); // Gọi hàm fetchCurrentUser để lấy thông tin người dùng
     return () => {
       imageFile && URL.revokeObjectURL(imageFile.preview);
     };
@@ -101,41 +82,51 @@ const PersonalProduct = () => {
       alert('Vui lòng điền đầy đủ thông tin và giá trị hợp lệ.');
       return;
     }
->>>>>>> w8
     try {
-      const [currentUserResponse, sellerProductsResponse, sellerProfileResponse, followersCountResponse] = await Promise.all([
-        api.get("/Users/current-user"),
-        api.get(`Flowers/seller/${userId}`),
-        api.get(`Users/${userId}`),
-        api.get(`/SellerFollow/followers-count/${userId}`)
-      ]);
-
-      setCurrentUserId(currentUserResponse.data.userId);
-      setSellerProducts(sellerProductsResponse.data);
-      setSellerProfile({
-        ...sellerProfileResponse.data,
-        followers: followersCountResponse.data
-      });
-
-      if (currentUserResponse.data.userId) {
-        const isFollowingResponse = await api.get(`/SellerFollow/is-following`, {
-          params: {
-            userId: currentUserResponse.data.userId,
-            sellerId: userId
-          }
-        });
-        setIsFollowing(isFollowingResponse.data);
+      const formData = new FormData();
+      formData.append('FlowerName', flower.FlowerName);
+      formData.append('Price', flower.Price.toString());
+      formData.append('Quantity', flower.Quantity.toString());
+      formData.append('Condition', flower.Condition);
+      formData.append('CategoryId', flower.CategoryId.toString());
+      if (imageFile) {
+        formData.append('image', imageFile);
       }
 
-<<<<<<< HEAD
-      // Fetch total reviews for all products
-      let totalReviewsCount = 0;
-      for (const product of sellerProductsResponse.data) {
-        const reviewCountResponse = await api.get(`/Reviews/count/${product.flowerId}`);
-        totalReviewsCount += reviewCountResponse.data;
-=======
+      const response = await api.post('Flowers', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        }
+      });
+
+      const newFlower = response.data;
+      console.log("Sản phẩm mới:", newFlower);
+
+      // Tạo thông báo mới
+      try {
+        const userString = localStorage.getItem('user');
+        if (!userString) {
+          throw new Error('User information not found in localStorage');
+        }
+        const currentUser = JSON.parse(userString);
+        if (!currentUser || !currentUser.userId) {
+          throw new Error('Invalid user information');
+        }
+        
+        await api.post('Notification', {
+          Message: `Sản phẩm mới đã được thêm: ${newFlower.flowerName}`,
+          NotificationDate: new Date().toISOString(),
+          IsRead: false,
+          SellerId: currentUser.userId 
+        });
+        console.log("Thông báo đã được tạo thành công");
+      } catch (notificationError) {
+        console.error("Lỗi khi tạo thông báo:", notificationError.message);
+      }
+
+      
       alert('Sản phẩm đã được tạo thành công!');
-      navigate(`/manage-products/${userId}`);
+      navigate(`/manage-products/${userId}`); // Sử dụng userId đã lưu để điều hướng
     } catch (error) {
       console.error('Error creating product:', error);
       if (error.response) {
@@ -147,122 +138,15 @@ const PersonalProduct = () => {
         alert('Không nhận được phản hồi từ server. Vui lòng thử lại sau.');
       } else {
         alert('Có lỗi xảy ra khi tạo sản phẩm: ' + error.message);
->>>>>>> w8
       }
-      setTotalReviews(totalReviewsCount);
-
-    } catch (err) {
-      console.error("Error fetching data:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, [userId]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  const handleChat = () => {
-    navigate(`/chat/${userId}`);
-  };
-
-  const handleManageOrders = () => {
-    navigate(`/seller/${userId}/orders`);
-  };
-
-  const handleManageProducts = () => {
-    navigate(`/manage-products/${userId}`);
-  };
-
-  const handleFollow = async () => {
-    try {
-      if (isFollowing) {
-        await api.post(`/SellerFollow/unfollow`, { userId: currentUserId, sellerId: userId });
-      } else {
-        await api.post(`/SellerFollow/follow`, { userId: currentUserId, sellerId: userId });
-      }
-      await fetchData(); // Refresh all data after follow/unfollow
-    } catch (err) {
-      console.error("Error handling follow/unfollow:", err);
     }
   };
-
-  const handleRevenue = () => {
-    navigate(`/manage-revenue/${userId}`);
-  };
-
-  const handleOrders = () => {
-    navigate(`/manage-orders/${userId}`);
-  };
-
-  if (loading) return <LoadingComponent />; // Show loading component
 
   return (
     <>
-      <Notification />
       <Header />
-<<<<<<< HEAD
-      <div className="container mx-auto py-24">
-        {sellerProfile && (
-          <div className="mb-6 p-4 border border-gray-200 rounded">
-            <div className="flex items-center">
-              <img src={sellerProfile.profileImageUrl || 'default-image-url'} alt={sellerProfile.name} className="w-10 h-10 rounded-full mr-2" />
-              <div className="ml-2">
-                <h2 className="text-xl font-bold">{sellerProfile.fullName}</h2>
-                <div className="flex mt-2">
-                  <div className="mr-6">
-                    <span>Đánh Giá: </span><strong>{totalReviews}</strong>
-                  </div>
-                  <div className="mr-6">
-                    <span>Sản Phẩm: </span><strong>{sellerProducts.length}</strong>
-                  </div>
-                  <div className="mr-6">
-                    <span>Người Theo Dõi: </span><strong>{sellerProfile.followers}</strong>
-                  </div>
-                </div>
-                <div className="flex mt-2 gap-2">
-                  {currentUserId === parseInt(userId) && (
-                    <>
-                      <button className="text-sm border border-gray-300 rounded-lg py-2 px-5 hover:bg-gray-200 hover:text-black" onClick={handleManageProducts}>
-                        Quản lí sản phẩm
-                      </button>
-                      <button className="text-sm border border-gray-300 rounded-lg py-2 px-5 hover:bg-gray-200 hover:text-black" onClick={handleRevenue}>
-                        Xem Doanh Thu
-                      </button>
-                      <button className="text-sm border border-gray-300 rounded-lg py-2 px-5 hover:bg-gray-200 hover:text-black" onClick={handleOrders}>
-                        Xem Đơn Hàng
-                      </button>
-                    </>
-                  )}
-                  {currentUserId !== parseInt(userId) && (
-                    <>
-                      <button className="chat-button text-sm border border-gray-300 rounded py-1 px-2 mr-2" onClick={handleChat}>
-                        Chat Ngay
-                      </button>
-                      <button
-                        className={`text-sm border border-gray-300 rounded py-1 px-2 ${isFollowing ? 'bg-red-500 text-white' : ''}`}
-                        onClick={handleFollow}
-                      >
-                        {isFollowing ? "Bỏ Yêu Thích" : "Yêu Thích"}
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-=======
       <div style={{ border: '1px solid red', padding: '20px', margin: '20px' }}>
         <div className="max-w-md mx-auto mt-10">
-          {user && (
-            <div className="flex items-center mb-5">
-              <div className="w-16 h-16 mr-4">
-                <UserAvatar userId={user.userId} userName={user.fullName} />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold">{user.fullName}</h3>
-                <p className="text-sm text-gray-600">{user.email}</p>
-              </div>
-            </div>
-          )}
           <h2 className="text-2xl font-bold mb-5">Tạo Sản Phẩm Mới</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -275,31 +159,88 @@ const PersonalProduct = () => {
                 className="w-full border rounded px-3 py-2"
                 required
               />
->>>>>>> w8
             </div>
+            <div>
+              <label className="block mb-1">Giá:</label>
+              <input
+                type="number"
+                name="Price"
+                value={flower.Price}
+                onChange={handleChange}
+                className="w-full border rounded px-3 py-2"
+                required
+                min="0.01"
+                step="0.01"
+              />
+            </div>
+            <div>
+              <label className="block mb-1">Số lượng:</label>
+              <input
+                type="number"
+                name="Quantity"
+                value={flower.Quantity}
+                onChange={handleChange}
+                className="w-full border rounded px-3 py-2"
+                required
+                min="1"
+              />
+            </div>
+            <div>
+            <label className="block mb-1">Condition:</label>
+              <select
+              name="Condition"
+              value={flower.Condition}
+              onChange={handleChange}
+              className="w-full border rounded px-3 py-2"
+              required
+            >
+              <option value="">Chọn điều kiện</option>
+              <option value="100">100%</option>
+              <option value="80">80%</option>
+              <option value="60">60%</option>
+            </select>
           </div>
-        )}
-        <h1 className="text-2xl font-bold mb-6">Sản phẩm của người bán</h1>
-        <div className="product-grid">
-          {sellerProducts.length > 0 ? (
-            sellerProducts.map((product) => (
-              <div key={product.flowerId} className="product-grid-item">
-                <ProductCard flower={product} />
-              </div>
-            ))
-          ) : (
-            <div className="w-full text-center py-8">
-              <p className="text-lg text-gray-600">Người bán này chưa có sản phẩm nào.</p>
-              {currentUserId === parseInt(userId) && (
-                <button
-                  className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
-                  onClick={handleManageProducts}
+            <div>
+              <label className="block mb-1">Danh mục:</label>
+              {loading ? (
+                <p>Đang tải danh mục...</p>
+              ) : error ? (
+                <p className="text-red-500">{error}</p>
+              ) : (
+                <select
+                  name="CategoryId"
+                  value={flower.CategoryId}
+                  onChange={handleChange}
+                  className="w-full border rounded px-3 py-2"
+                  required
                 >
-                  Thêm sản phẩm mới
-                </button>
+                  <option value="">Chọn danh mục</option>
+                  {categories.map(category => (
+                    <option key={category.categoryId} value={category.categoryId}>
+                      {category.categoryName}
+                    </option>
+                  ))}
+                </select>
               )}
             </div>
-          )}
+            <div>
+              <label className="block mb-1">Hình ảnh:</label>
+              <input
+                type="file"
+                onChange={handleImageChange}
+                accept="image/*"
+                className="w-full border rounded px-3 py-2"
+              />
+            </div>
+            {imageFile && (
+              <div>
+                <img src={imageFile.preview} alt={flower.FlowerName} className="w-full mt-2" />
+              </div>
+            )}
+            <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+              Tạo Sản Phẩm
+            </button>
+          </form>
         </div>
       </div>
       <Footer />
@@ -307,8 +248,4 @@ const PersonalProduct = () => {
   );
 };
 
-<<<<<<< HEAD
-export default PersonalProduct;
-=======
 export default CreateProduct;
->>>>>>> w8

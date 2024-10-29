@@ -377,7 +377,7 @@ const QuanLiNguoiDung = () => {
             onChange={(value) => setUpdatedUser({ ...updatedUser, userType: value })}
             style={{ width: '100%' }}
           >
-            <Option value="Admin">Admin</Option>
+            {/* <Option value="Admin">Admin</Option> */}
             <Option value="Seller">Seller</Option>
             <Option value="Buyer">Buyer</Option>
           </Select>

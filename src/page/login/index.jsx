@@ -120,35 +120,14 @@ const Login = () => {
             {isNewUser ? (
               <Form onFinish={handleCompleteRegistration} initialValues={{ fullName: googleUserInfo?.name }}>
                 <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">Hoàn tất đăng ký</h2>
-<<<<<<< HEAD
-                {/* <Form.Item label="Email" name="email" className="font-bold">
-                  <Input value={newUserEmail} disabled />
-                </Form.Item> */}
-                <Form.Item 
-                  label="Họ và tên" 
-                  name="fullName" 
-=======
                 <Form.Item
                   label="Họ và tên"
                   name="fullName"
->>>>>>> w8
                   className="font-bold"
                   rules={[{ required: true, message: 'Vui lòng nhập họ và tên' }]}
                 >
                   <Input />
                 </Form.Item>
-<<<<<<< HEAD
-                <Form.Item 
-                  label="Số điện thoại" 
-                  name="phone"
-                  className="font-bold" 
-                  rules={[{ required: true, message: 'Vui lòng nhập số điện thoại' }]}
-                >
-                  <Input />
-                </Form.Item>
-                <Form.Item 
-                  label="Địa chỉ" 
-=======
                 <Form.Item
                   label="Số điện thoại"
                   name="phone"
@@ -169,7 +148,6 @@ const Login = () => {
                 </Form.Item>
                 <Form.Item
                   label="Địa chỉ"
->>>>>>> w8
                   name="address"
                   className="font-bold"
                   rules={[{ required: true, message: 'Vui lòng nhập địa chỉ' }]}

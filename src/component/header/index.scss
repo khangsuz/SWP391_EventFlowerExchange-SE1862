@@ -23,3 +23,25 @@
 .search:focus-within{
   border-color: rgba(22, 24, 35, 0.12);
 }
+
+@keyframes bellShake {
+  0% { transform: rotate(0); }
+  15% { transform: rotate(5deg); }
+  30% { transform: rotate(-5deg); }
+  45% { transform: rotate(4deg); }
+  60% { transform: rotate(-4deg); }
+  75% { transform: rotate(2deg); }
+  85% { transform: rotate(-2deg); }
+  92% { transform: rotate(1deg); }
+  100% { transform: rotate(0); }
+}
+
+.notification-bell {
+  transition: all 0.3s ease;
+  
+  &.has-new {
+    animation: bellShake 1s cubic-bezier(.36,.07,.19,.97) infinite;
+    stroke: #ef4444 !important;
+    color: #ef4444 !important;
+  }
+}

@@ -21,24 +21,47 @@ function Notification({ onClose }) {
     const [hasMore, setHasMore] = useState(true);
 
     useEffect(() => {
-        const connection = new HubConnectionBuilder()
-            .withUrl("https://localhost:7288/notificationHub")
+        const newConnection = new HubConnectionBuilder()
+            .withUrl("https://localhost:7288/notificationHub", {
+                withCredentials: true
+            })
             .withAutomaticReconnect()
             .build();
 
-        connection.start()
-            .then(() => {
+        async function startConnection() {
+            try {
+                await newConnection.start();
                 console.log("Connected to SignalR");
 
-                connection.on("ReceiveNotification", (message) => {
-                    setNotifications(prev => [...prev, message]);
-                    console.log(message);
+                newConnection.on("ReceiveNotification", (notification) => {
+                    console.log("New notification received:", notification);
+                    if (notification.type === NotificationType.NewFollower) {
+                        // Xử lý thông báo người theo dõi mới
+                        const newNotification = {
+                            ...notification,
+                            icon: (
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                                </svg>
+                            )
+                        };
+                        setNotifications(prev => [newNotification, ...prev]);
+                    } else {
+                        setNotifications(prev => [notification, ...prev]);
+                    }
                 });
-            })
-            .catch(error => console.error("Connection failed: ", error));
+            } catch (err) {
+                console.error("SignalR Connection Error:", err);
+                setTimeout(startConnection, 5000);
+            }
+        }
+
+        startConnection();
 
         return () => {
-            connection.stop();
+            if (newConnection) {
+                newConnection.stop();
+            }
         };
     }, []);
 
@@ -132,11 +155,17 @@ function Notification({ onClose }) {
                                 }`}
                             >
                                 <div className="flex items-start gap-3">
-                                    {/* Notification Icon */}
+                                    {/* Notification Icon - Thay đổi icon dựa trên loại thông báo */}
                                     <div className="flex-shrink-0 mt-1">
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
-                                            <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
-                                        </svg>
+                                        {notification.type === "NEW_FOLLOWER" ? (
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                                                <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                                            </svg>
+                                        ) : (
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                                                <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
+                                            </svg>
+                                        )}
                                     </div>
 
                                     {/* Notification Content */}

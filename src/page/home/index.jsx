@@ -5,12 +5,8 @@ import api from "../../config/axios";
 import Footer from "../../component/footer";
 import ProductCard from "../../component/product-card";
 import { Link } from "react-router-dom";
-<<<<<<< HEAD
-import LoadingComponent from '../../component/loading'; // Import LoadingComponent
-=======
 import LoadingComponent from '../../component/loading';
 import FloatingChatButton from "../chat/FloatingButton";
->>>>>>> w8
 
 const Home = () => {
   const [bestSellingFlowers, setBestSellingFlowers] = useState([]);

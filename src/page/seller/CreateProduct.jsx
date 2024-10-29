@@ -3,11 +3,8 @@ import api from "../../config/axios";
 import { useNavigate } from 'react-router-dom';
 import Header from '../../component/header';
 import Footer from '../../component/footer';
-<<<<<<< HEAD
-=======
 import { FaArrowLeft, FaMoneyCheckAlt } from 'react-icons/fa';
 import { getFullImageUrl } from '../../utils/imageHelpers';
->>>>>>> w8
 
 const CreateProduct = () => {
   const [categories, setCategories] = useState([]);
@@ -20,6 +17,7 @@ const CreateProduct = () => {
     Price: 0,
     Quantity: 0,
     CategoryId: '',
+    Condition: '',
   });
   const [userId, setUserId] = useState(null);
 
@@ -45,22 +43,14 @@ const CreateProduct = () => {
     const fetchCurrentUser = async () => {
       try {
         const response = await api.get("/Users/current-user");
-<<<<<<< HEAD
-        setUserId(response.data.userId); // Lưu userId vào state
-=======
         setUserId(response.data.userId);
->>>>>>> w8
       } catch (error) {
         console.error("Error fetching current user:", error);
       }
     };
 
     fetchCategories();
-<<<<<<< HEAD
-    fetchCurrentUser(); // Gọi hàm fetchCurrentUser để lấy thông tin người dùng
-=======
     fetchCurrentUser();
->>>>>>> w8
     return () => {
       imageFile && URL.revokeObjectURL(imageFile.preview);
     };
@@ -84,10 +74,6 @@ const CreateProduct = () => {
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-<<<<<<< HEAD
-    file.preview = URL.createObjectURL(file);
-    setImageFile(file);
-=======
     if (file) {
       const previewUrl = URL.createObjectURL(file);
       setImageFile({
@@ -95,12 +81,11 @@ const CreateProduct = () => {
         preview: previewUrl
       });
     }
->>>>>>> w8
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!flower.FlowerName || flower.Price <= 0 || flower.Quantity <= 0 || !flower.CategoryId) {
+    if (!flower.FlowerName || flower.Quantity <= 0 || !flower.CategoryId) {
       alert('Vui lòng điền đầy đủ thông tin và giá trị hợp lệ.');
       return;
     }
@@ -109,13 +94,10 @@ const CreateProduct = () => {
       formData.append('FlowerName', flower.FlowerName);
       formData.append('Price', flower.Price.toString());
       formData.append('Quantity', flower.Quantity.toString());
+      formData.append('Condition', flower.Condition.toString());
       formData.append('CategoryId', flower.CategoryId.toString());
       if (imageFile) {
-<<<<<<< HEAD
-        formData.append('image', imageFile);
-=======
         formData.append('image', imageFile.file);
->>>>>>> w8
       }
 
       const response = await api.post('Flowers', formData, {
@@ -137,31 +119,19 @@ const CreateProduct = () => {
         if (!currentUser || !currentUser.userId) {
           throw new Error('Invalid user information');
         }
-<<<<<<< HEAD
-        
-=======
 
->>>>>>> w8
         await api.post('Notification', {
           Message: `Sản phẩm mới đã được thêm: ${newFlower.flowerName}`,
           NotificationDate: new Date().toISOString(),
           IsRead: false,
-<<<<<<< HEAD
-          SellerId: currentUser.userId 
-=======
           SellerId: currentUser.userId
->>>>>>> w8
         });
         console.log("Thông báo đã được tạo thành công");
       } catch (notificationError) {
         console.error("Lỗi khi tạo thông báo:", notificationError.message);
       }
 
-<<<<<<< HEAD
-      
-=======
 
->>>>>>> w8
       alert('Sản phẩm đã được tạo thành công!');
       navigate(`/manage-products/${userId}`); // Sử dụng userId đã lưu để điều hướng
     } catch (error) {
@@ -182,9 +152,6 @@ const CreateProduct = () => {
   return (
     <>
       <Header />
-<<<<<<< HEAD
-      <div style={{ border: '1px solid red', padding: '20px', margin: '20px' }}>
-=======
       <div className="p-20">
         <button
           className="bg-blue-600 text-white font-bold py-2 px-6 rounded transition duration-300 ease-in-out transform hover:bg-blue-500 hover:scale-105 shadow-md hover:shadow-lg"
@@ -192,7 +159,6 @@ const CreateProduct = () => {
         >
           <FaArrowLeft className="inline-block mr-2" /> Quay Về Cửa Hàng
         </button>
->>>>>>> w8
         <div className="max-w-md mx-auto mt-10">
           <h2 className="text-2xl font-bold mb-5">Tạo Sản Phẩm Mới</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -216,7 +182,7 @@ const CreateProduct = () => {
                 onChange={handleChange}
                 className="w-full border rounded px-3 py-2"
                 required
-                min="0.01"
+                min="0"
                 step="0.01"
               />
             </div>
@@ -232,6 +198,21 @@ const CreateProduct = () => {
                 min="1"
               />
             </div>
+            <div>
+            <label className="block mb-1">Condition:</label>
+              <select
+              name="Condition"
+              value={flower.Condition}
+              onChange={handleChange}
+              className="w-full border rounded px-3 py-2"
+              required
+            >
+              <option value="">Chọn điều kiện</option>
+              <option value="100">100%</option>
+              <option value="80">80%</option>
+              <option value="60">60%</option>
+            </select>
+          </div>
             <div>
               <label className="block mb-1">Danh mục:</label>
               {loading ? (
@@ -265,10 +246,6 @@ const CreateProduct = () => {
               />
             </div>
             {imageFile && (
-<<<<<<< HEAD
-              <div>
-                <img src={imageFile.preview} alt={flower.FlowerName} className="w-full mt-2" />
-=======
               <div className="relative">
                 <img 
                   src={imageFile.preview} 
@@ -287,7 +264,6 @@ const CreateProduct = () => {
                     <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
                 </button>
->>>>>>> w8
               </div>
             )}
             <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
@@ -301,8 +277,4 @@ const CreateProduct = () => {
   );
 };
 
-<<<<<<< HEAD
 export default CreateProduct;
-=======
-export default CreateProduct;
->>>>>>> w8

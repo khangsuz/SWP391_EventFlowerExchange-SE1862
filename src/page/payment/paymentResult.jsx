@@ -4,10 +4,7 @@ import Header from "../../component/header";
 import Footer from "../../component/footer";
 import api from "../../config/axios";
 import { useCart } from "../../contexts/CartContext";
-<<<<<<< HEAD
-=======
 import { Notification ,notifySuccess, notifyError } from "../../component/alert";
->>>>>>> w8
 
 function PaymentResult() {
     const location = useLocation();
@@ -15,8 +12,6 @@ function PaymentResult() {
     const [paymentStatus, setPaymentStatus] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const { updateCartItemCount } = useCart();
-<<<<<<< HEAD
-=======
 
     const createShippingOrder = async (orderDetails) => {
         if (!orderDetails || !orderDetails.orderId) {
@@ -65,7 +60,6 @@ function PaymentResult() {
             notifyError('Không thể tạo đơn hàng giao hàng. Vui lòng liên hệ hỗ trợ.');
         }
     };
->>>>>>> w8
 
     useEffect(() => {
         const processPaymentResult = async () => {
@@ -76,56 +70,6 @@ function PaymentResult() {
                 const response = await api.get(`Payments/vnpay-return${location.search}`);
                 console.log('Payment result processed:', response.data);
 
-<<<<<<< HEAD
-                switch(vnp_ResponseCode) {
-                    case '00':
-                        setPaymentStatus('Giao dịch thành công!');
-                        localStorage.setItem('cart', JSON.stringify([]));
-                        updateCartItemCount(0);
-                        break;
-                    case '07':
-                        setPaymentStatus('Trừ tiền thành công. Giao dịch bị nghi ngờ (liên quan tới lừa đảo, giao dịch bất thường).');
-                        break;
-                    case '09':
-                        setPaymentStatus('Giao dịch không thành công do: Thẻ/Tài khoản của khách hàng chưa đăng ký dịch vụ InternetBanking tại ngân hàng.');
-                        break;
-                    case '10':
-                        setPaymentStatus('Giao dịch không thành công do: Tài khoản của khách hàng không đủ số dư để thực hiện giao dịch.');
-                        break;
-                    case '11':
-                        setPaymentStatus('Giao dịch không thành công do: Đã hết hạn chờ thanh toán. Xin quý khách vui lòng thực hiện lại giao dịch.');
-                        break;
-                    case '12':
-                        setPaymentStatus('Giao dịch không thành công do: Thẻ/Tài khoản của khách hàng bị khóa.');
-                        break;
-                    case '13':
-                        setPaymentStatus('Giao dịch không thành công do Quý khách nhập sai mật khẩu xác thực giao dịch (OTP). Xin quý khách vui lòng thực hiện lại giao dịch.');
-                        break;
-                    case '24':
-                        setPaymentStatus('Giao dịch không thành công do: Khách hàng hủy giao dịch');
-                        break;
-                    case '51':
-                        setPaymentStatus('Giao dịch không thành công do: Tài khoản của quý khách không đủ số dư để thực hiện giao dịch.');
-                        break;
-                    case '65':
-                        setPaymentStatus('Giao dịch không thành công do: Tài khoản của Quý khách đã vượt quá hạn mức giao dịch trong ngày.');
-                        break;
-                    case '75':
-                        setPaymentStatus('Ngân hàng thanh toán đang bảo trì.');
-                        break;
-                    case '79':
-                        setPaymentStatus('Giao dịch không thành công do: KH nhập sai mật khẩu thanh toán quá số lần quy định. Xin quý khách vui lòng thực hiện lại giao dịch');
-                        break;
-                    case '99':
-                        setPaymentStatus('Các lỗi khác (lỗi còn lại, không có trong danh sách mã lỗi đã liệt kê)');
-                        break;
-                    default:
-                        setPaymentStatus('Giao dịch không thành công!');
-                }
-            } catch (error) {
-                console.error('Error processing payment result:', error.response?.data || error.message);
-                setPaymentStatus(error.response?.data?.message || 'Có lỗi xảy ra khi xử lý kết quả thanh toán.');
-=======
                 if (vnp_ResponseCode === '00') {
                     setPaymentStatus('Giao dịch thành công!');
                     
@@ -154,7 +98,6 @@ function PaymentResult() {
                 console.error('Error processing payment result:', error);
                 setPaymentStatus('Có lỗi xảy ra khi xử lý kết quả thanh toán.');
                 notifyError('Có lỗi xảy ra khi xử lý kết quả thanh toán.');
->>>>>>> w8
             } finally {
                 setIsLoading(false);
             }

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../../config/axios";
-import { Table, Modal, Input, Button } from "antd";
+import { Table, Modal, Input, Button, message } from "antd";
 import { Line } from 'react-chartjs-2'; 
 import Header from "../../component/header";
 import Footer from "../../component/footer";
@@ -35,17 +35,17 @@ const ManageRevenue = () => {
 
   const handleCancelRequest = async (requestId) => {
     if (!requestId) {
-      alert('Yêu cầu không hợp lệ!');
+      message.error('Yêu cầu không hợp lệ!');
       return;
     }
     
     try {
       await api.delete(`Users/api/withdrawal-requests/${requestId}`); 
-      alert('Yêu cầu rút tiền đã được hủy!');
+      message.success('Yêu cầu rút tiền đã được hủy!');
       fetchWithdrawalRequests();
     } catch (error) {
       console.error("Error canceling withdrawal request:", error);
-      alert('Hủy yêu cầu không thành công!');
+      message.error('Hủy yêu cầu không thành công!');
     }
   };
   const showHistoryModal = () => {
@@ -133,31 +133,51 @@ const ManageRevenue = () => {
   };
 
   const handleWithdraw = async () => {
-    if (withdrawRequest.amount > revenue) {
-      alert('Số tiền rút không được lớn hơn doanh thu thu được.');
+    const amountString = String(withdrawRequest.amount);
+    const numericAmount = parseInt(amountString.replace(/[^0-9]/g, ''), 10);
+
+    if (numericAmount > revenue) {
+      message.error('Số tiền rút không được lớn hơn doanh thu thu được.');
       return; 
     }
     
     try {
-      const response = await api.post('Users/api/withdrawal', withdrawRequest);
+      const response = await api.post('Users/api/withdrawal', { ...withdrawRequest, amount: numericAmount });
       console.log("Withdraw Response:", response.data);
-      alert('Yêu cầu rút tiền đã được gửi!');
+      message.success('Yêu cầu rút tiền đã được gửi!');
       setIsModalVisible(false);
       fetchRevenue(); 
       fetchCurrentIncome(); 
       fetchWithdrawalRequests();
     } catch (error) {
       console.error("Error during withdrawal:", error);
-      alert('Rút tiền không thành công!');
+      message.error('Rút tiền không thành công!'); 
     }
   };
 
-  const showModal = () => setIsModalVisible(true);
+  const showModal = () => {
+    setWithdrawRequest(prev => ({
+      ...prev,
+      amount: currentIncome
+    }));
+    setIsModalVisible(true);
+  };
   const handleCancel = () => setIsModalVisible(false);
   
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setWithdrawRequest({ ...withdrawRequest, [name]: value });
+    if (name === 'amount') {
+      const numericValue = value.replace(/[^0-9]/g, '');
+      setWithdrawRequest({ 
+        ...withdrawRequest, 
+        [name]: numericValue 
+      });
+    } else {
+      setWithdrawRequest({ ...withdrawRequest, [name]: value });
+    }
+  };
+  const formatCurrency = (value) => {
+    return Number(value).toLocaleString('vi-VN');
   };
 
   return (
@@ -318,9 +338,8 @@ const ManageRevenue = () => {
         
         <p>Số tiền:</p>
         <Input
-          type="number"
           name="amount"
-          value={withdrawRequest.amount}
+          value={formatCurrency(withdrawRequest.amount)}
           onChange={handleInputChange}
         />
         
@@ -353,14 +372,14 @@ const ManageRevenue = () => {
                 title: 'Hành Động',
                 key: 'action',
                 render: (text, record) => (
-                    record.status !== "Approved" ? ( // Kiểm tra trạng thái
+                    record.status !== "Approved" ? ( 
                             <Button 
                                 type="danger" 
                                 onClick={() => handleCancelRequest(record.requestId)}
                             >
                                 Hủy
                             </Button>
-                        ) : null // Không hiển thị nút nếu đã được duyệt
+                        ) : null 
                     ),
                 },
             ]}

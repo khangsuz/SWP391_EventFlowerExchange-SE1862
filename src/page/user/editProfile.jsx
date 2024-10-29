@@ -2,52 +2,36 @@ import { useEffect, useState } from "react";
 import { Routes, Route, Link, useNavigate, useLocation } from "react-router-dom";
 import Header from "../../component/header";
 import "../../index.css";
+import api from "../../config/axios";
 import Footer from "../../component/footer";
 import { useCart } from "../../contexts/CartContext";
 import RegisterSeller from "./RegisterSeller";
 import OrderHistory from "./OrderHistory";
 import ChangePassword from "./ChangePassword";
-<<<<<<< HEAD
-import api, { baseUrl } from "../../config/axios";
-import LoadingComponent from "../../component/loading";
-=======
 import UserAvatar from "./UserAvatar";
 import Address from "./Address";
->>>>>>> w8
 
 const Profile = () => {
     const navigate = useNavigate();
     const [userData, setUserData] = useState(null);
     const [error, setError] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
-    const [loading, setLoading] = useState(false);
     const [userType, setUserType] = useState(null);
     const [editedData, setEditedData] = useState({});
     const [success, setSuccess] = useState(null);
     const { updateCartItemCount } = useCart();
     const [profileImage, setProfileImage] = useState(null);
     const location = useLocation();
-<<<<<<< HEAD
-    const [imageKey, setImageKey] = useState(0);
-    const [imageError, setImageError] = useState(false);
-=======
->>>>>>> w8
 
     const fetchUserData = async () => {
-        setLoading(true);
         try {
             const response = await api.get('/Users/profile');
             setUserData(response.data);
             setEditedData(response.data);
-<<<<<<< HEAD
-=======
             const storedImage = localStorage.getItem('profileImageUrl');
->>>>>>> w8
         } catch (error) {
             console.error("Error fetching user data:", error);
             setError("Failed to load user data. Please try again later.");
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -86,9 +70,7 @@ const Profile = () => {
         setProfileImage(null);
         setError(null);
         setSuccess(null);
-        setImageError(false); // Reset image error when cancelling edit
-        URL.revokeObjectURL(editedData.profileImageUrl);
-      };
+    };
 
     const handleChange = (e) => {
         setEditedData({ ...editedData, [e.target.name]: e.target.value });
@@ -97,19 +79,12 @@ const Profile = () => {
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-<<<<<<< HEAD
-          setProfileImage(file);
-          setEditedData({ ...editedData, profileImage: file });
-          setImageError(false); // Reset image error when a new image is selected
-=======
             setProfileImage(file);
             setEditedData({ ...editedData, profileImageUrl: URL.createObjectURL(file) });
->>>>>>> w8
         }
-      };
+    };
 
-      const handleSave = async () => {
-        setLoading(true);
+    const handleSave = async () => {
         let isValid = true;
         if (editedData.name !== userData.name) {
             const nameRegex = /^[^\s!@#$%^&*()_+={}\[\]:;"'<>,.?~]+$/;
@@ -137,40 +112,21 @@ const Profile = () => {
 
         if (isValid) {
             const formData = new FormData();
-<<<<<<< HEAD
-            Object.keys(editedData).forEach(key => {
-                if (key !== 'profileImageUrl') {
-                    formData.append(key, editedData[key]);
-                }
-            });
-=======
             formData.append("FullName", editedData.fullName);
             formData.append("Email", editedData.email);
             formData.append("Address", editedData.address);
             formData.append("Phone", editedData.phone);
 
->>>>>>> w8
             if (profileImage) {
                 formData.append("image", profileImage);
             }
 
             try {
-<<<<<<< HEAD
-                const response = await api.put('/Users/profile', formData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
-                });
-                await fetchUserData(); // Tải lại dữ liệu người dùng
-=======
                 const response = await api.put('/Users/profile', formData);
                 setUserData(response.data);
->>>>>>> w8
                 setIsEditing(false);
                 setSuccess("Profile updated successfully!");
                 setError(null);
-                setProfileImage(null);
-                setImageKey(prev => prev + 1); // Force re-render of image
                 setTimeout(() => setSuccess(null), 3000);
             } catch (error) {
                 console.error("Error updating user data:", error.response ? error.response.data : error.message);
@@ -178,11 +134,10 @@ const Profile = () => {
                 setSuccess(null);
             }
         }
-        setLoading(false);
     };
 
     if (!userData) {
-        return <LoadingComponent />;
+        return <div>Loading...</div>;
     }
     const userId = userData.userId;
     return (
@@ -202,32 +157,9 @@ const Profile = () => {
                 <div className="flex max-w-6xl mx-auto">
                     <div className="w-1/4 bg-white shadow-md rounded-lg p-5">
                         <div className="text-center mb-5">
-<<<<<<< HEAD
-                            {!imageError ? (
-                                <img
-                                    key={imageKey}
-                                    src={isEditing && profileImage
-                                        ? URL.createObjectURL(profileImage)
-                                        : (userData.profileImageUrl
-                                            ? `${baseUrl}Users/profile-image/${userData.userId}?${new Date().getTime()}`
-                                            : '/path/to/default/image.jpg')}
-                                    alt={userData.name}
-                                    className="w-24 h-24 rounded-full mx-auto mb-2 object-cover"
-                                    onError={(e) => {
-                                        console.error("Image load error:", e);
-                                        setImageError(true);
-                                    }}
-                                />
-                            ) : (
-                                <div className="w-24 h-24 rounded-full mx-auto mb-2 bg-gray-300 flex items-center justify-center text-gray-600 font-bold text-xl">
-                                    {userData.fullName ? userData.fullName.charAt(0).toUpperCase() : '?'}
-                                </div>
-                            )}
-=======
                             <div className="w-10 h-10 mx-auto mb-3">
                                 <UserAvatar userId={userData.userId} userName={userData.fullName} />
                             </div>
->>>>>>> w8
                             {isEditing && (
                                 <input
                                     type="file"
@@ -292,11 +224,7 @@ const Profile = () => {
                         <Routes>
                             <Route path="/" element={
                                 <>
-<<<<<<< HEAD
-                                    <h1 className="text-center text-2xl font-semibold mb-5 mt-8">Thông tin tài khoản</h1>
-=======
                                     <h1 className="text-center text-2xl font-semibold mb-8 mt-8">Thông tin tài khoản</h1>
->>>>>>> w8
                                     <div className="flex mb-3">
                                         <h2 className="text-2xl p-2 w-56">Tên đầy đủ:</h2>
                                         {isEditing ? (
@@ -339,32 +267,6 @@ const Profile = () => {
                                             <p className="p-2 text-2xl">{userData.phone}</p>
                                         )}
                                     </div>
-<<<<<<< HEAD
-                                    <div className="flex mb-3">
-                                        <h2 className="text-2xl p-2 w-56">Địa chỉ:</h2>
-                                        {isEditing ? (
-                                            <input
-                                                type="text"
-                                                name="address"
-                                                value={editedData.address}
-                                                onChange={handleChange}
-                                                className="text-2xl p-2 border rounded"
-                                            />
-                                        ) : (
-                                            <p className="p-2 text-2xl">{userData.address}</p>
-                                        )}
-                                    </div>
-                                    <div className="">
-                                        {isEditing ? (
-                                            <>
-                                                <button onClick={handleSave} className="bg-blue-500 text-white px-4 py-2 rounded mr-2">Lưu</button>
-                                                <button onClick={handleCancel} className="bg-gray-300 text-black px-4 py-2 rounded">Hủy</button>
-                                            </>
-                                        ) : (
-                                            <button onClick={handleEdit} className="bg-green-500 text-white px-4 py-2 rounded">Chỉnh sửa hồ sơ</button>
-                                        )}
-                                    </div>
-=======
 
                                     <div className="flex gap-4 pt-4">
                                             {isEditing ? (
@@ -392,7 +294,6 @@ const Profile = () => {
                                             )}
                                         </div>
 
->>>>>>> w8
                                 </>
                             } />
                             <Route path="change-password" element={<ChangePassword />} />

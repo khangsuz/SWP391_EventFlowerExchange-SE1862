@@ -1,15 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-<<<<<<< HEAD
-import { useNavigate } from 'react-router-dom';
-=======
 import { useNavigate, useLocation } from 'react-router-dom';
->>>>>>> w8
 import Header from '../../component/header';
 import Footer from '../../component/footer';
 import api from '../../config/axios';
 import { useCart } from "../../contexts/CartContext";
 import { Notification, notifySuccess, notifyError } from "../../component/alert";
-import LoadingComponent from '../../component/loading'; // Import LoadingComponent
 
 function CheckoutPage() {
     const navigate = useNavigate();
@@ -36,9 +31,6 @@ function CheckoutPage() {
     const [selectedWardName, setSelectedWardName] = useState('');
     const [selectedDistrictName, setSelectedDistrictName] = useState('');
     const [fullAddress, setFullAddress] = useState('');
-<<<<<<< HEAD
-    const [loading, setLoading] = useState(false); // Loading state
-=======
     const [isLoading, setIsLoading] = useState(true);
     const [note, setNote] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);  // Add this new state
@@ -58,10 +50,10 @@ function CheckoutPage() {
         if (items) {
             setCartItems(items);
         } else {
+            // Redirect back to cart if no items are passed
             navigate('/cart');
         }
     }, [items, navigate]);
->>>>>>> w8
 
     useEffect(() => {
         const storedCart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -96,19 +88,12 @@ function CheckoutPage() {
     }, [userInfo.address, selectedWardName, selectedDistrictName]);
 
     const calculateTotalWeight = useCallback(() => {
-<<<<<<< HEAD
-        return cartItems.reduce((total, item) => total + 5000 * item.quantity, 0);
-    }, [cartItems]);
-=======
         return items.reduce((total, item) => total + 5000 * item.quantity, 0);
     }, [items]);
->>>>>>> w8
 
     const handleShippingFeeCalculation = useCallback(async () => {
-        setLoading(true); // Set loading to true
         if (!selectedDistrict || !selectedWard) {
             setShippingFee(0);
-            setLoading(false); // Set loading to false
             return;
         }
 
@@ -146,8 +131,6 @@ function CheckoutPage() {
         } catch (error) {
             console.error('Error calculating shipping fee:', error);
             notifyError('Shop chưa hỗ trợ giao hàng đến địa chỉ này.');
-        } finally {
-            setLoading(false); // Set loading to false
         }
     }, [selectedDistrict, selectedWard, cartItems, navigate, calculateTotalWeight]);
 
@@ -156,11 +139,7 @@ function CheckoutPage() {
     }, [handleShippingFeeCalculation]);
 
     const fetchUserInfo = async () => {
-<<<<<<< HEAD
-        setLoading(true); // Set loading to true
-=======
         setIsLoading(true);
->>>>>>> w8
         const token = localStorage.getItem('token');
         if (!token) {
             notifyError('Vui lòng đăng nhập trước khi thanh toán');
@@ -176,14 +155,11 @@ function CheckoutPage() {
             });
             if (response.data) {
                 setUserInfo(response.data);
-<<<<<<< HEAD
-=======
                 setSelectedDistrict(response.data.districtId ? response.data.districtId.toString() : '');
                 if (response.data.districtId) {
                     await fetchWards(response.data.districtId);
                 }
                 setSelectedWard(response.data.wardCode || '');
->>>>>>> w8
             } else {
                 notifyError('Không thể lấy thông tin người dùng. Vui lòng thử lại sau.');
             }
@@ -191,11 +167,7 @@ function CheckoutPage() {
             console.error('Error fetching user info:', error);
             notifyError('Không thể lấy thông tin người dùng. Vui lòng thử lại sau.');
         } finally {
-<<<<<<< HEAD
-            setLoading(false); // Set loading to false
-=======
             setIsLoading(false);
->>>>>>> w8
         }
     };
 
@@ -230,59 +202,9 @@ function CheckoutPage() {
         return total >= 0 ? total : 0;
     };
 
-<<<<<<< HEAD
-    const createShippingOrder = async () => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            notifyError('Vui lòng đăng nhập trước khi thanh toán');
-            navigate('/login');
-            return;
-        }
-        const MAX_WEIGHT = 30000;
-        const totalWeight = Math.min(calculateTotalWeight(), MAX_WEIGHT);
-        const shippingOrder = {
-            from_name: 'Shop Hoa ABC',
-            from_phone: '0901234567',
-            from_address: '72 Lê Thánh Tôn, Phường Bến Nghé',
-            from_ward_name: 'Phường Bến Nghé',
-            from_district_name: 'Quận 1',
-            from_province_name: 'TP Hồ Chí Minh',
-            to_name: userInfo.fullName,
-            to_phone: userInfo.phone,
-            to_address: fullAddress,
-            to_ward_name: selectedWardName,
-            to_ward_code: selectedWard,
-            to_district_id: selectedDistrict,
-            weight: totalWeight,
-            length: 30,
-            width: 20,
-            height: 10,
-            required_note: "CHOXEMHANGKHONGTHU",
-            items: cartItems.map(item => ({
-                name: item.flowerName,
-                code: String(item.flowerId),
-                quantity: item.quantity,
-                price: item.price
-            }))
-        };
-
-        try {
-            const response = await api.post('Shipping/create-order', shippingOrder, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            return response.data;
-        } catch (error) {
-            console.error('Error creating shipping order:', error.response ? error.response.data : error.message);
-            notifyError('Không thể tạo đơn hàng giao hàng. Vui lòng thử lại sau.');
-        }
-=======
     const tamtinh = () => {
         const total = items.reduce((total, item) => total + item.price * item.quantity, 0);
         return total >= 0 ? total : 0;
->>>>>>> w8
     };
 
     // Trong CheckoutPage.js
@@ -300,7 +222,6 @@ function CheckoutPage() {
         setIsProcessing(true);
 
         const token = localStorage.getItem('token');
-        if (isButtonDisabled) return;
         if (!token) {
             notifyError('Vui lòng đăng nhập trước khi thanh toán');
             navigate('/login');
@@ -310,104 +231,90 @@ function CheckoutPage() {
             return;
         }
 
-<<<<<<< HEAD
-        if (!selectedDistrict || !selectedWard) {
-            notifyError('Vui lòng chọn quận/huyện và phường/xã trong TP. Hồ Chí Minh.');
-            return;
-        }
-
-        if (!paymentMethod) {
-            notifyError('Vui lòng chọn phương thức thanh toán.');
-            return;
-        }
-
-        setIsProcessing(true);
-        setIsButtonDisabled(true); 
-
-=======
->>>>>>> w8
         try {
-            // Tạo đơn hàng
-            const cartItemsToSend = items.map(item => ({
-                flowerId: item.flowerId,
-                quantity: item.quantity
-            }));
+            // Group items by seller
+            const itemsBySeller = groupCartItemsBySeller(items);
+            
+            // Process each seller's items separately
+            for (const [sellerName, sellerItems] of Object.entries(itemsBySeller)) {
+                // Create order items array
+                const cartItemsToSend = sellerItems.map((item) => ({
+                    flowerId: item.flowerId,
+                    quantity: item.quantity,
+                    sellerId: item.sellerId
+                }));
 
-            const checkoutResponse = await api.post(
-                `Orders/checkout?fullAddress=${encodeURIComponent(fullAddress)}`,
-                cartItemsToSend,
-                {
-                    params: {
-                        fullAddress: userInfo.address,
-                        wardCode: selectedWard,
-                        wardName: selectedWardName,
-                        toDistrictId: parseInt(selectedDistrict, 10),
-                        note: note
-                    },
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
-
-            if (checkoutResponse.data && checkoutResponse.data.message === "Đặt hàng thành công") {
-                // Xóa giỏ hàng
-                localStorage.setItem('cart', JSON.stringify([]));
-                updateCartItemCount(0);
-                
-                // Chuyển hướng đến trang thanh toán VNPay
-                const paymentResponse = await api.post(
-                    'Payments/createVnpPayment',
+                // Create order
+                const checkoutResponse = await api.post(
+                    'Orders/checkout',
+                    cartItemsToSend,
                     {
-                        Amount: calculateTotal(),
-                        FullName: userInfo.fullName,
-<<<<<<< HEAD
-                        FullAddress: fullAddress
-=======
-                        FullAddress: fullAddress,
-                        OrderId: checkoutResponse.data.orderId
->>>>>>> w8
-                    },
-                    {
+                        params: {
+                            fullAddress: fullAddress,
+                            wardCode: selectedWard,
+                            wardName: selectedWardName,
+                            toDistrictId: parseInt(selectedDistrict, 10),
+                            note: note
+                        },
                         headers: {
                             Authorization: `Bearer ${token}`,
                             'Content-Type': 'application/json'
                         }
                     }
                 );
-<<<<<<< HEAD
-                
-                if (paymentResponse.data && paymentResponse.data.paymentUrl) {
-                    notifySuccess('Đặt hàng thành công. Chuyển đến trang thanh toán');
-                    localStorage.setItem('pendingOrderId', checkoutResponse.data.orderId);
-                    updateCartItemCount(0);
-                    localStorage.setItem('cart', JSON.stringify([]));
-                    window.location.href = paymentResponse.data.paymentUrl;
-                } else {
-                    notifyError('Invalid response from payment server');
-                    setIsButtonDisabled(false); 
-                }
-            }
-        } catch (error) {
-            handlePaymentError(error);
-            setIsButtonDisabled(false);
-=======
 
-                if (paymentResponse.data && paymentResponse.data.paymentUrl) {
-                    window.location.href = paymentResponse.data.paymentUrl;
-                    return;
+                if (checkoutResponse.data) {
+                    // Create payment
+                    const paymentResponse = await api.post(
+                        'Payments/createVnpPayment',
+                        {
+                            Amount: calculateSellerTotal(sellerItems)
+                        },
+                        {
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        }
+                    );
+
+                    if (paymentResponse.data && paymentResponse.data.paymentUrl) {
+                        // Update cart
+                        const currentCart = JSON.parse(localStorage.getItem('cart') || '[]');
+                        const updatedCart = currentCart.filter(item => 
+                            !sellerItems.some(sellerItem => 
+                                sellerItem.flowerId === item.flowerId
+                            )
+                        );
+                        localStorage.setItem('cart', JSON.stringify(updatedCart));
+                        updateCartItemCount(updatedCart.length);
+                        
+                        // Store payment amount
+                        localStorage.setItem('paymentAmount', calculateSellerTotal(sellerItems));
+                        
+                        // Redirect to payment URL
+                        window.location.href = paymentResponse.data.paymentUrl;
+                        return;
+                    }
                 }
             }
         } catch (error) {
             console.error('Checkout error:', error);
-            handlePaymentError(error);
->>>>>>> w8
+            if (error.response?.data) {
+                notifyError(`Lỗi: ${error.response.data}`);
+            } else {
+                notifyError('Đã xảy ra lỗi trong quá trình đặt hàng. Vui lòng thử lại.');
+            }
         } finally {
             setIsProcessing(false);
             setIsButtonDisabled(false);
             setIsSubmitting(false);
         }
+    };
+    
+    // Helper function to calculate total for a seller's items
+    const calculateSellerTotal = (sellerItems) => {
+        return sellerItems.reduce((total, item) => total + item.price * item.quantity, 0) + shippingFee;
     };
 
     const handlePaymentError = (error) => {
@@ -424,28 +331,8 @@ function CheckoutPage() {
         }
     };
 
-    const handlePaymentError = (error) => {
-        console.error('Payment error:', error);
-        if (error.response) {
-            notifyError(`Thanh toán thất bại: ${error.response.data}`);
-        } else if (error.request) {
-            notifyError('Lỗi mạng. Vui lòng kiểm tra kết nối và thử lại.');
-        } else {
-            notifyError('Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.');
-        }
-    };
-
     const handleDistrictChange = (e) => {
         const districtId = e.target.value;
-<<<<<<< HEAD
-        setSelectedDistrict(districtId);
-        const district = districts.find(d => d.districtId === parseInt(districtId));
-        if (district) {
-            setSelectedDistrictName(district.districtName);
-        }
-        setSelectedWard('');
-        setShippingFee(0);
-=======
         setSelectedDistrict(districtId || '');
         const district = districts.find(d => d.districtId === parseInt(districtId, 10));
         if (district) {
@@ -458,7 +345,6 @@ function CheckoutPage() {
             setShippingFee(0);
         }
         fetchWards(districtId);
->>>>>>> w8
     };
 
     const handleWardChange = (e) => {
@@ -471,11 +357,6 @@ function CheckoutPage() {
         }
     };
 
-<<<<<<< HEAD
-    if (loading) {
-        return <LoadingComponent />; // Show loading component
-    }
-=======
     useEffect(() => {
         console.log('Selected Ward:', selectedWard);
         console.log('User Info Ward Code:', userInfo.wardCode);
@@ -500,7 +381,6 @@ function CheckoutPage() {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
       };
->>>>>>> w8
 
     return (
         <>
@@ -644,17 +524,12 @@ function CheckoutPage() {
                     </div>
                     <button
                         onClick={handleSubmit}
-<<<<<<< HEAD
-                        className="w-full bg-green-500 text-white p-4 rounded"
-                        disabled={isProcessing || !paymentMethod}
-=======
                         className={`w-full p-4 rounded ${
                             isSubmitting || isProcessing || !paymentMethod
                                 ? 'bg-gray-400 cursor-not-allowed'
                                 : 'bg-green-500 hover:bg-green-600'
                         } text-white`}
                         disabled={isSubmitting || isProcessing || !paymentMethod}
->>>>>>> w8
                     >
                         {isProcessing ? 'Đang xử lý...' : isSubmitting ? 'Đã đặt hàng' : 'Đặt hàng'}
                     </button>

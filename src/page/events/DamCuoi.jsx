@@ -9,7 +9,7 @@ function DamCuoi() {
   const [flowers, setFlowers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const flowersPerPage = 5;
+  const flowersPerPage = 12;
 
   useEffect(() => {
     const fetchFlowers = async () => {

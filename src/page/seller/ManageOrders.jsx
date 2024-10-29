@@ -3,16 +3,10 @@ import api from "../../config/axios";
 import { useParams, useNavigate } from "react-router-dom";
 import { Table, Tag, Typography, Space, Button, Modal, Form, Input, message, Select } from "antd";
 import { EditOutlined, DeleteOutlined, HomeOutlined } from '@ant-design/icons';
-<<<<<<< HEAD
-import Header from "../../component/header";
-import Footer from "../../component/footer";
-import LoadingComponent from '../../component/loading'; // Import LoadingComponent
-=======
 import LoadingComponent from '../../component/loading';
 import Header from "../../component/header";
 import Footer from "../../component/footer";
 import { Notification, notifySuccess, notifyError } from "../../component/alert";
->>>>>>> w8
 
 const { Title } = Typography;
 
@@ -23,18 +17,6 @@ const ManageOrders = () => {
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [currentOrder, setCurrentOrder] = useState(null); 
   const [currentUserId, setCurrentUserId] = useState(null);
-<<<<<<< HEAD
-  const [loading, setLoading] = useState(true); // Loading state
-  
-  const handleDeliveryStatusChange = async (orderId, newStatus) => {
-    try {
-        await api.put(`Orders/${orderId}/delivery`, { orderDelivery: newStatus, userId });
-        message.success('Cập nhật trạng thái giao hàng thành công');
-        fetchOrders();
-    } catch (error) {
-        console.error('Error updating order delivery status:', error);
-        message.error('Không thể cập nhật trạng thái giao hàng: ' + (error.response?.data || error.message));
-=======
   const [loading, setLoading] = useState(true);
   
   const handleDeliveryStatusChange = async (orderId, newStatus) => {
@@ -61,7 +43,6 @@ const ManageOrders = () => {
         console.error('Error updating order:', error);
         console.error('Error details:', error.response?.data);
         message.error('Không thể cập nhật trạng thái đơn hàng');
->>>>>>> w8
     }
 };
 
@@ -85,11 +66,7 @@ const ManageOrders = () => {
   }, [currentUserId, userId, navigate]);
   
   const fetchOrders = async () => {
-<<<<<<< HEAD
-    setLoading(true); // Set loading to true
-=======
     setLoading(true);
->>>>>>> w8
     try {
       console.log("Fetching orders for userId:", userId); 
       const response = await api.get(`Orders/orders/seller/${userId}`);
@@ -98,11 +75,7 @@ const ManageOrders = () => {
     } catch (err) {
       console.error("Error fetching orders:", err.response?.data || err);
     } finally {
-<<<<<<< HEAD
-      setLoading(false); // Set loading to false
-=======
       setLoading(false);
->>>>>>> w8
     }
   };
   const deleteOrder = async (orderId) => {
@@ -112,11 +85,7 @@ const ManageOrders = () => {
         console.log(`Order ${orderId} deleted successfully.`);
     } catch (err) {
         console.error("Error deleting order:", err.response?.data || err);
-<<<<<<< HEAD
-        alert("Không thể xóa đơn hàng. Vui lòng kiểm tra lại.");
-=======
         notifyError("Không thể xóa đơn hàng. Vui lòng kiểm tra lại.");
->>>>>>> w8
     }
   };
   const showEditModal = (order) => {

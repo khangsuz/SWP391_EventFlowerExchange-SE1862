@@ -37,7 +37,7 @@ const Products = () => {
 
   const filterAndSortFlowers = (flowers) => {
     let filtered = [...flowers];
-
+    // filtered = filtered.filter(flower => !flower.isExpired);
     filtered = filtered.filter(flower => flower.price >= priceRange[0] && flower.price <= priceRange[1]);
 
     switch (sortOption) {

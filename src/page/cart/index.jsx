@@ -7,12 +7,14 @@ import "../../index.css";
 import Header from "../../component/header";
 import Footer from "../../component/footer";
 import { getFullImageUrl } from '../../utils/imageHelpers';
-import { Notification, notifySuccess, notifyError } from '../../component/alert';
+import { Notification, notifyError, notifySuccess } from '../../component/alert';
+import LoadingComponent from '../../component/loading'; 
 
 function Cart() {
     const navigate = useNavigate();
     const [cartItems, setCartItems] = useState([]);
     const [isCheckingOut, setIsCheckingOut] = useState(false);
+    const [loading, setLoading] = useState(true);
     const { updateCartItemCount } = useCart();
     const [groupedCartItems, setGroupedCartItems] = useState({});
 
@@ -118,9 +120,9 @@ function Cart() {
         return items.reduce((total, item) => total + item.price * item.quantity, 0);
     };
 
-    const handlePayment = () => {
-        if (cartItems.length === 0) {
-            alert('Giỏ hàng của bạn đang trống');
+    const handlePayment = async (sellerFullName, items) => {
+        if (items.length === 0) {
+            notifyError('Giỏ hàng của bạn đang trống');
             return;
         }
 
@@ -131,11 +133,65 @@ function Cart() {
             return;
         }
     
-        navigate('/checkout');
+        setIsCheckingOut(true);
+        try {
+            const checkoutData = {
+                sellerFullName,
+                items: items.map(item => ({
+                    cartItemId: item.cartItemId,
+                    flowerId: item.flowerId,
+                    flowerName: item.flowerName,
+                    price: item.price,
+                    quantity: item.quantity,
+                    imageUrl: item.imageUrl,
+                    isCustomOrder: item.isCustomOrder
+                })),
+                subtotal: calculateSellerSubtotal(items)
+            };
+    
+            localStorage.setItem('itemsBeingPurchased', JSON.stringify({
+                sellerFullName,
+                itemIds: items.map(item => item.cartItemId)
+            }));
+    
+            navigate('/checkout', { state: checkoutData });
+        } catch (error) {
+            console.error('Payment processing error:', error);
+            notifyError('Đã xảy ra lỗi trong quá trình thanh toán');
+        } finally {
+            setIsCheckingOut(false);
+        }
     };
 
-    
-    
+    // Thêm useEffect để lắng nghe kết quả thanh toán
+    useEffect(() => {
+        const handlePaymentResult = async () => {
+            const paymentSuccess = localStorage.getItem('paymentSuccess');
+            if (paymentSuccess) {
+                try {
+                    await fetchCartItems(); // Refresh cart after payment
+                    notifySuccess('Đơn hàng đã được thanh toán thành công');
+                    
+                    // Xóa dữ liệu tạm
+                    localStorage.removeItem('paymentSuccess');
+                    localStorage.removeItem('itemsBeingPurchased');
+                } catch (error) {
+                    console.error('Error updating cart after payment:', error);
+                    notifyError('Có lỗi xảy ra khi cập nhật giỏ hàng');
+                }
+            }
+        };
+
+        handlePaymentResult();
+    }, []);
+
+    if (loading) {
+        return <LoadingComponent />;
+    }
+
+    const isCartEmpty = !cartItems.length;
+
+    // JSX remains mostly the same, just update the item references
     return (
         <>
             <Notification />

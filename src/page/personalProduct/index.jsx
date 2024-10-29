@@ -27,7 +27,7 @@ const PersonalProduct = () => {
       console.error("Error fetching current user:", err);
     }
   };
-
+  
   const fetchSellerProducts = async () => {
     try {
       const response = await api.get(`Flowers/seller/${userId}`);

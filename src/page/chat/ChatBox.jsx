@@ -10,6 +10,70 @@ import CreateOrderForm from '../../component/createOrder';
 import { Button, message as antMessage } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 
+const ChatHeader = ({ currentUser, sellerInfo, buyerInfo, onOpenModal }) => {
+  // Xác định người đối thoại dựa trên currentUser
+  const getPartnerInfo = () => {
+    if (!currentUser || !sellerInfo || !buyerInfo) return null;
+
+    // Nếu currentUser là seller, hiển thị thông tin buyer
+    if (currentUser.userId === sellerInfo.seller?.userId) {
+      return {
+        name: buyerInfo.fullName || "Người mua",
+        avatar: buyerInfo.avatar,
+        role: "Người mua",
+        userId: buyerInfo.buyerId
+      };
+    }
+    
+    // Nếu currentUser là buyer, hiển thị thông tin seller
+    else {
+      return {
+        name: sellerInfo.seller?.fullName || "Người bán",
+        avatar: sellerInfo.seller?.avatar,
+        role: "Người bán",
+        userId: sellerInfo.seller?.userId
+      };
+    }
+  };
+
+  const partnerInfo = getPartnerInfo();
+
+  if (!partnerInfo) return null;
+
+  return (
+    <div className="px-6 py-4 border-b border-gray-200 bg-white">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <UserAvatar
+            userId={partnerInfo.userId}
+            userName={partnerInfo.name}
+            avatarUrl={partnerInfo.avatar}
+            size="large"
+          />
+          <div>
+            <h2 className="text-lg font-semibold text-gray-800">
+              {partnerInfo.name}
+            </h2>
+            <p className="text-sm text-gray-500">{partnerInfo.role}</p>
+          </div>
+        </div>
+
+        {/* Nút tạo đơn hàng - chỉ hiển thị khi người dùng hiện tại là seller */}
+        {currentUser.userId === sellerInfo.seller?.userId && (
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={onOpenModal}
+            className="bg-green-600 hover:bg-green-700 flex items-center gap-2 transition-all duration-200"
+          >
+            Tạo đơn hàng tùy chỉnh
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const ChatBox = ({ conversationId }) => {
   const [messages, setMessages] = useState([]);
   const [connection, setConnection] = useState(null);
@@ -31,11 +95,12 @@ const ChatBox = ({ conversationId }) => {
 
   useEffect(() => {
     const loadInitialData = async () => {
+      setIsLoadingMessages(true);
       try {
-        setIsLoadingMessages(true);
         const user = JSON.parse(localStorage.getItem("user"));
-        if (user) {
-          setCurrentUser(user);
+        if (!user) {
+          setError("Vui lòng đăng nhập để sử dụng chat");
+          return;
         }
 
         const token = localStorage.getItem("token");
@@ -44,47 +109,40 @@ const ChatBox = ({ conversationId }) => {
           return;
         }
 
-        // Load conversation info
-        const conversationResponse = await api.get(
-          `Chat/conversation-info/${conversationId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` }
-          }
-        );
-
-        const { seller, buyer } = conversationResponse.data;
-        
-        // Set seller info
-        setSellerInfo({
-          sellerId: seller.userId,
-          fullName: seller.fullName,
-          avatar: seller.avatar,
-          role: 'Người bán'
-        });
-
-        // Set buyer info
-        setBuyerInfo({
-          buyerId: buyer.userId,
-          fullName: buyer.fullName,
-          avatar: buyer.avatar,
-          role: 'Người mua'
-        });
-
-        // Load message history
-        const historyResponse = await api.get(
+        const response = await api.get(
           `Chat/history/${conversationId}`,
           {
             headers: { Authorization: `Bearer ${token}` }
           }
         );
 
-        if (historyResponse.data) {
-          const formattedMessages = historyResponse.data.messages.map(msg => {
-            const isCurrentUser = msg.senderId === user?.userId;
+        if (response.data) {
+          const conversation = response.data.conversation;
+          
+          setSellerInfo({
+            seller: {
+              userId: conversation.seller.userId,
+              fullName: conversation.seller.fullName,
+              avatar: conversation.seller.avatar
+            }
+          });
+
+          setBuyerInfo({
+            buyerId: conversation.buyer.userId,
+            fullName: conversation.buyer.fullName,
+            avatar: conversation.buyer.avatar
+          });
+
+          const formattedMessages = response.data.messages.map(msg => {
+            const isCurrentUser = msg.senderId === user.userId;
             return {
               ...msg,
-              senderName: isCurrentUser ? buyer.name : seller.name,
-              senderAvatar: isCurrentUser ? buyer.avatar : seller.avatar,
+              senderName: isCurrentUser 
+                ? conversation.buyer.fullName 
+                : conversation.seller.fullName,
+              senderAvatar: isCurrentUser 
+                ? conversation.buyer.avatar 
+                : conversation.seller.avatar,
               imageUrl: msg.imageUrl ? getFullImageUrl(msg.imageUrl) : null,
               isCurrentUser
             };
@@ -139,7 +197,7 @@ const ChatBox = ({ conversationId }) => {
               senderAvatar: isCurrentUser ? currentUser.avatar : message.senderAvatar,
               messageContent: message.messageContent,
               imageUrl: message.imageUrl ? getFullImageUrl(message.imageUrl) : null,
-              sendTime: message.sendTime,
+              sendTime: message.sendTime.endsWith('Z') ? message.sendTime : message.sendTime + 'Z',
               isCurrentUser
             };
 
@@ -333,7 +391,7 @@ const ChatBox = ({ conversationId }) => {
           setError("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
           break;
         case 403:
-          setError("Bạn không có quyền thực hiện hành động này.");
+          setError("Bạn không có quyền thc hiện hành động này.");
           break;
         case 404:
           setError("Cuộc trò chuyện không tồn tại.");
@@ -384,11 +442,28 @@ const ChatBox = ({ conversationId }) => {
     }
 
     const formatMessageTime = (timeString) => {
-      const date = parseISO(timeString);
-      if (isToday(date)) {
-        return format(date, 'HH:mm', { locale: vi });
-      } else {
-        return format(date, 'dd/MM/yyyy HH:mm', { locale: vi });
+      try {
+        console.log('Original UTC time:', timeString);
+        const isISOString = timeString.endsWith('Z');
+        
+        const utcDate = parseISO(timeString);
+        console.log('Parsed UTC date:', utcDate);
+        
+        const localDate = isISOString 
+          ? utcDate 
+          : new Date(utcDate.getTime() + (7 * 60 * 60 * 1000));
+        
+        console.log('Local date:', localDate);
+        console.log('Is ISO string:', isISOString);
+
+        if (isToday(localDate)) {
+          return format(localDate, 'HH:mm', { locale: vi });
+        } else {
+          return format(localDate, 'dd/MM/yyyy HH:mm', { locale: vi });
+        }
+      } catch (error) {
+        console.error('Error formatting time:', error);
+        return timeString;
       }
     };
 
@@ -504,7 +579,7 @@ const ChatBox = ({ conversationId }) => {
                     }
                 );
                 if (cartResponse.data.success) {
-                    antMessage.success('Đã thêm vào giỏ hàng của người mua thành công');
+                    antMessage.success('Đã thêm vào gi hàng của người mua thành công');
                     setIsModalOpen(false);
                 }
             } catch (cartError) {
@@ -548,15 +623,9 @@ const ChatBox = ({ conversationId }) => {
     console.log('Modal state changed:', isModalOpen);
   }, [isModalOpen]);
 
-  // Sửa lại hàm onClick
   const handleOpenModal = () => {
     console.log('Opening modal');
     setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    console.log('Closing modal');
-    setIsModalOpen(false);
   };
 
   if (error) {
@@ -577,39 +646,14 @@ const ChatBox = ({ conversationId }) => {
 
   return (
     <div className="flex flex-col h-[600px] bg-white rounded-xl shadow-lg border border-gray-200">
-      {/* Header luôn hiển thị khi có sellerInfo */}
+      {/* Sử dụng ChatHeader component */}
       {sellerInfo && (
-        <div className="px-6 py-4 border-b border-gray-200 bg-white">
-          <div className="flex items-center justify-between">
-            {/* Thông tin người chat */}
-            <div className="flex items-center space-x-3">
-              <UserAvatar
-                userId={sellerInfo.seller?.userId}
-                userName={sellerInfo.seller?.name || "Người bán"}
-                avatarUrl={sellerInfo.seller?.avatar}
-                size="large"
-              />
-              <div>
-                <h2 className="text-lg font-semibold text-gray-800">
-                  {sellerInfo.seller?.fullName}
-                </h2>
-                <p className="text-sm text-gray-500">Người bán</p>
-              </div>
-            </div>
-
-            {/* Nút tạo đơn hàng */}
-            {isSeller && isConversationSeller && buyerInfo?.buyerId && (
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={handleOpenModal}
-                className="bg-green-600 hover:bg-green-700 flex items-center gap-2 transition-all duration-200"
-              >
-                Tạo đơn hàng tùy chỉnh
-              </Button>
-            )}
-          </div>
-        </div>
+        <ChatHeader
+          currentUser={currentUser}
+          sellerInfo={sellerInfo}
+          buyerInfo={buyerInfo}
+          onOpenModal={handleOpenModal}
+        />
       )}
 
       {/* Messages Container */}

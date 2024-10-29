@@ -6,8 +6,6 @@ import api from "../../config/axios";
 import { Link, useNavigate } from "react-router-dom";
 import Footer from "../../component/footer";
 
-
-
 const SignUp = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
@@ -15,27 +13,6 @@ const SignUp = () => {
 
   const handleSignUp = async (values) => {
     console.log("Form values:", values);
-<<<<<<< HEAD
-  
-    try {
-      const response = await api.post("Users/register", values);
-      const { token } = response.data;
-  
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(response.data));
-  
-      navigate("/login");
-    } catch (err) {
-      console.error("Registration error:", err.response?.data);
-      if (err.response && err.response.data) {
-        if (err.response.data.errors) {
-          const errorMessages = err.response.data.errors.map(error => 
-            `${error.field}: ${error.errors.join(', ')}`
-          ).join('\n');
-          alert(`Validation errors:\n${errorMessages}`);
-        } else {
-          alert(err.response.data.message || "An error occurred during registration.");
-=======
     setError(null);
 
     try {
@@ -58,7 +35,6 @@ const SignUp = () => {
           setError(err.response.data.message);
         } else {
           setError("An error occurred during registration.");
->>>>>>> w8
         }
       } else {
         setError("An error occurred. Please try again.");
@@ -98,10 +74,6 @@ const SignUp = () => {
               }}
               onFinish={handleSignUp}
             >
-<<<<<<< HEAD
-              {/* Sign-up title */}
-=======
->>>>>>> w8
               <h2 className="text-3xl font-bold mb-6 mt-6 text-center text-gray-800">
                 Đăng ký
               </h2>
@@ -124,10 +96,6 @@ const SignUp = () => {
                 <Input type="text" placeholder="username" />
               </Form.Item>
 
-<<<<<<< HEAD
-              {/* Full Name Input */}
-=======
->>>>>>> w8
               <Form.Item
                 className="block text-gray-700 text-sm font-bold mb-2"
                 label="Họ và tên"
@@ -142,10 +110,6 @@ const SignUp = () => {
                 <Input type="text" placeholder="Nguyễn Văn A" />
               </Form.Item>
 
-<<<<<<< HEAD
-              {/* Email Input */}
-=======
->>>>>>> w8
               <Form.Item
                 className="block text-gray-700 text-sm font-bold mb-2"
                 label="Email"
@@ -162,19 +126,6 @@ const SignUp = () => {
                 ]}
               >
                 <Input type="text" placeholder="you@example.com" />
-              </Form.Item>
-              <Form.Item
-                className="block text-gray-700 text-sm font-bold mb-2"
-                label="Điện thoại"
-                name="phone"
-                rules={[
-                  {
-                    required: true,
-                    message: "Vui lòng nhập số điện thoại!",
-                  },
-                ]}
-              >
-                <Input type="text" placeholder="0123456789" />
               </Form.Item>
 
               <Form.Item

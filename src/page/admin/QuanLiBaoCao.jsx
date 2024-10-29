@@ -81,8 +81,6 @@ const QuanLiBaoCao = () => {
     switch (status) {
       case 'pending':
         return 'gold';
-      case 'processing':
-        return 'blue';
       case 'resolved':
         return 'green';
       default:
@@ -211,7 +209,6 @@ const QuanLiBaoCao = () => {
                 style={{ width: '100%' }}
               >
                 <Option value="pending">Chờ xử lý</Option>
-                <Option value="processing">Đang xử lý</Option>
                 <Option value="resolved">Đã giải quyết</Option>
               </Select>
             </Form.Item>

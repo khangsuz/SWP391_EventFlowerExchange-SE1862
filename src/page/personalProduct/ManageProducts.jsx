@@ -48,16 +48,23 @@ const ManageProducts = () => {
   }, []);
 
   const handleDelete = async (flowerId) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) {
-      try {
-        await api.delete(`Flowers/${flowerId}`);
-        setProducts(products.filter((product) => product.flowerId !== flowerId));
-        notification.success({ message: 'Xóa sản phẩm thành công' });
-      } catch (err) {
-        console.error("Error deleting product:", err);
-        notification.error({ message: 'Xóa sản phẩm thất bại' });
-      }
-    }
+    Modal.confirm({
+        title: 'Xác nhận xóa',
+        content: 'Bạn có chắc chắn muốn xóa sản phẩm này?',
+        okText: 'Có',
+        okType: 'danger',
+        cancelText: 'Không',
+        onOk: async () => {
+            try {
+                await api.delete(`Flowers/${flowerId}`);
+                setProducts(products.filter((product) => product.flowerId !== flowerId));
+                notification.success({ message: 'Xóa sản phẩm thành công' });
+            } catch (err) {
+                console.error("Error deleting product:", err);
+                notification.error({ message: 'Xóa sản phẩm thất bại' });
+            }
+        },
+    });
   };
 
   const openEditModal = (product) => {
