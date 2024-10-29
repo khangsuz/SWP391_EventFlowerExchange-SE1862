@@ -78,7 +78,7 @@ const CreateProduct = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!flower.FlowerName || flower.Price <= 0 || flower.Quantity <= 0 || !flower.CategoryId) {
+    if (!flower.FlowerName  || flower.Quantity <= 0 || !flower.CategoryId) {
       alert('Vui lòng điền đầy đủ thông tin và giá trị hợp lệ.');
       return;
     }
@@ -169,7 +169,7 @@ const CreateProduct = () => {
                 onChange={handleChange}
                 className="w-full border rounded px-3 py-2"
                 required
-                min="0.01"
+                min="0"
                 step="0.01"
               />
             </div>

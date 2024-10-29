@@ -35,7 +35,7 @@ const Products = () => {
     let filtered = [...flowers];
 
     // Áp dụng bộ lọc giá
-    filtered = filtered.filter(flower => flower.price >= priceRange[0] && flower.price <= priceRange[1]);
+    filtered = filtered.filter(flower => !flower.isExpired);
 
     // Áp dụng sắp xếp
     switch (sortOption) {
@@ -50,6 +50,22 @@ const Products = () => {
         break;
       case "price-desc":
         filtered.sort((a, b) => b.price - a.price);
+        break;
+      case "available":
+        // Sắp xếp sản phẩm còn hạn lên đầu
+        filtered.sort((a, b) => {
+          const aTimeRemaining = renderTimeRemaining(a.listingDate);
+          const bTimeRemaining = renderTimeRemaining(b.listingDate);
+          return aTimeRemaining === 'Hết hạn' ? 1 : -1;
+        });
+        break;
+      case "out_of_stock":
+        // Sắp xếp sản phẩm hết hạn lên đầu
+        filtered.sort((a, b) => {
+          const aTimeRemaining = renderTimeRemaining(a.listingDate);
+          const bTimeRemaining = renderTimeRemaining(b.listingDate);
+          return bTimeRemaining === 'Hết hạn' ? 1 : -1;
+        });
         break;
       default:
         break;
@@ -126,6 +142,8 @@ const Products = () => {
                 <option value="name-desc">Tên Z-A</option>
                 <option value="price-asc">Giá tăng dần</option>
                 <option value="price-desc">Giá giảm dần</option>
+                <option value="available">Còn hạn</option>
+                <option value="out_of_stock">Hết hạn</option>
               </select>
             </div>
           </div>

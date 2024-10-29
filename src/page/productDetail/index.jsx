@@ -208,6 +208,12 @@ const ProductDetail = () => {
 
     const token = localStorage.getItem("token");
 
+    if (flower.price === 0) {
+      notifyError("Sản phẩm này chưa có giá để thêm vào giỏ hàng!");
+      setLoading(false);
+      return;
+    }
+
     try {
       await api.post("Orders/addtocart", null, {
         params: {
@@ -301,7 +307,7 @@ const ProductDetail = () => {
   reviews.forEach(review => {
     starCounts[review.rating]++;
   });
-  const renderTimeRemaining = (listingDate) => {
+   const renderTimeRemaining = (listingDate) => {
     const listingTime = new Date(listingDate).getTime();
     const currentTime = new Date().getTime();
 
@@ -317,6 +323,7 @@ const ProductDetail = () => {
 
     return 'Hết hạn';
 };
+  
   if (!flower) return <div>Loading...</div>;
 
   return (
@@ -331,7 +338,9 @@ const ProductDetail = () => {
               {/* <h1 className="text-gray-900 text-3xl title-font font-medium mb-1 mt-3">{flower.flowerName}</h1>
               <span className="title-font font-medium text-xl text-[#bc0000]">{flower.price.toLocaleString()}₫</span> */}
               <h1 className="text-gray-900 text-4xl title-font font-medium mb-1 mt-3">{flower.flowerName}</h1>
-              <p className="title-font mt-2 font-medium text-xl text-[#bc0000]">{flower.price.toLocaleString()}₫</p>
+              <p className="title-font mt-2 font-medium text-xl text-[#bc0000]">
+              {flower.price > 0 ? Number(flower.price).toLocaleString() + '₫' : '???đ'}
+              </p>
               <div className="flex items-center mt-2">
                 {/* <span className="text-yellow-500 text-lg font-semibold">{averageRating.toFixed(1)} sao</span> */}
                 <span className="text-yellow-500 text-xl font-semibold">{averageRating.toFixed(1)} sao</span>
@@ -352,7 +361,7 @@ const ProductDetail = () => {
                 </p>
                 
               )}
-               <p className="text-gray-600 text-xl mt-2">Độ tươi: {flower.condition}%</p>
+               <p className="text-gray-600 text-xl mt-2">Độ tươi: {flower.condition === 'New' ? 100 : flower.condition}%</p>
               <div className="flex mb-4"></div>
               {/* <p className="leading-relaxed">Lưu ý : Sản phẩm thực tế có thể sẽ khác đôi chút so với sản phẩm mẫu do đặc tính cắm, gói hoa thủ công. Các loại hoa không có sẵn, hoặc hết mùa sẽ được thay thế bằng các loại hoa khác, nhưng vẫn đảm bảo về định lượng hoa, tone màu, kiểu dáng và độ thẩm mỹ như sản phẩm mẫu.</p> */}
               <p className="leading-relaxed"><strong className="text-xl">Lưu ý</strong> : Sản phẩm thực tế có thể sẽ khác đôi chút so với sản phẩm mẫu do đặc tính cắm, gói hoa thủ công. Các loại hoa không có sẵn, hoặc hết mùa sẽ được thay thế bằng các loại hoa khác, nhưng vẫn đảm bảo về định lượng hoa, tone màu, kiểu dáng và độ thẩm mỹ như sản phẩm mẫu.</p>
@@ -401,7 +410,7 @@ const ProductDetail = () => {
             <img src={seller.profileImageUrl ? `https://localhost:7288${seller.profileImageUrl}` : 'default-image-url'}
              alt={seller.name} className="w-20 h-20 rounded-full mr-2" />
             <div className="ml-2 mr-2">
-              <p className="text-lg text-center">{seller.name || "Không xác định"}</p>
+              <p className="text-lg text-center">{seller.name || "Không xác đnh"}</p>
               <div className="flex mt-2">
                 <button className="chat-button text-sm border border-gray-300 rounded py-2 px-3 mr-2">Chat Ngay</button>
                 <button className="text-sm border border-gray-300 rounded py-1 px-2" onClick={() => navigate(`/personal-product/${seller.userId}`)}>

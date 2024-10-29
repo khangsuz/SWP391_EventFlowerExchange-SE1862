@@ -48,6 +48,11 @@ function ProductCard({ flower }) {
 
     const token = localStorage.getItem("token");
     const quantity = 1;
+    if (flower.price === 0) {
+      notifyError("Sản phẩm này chưa có giá để thêm vào giỏ hàng!");
+      setLoading(false);
+      return;
+    }
     if (isExpired) {
       notifyError("Sản phẩm này đã hết hạn và không thể thêm vào giỏ hàng!");
       setLoading(false);
@@ -180,7 +185,7 @@ function ProductCard({ flower }) {
           {flower.flowerName} ({flower.quantity})
         </p>
         <p className="price text-center text-red-500 font-bold">
-          {Number(flower.price).toLocaleString()}₫
+        {flower.price > 0 ? Number(flower.price).toLocaleString() + '₫' : '???đ'}
         </p>
         <div className="rating justify-center items-center space-x-1 mt-2">
           {[...Array(fullStars)].map((_, index) => (
