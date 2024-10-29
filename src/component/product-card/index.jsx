@@ -50,7 +50,7 @@ function ProductCard({ flower }) {
     const quantity = 1;
 
     if (!token) {
-      notifyError("Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng!");
+      notifyError("Bạn cần đăng nhập vào để thêm sản phẩm vào giỏ hàng!");
       setLoading(false);
       return;
     }
