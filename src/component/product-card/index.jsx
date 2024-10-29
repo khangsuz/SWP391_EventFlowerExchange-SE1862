@@ -16,29 +16,6 @@ function ProductCard({ flower }) {
   const { updateCartItemCount } = useCart();
   const [categories, setCategories] = useState({});
 
-  const addToCart = (item, quantity) => {
-    const storedCart = JSON.parse(localStorage.getItem('cart')) || [];
-    const existingItem = storedCart.find((cartItem) => cartItem.flowerId === item.flowerId);
-
-    if (existingItem) {
-      if (existingItem.quantity + quantity > item.quantity) {
-        notifyError(`Không thể thêm quá số lượng trong kho!`);
-        return;
-      }
-      const updatedCart = storedCart.map((cartItem) =>
-        cartItem.flowerId === item.flowerId
-          ? { ...cartItem, quantity: cartItem.quantity + quantity }
-          : cartItem
-      );
-      localStorage.setItem('cart', JSON.stringify(updatedCart));
-      notifySuccess(`${item.flowerName} đã được thêm vào giỏ hàng!`);
-    } else {
-      const updatedCart = [...storedCart, { ...item, quantity: quantity }];
-      localStorage.setItem('cart', JSON.stringify(updatedCart));
-      notifySuccess(`${item.flowerName} đã được thêm vào giỏ hàng!`);
-    }
-  };
-
   const handleAddToCart = async (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -46,6 +23,7 @@ function ProductCard({ flower }) {
 
     const token = localStorage.getItem("token");
     const quantity = 1;
+
     if (!token) {
       notifyError("Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng!");
       setLoading(false);
@@ -53,18 +31,32 @@ function ProductCard({ flower }) {
     }
 
     try {
-      const response = await api.post("Orders/addtocart", null, {
-        params: {
-          flowerId: flower.flowerId,
-          quantity: quantity,
+      // Sử dụng endpoint Cart/add-item
+      const response = await api.post(
+        "Cart/add-item",
+        {
+          FlowerId: flower.flowerId,
+          Quantity: quantity,
+          Price: flower.price,
+          IsCustomOrder: false
         },
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      addToCart(flower, quantity);
-      updateCartItemCount();
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (response.data.success) {
+        notifySuccess(`${flower.flowerName} đã được thêm vào giỏ hàng!`);
+        // Trigger update cart count
+        updateCartItemCount();
+      } else {
+        notifyError(response.data.message || "Thêm vào giỏ hàng thất bại!");
+      }
     } catch (err) {
+      console.error("Error adding to cart:", err);
       const errorMessage = err.response?.data?.message || "Thêm vào giỏ hàng thất bại!";
       notifyError(errorMessage);
     } finally {
@@ -171,7 +163,7 @@ function ProductCard({ flower }) {
               )}
             </button>
           ) : (
-            <p className="text-red-500 mt-5">Hết hàng</p>
+            <p className="text-red-500 mt-5 font-medium">Hết hàng</p>
           )}
         </div>
       </div>

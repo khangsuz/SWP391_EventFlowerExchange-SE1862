@@ -4,11 +4,9 @@ import Header from "../../component/header";
 import Footer from "../../component/footer";
 import api from "../../config/axios";
 import { getFullImageUrl } from "../../utils/imageHelpers";
-import { Modal, Input, Button, Select, message } from "antd";
-import { ExclamationCircleOutlined } from '@ant-design/icons';
+import { Modal, Input, Button, Select, notification } from "antd";
 
 const { Option } = Select;
-const { confirm } = Modal;
 
 const ManageProducts = () => {
   const { userId } = useParams();
@@ -29,11 +27,11 @@ const ManageProducts = () => {
 
   const fetchProducts = useCallback(async () => {
     try {
-      const response = await api.get(`Flowers/manage/${userId}`);
+      const response = await api.get(`Flowers/manage/${userId}`); 
       setProducts(response.data);
     } catch (err) {
       console.error("Error fetching products:", err);
-      message.error('Không thể tải danh sách sản phẩm');
+      notification.error({ message: 'Không thể tải danh sách sản phẩm' });
     } finally {
       setLoading(false);
     }
@@ -45,29 +43,21 @@ const ManageProducts = () => {
       setCategories(response.data);
     } catch (err) {
       console.error("Error fetching categories:", err);
-      message.error('Không thể tải danh sách danh mục');
+      notification.error({ message: 'Không thể tải danh sách danh mục' });
     }
   }, []);
 
-  const handleDelete = (flowerId) => {
-    confirm({
-      title: 'Xác nhận xóa sản phẩm',
-      icon: <ExclamationCircleOutlined />,
-      content: 'Bạn có chắc chắn muốn xóa sản phẩm này?',
-      okText: 'Xóa',
-      okType: 'danger',
-      cancelText: 'Hủy',
-      onOk: async () => {
-        try {
-          await api.delete(`Flowers/${flowerId}`);
-          setProducts(products.filter((product) => product.flowerId !== flowerId));
-          message.success('Xóa sản phẩm thành công');
-        } catch (err) {
-          console.error("Error deleting product:", err);
-          message.error('Xóa sản phẩm thất bại');
-        }
-      },
-    });
+  const handleDelete = async (flowerId) => {
+    if (window.confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) {
+      try {
+        await api.delete(`Flowers/${flowerId}`);
+        setProducts(products.filter((product) => product.flowerId !== flowerId));
+        notification.success({ message: 'Xóa sản phẩm thành công' });
+      } catch (err) {
+        console.error("Error deleting product:", err);
+        notification.error({ message: 'Xóa sản phẩm thất bại' });
+      }
+    }
   };
 
   const openEditModal = (product) => {
@@ -91,27 +81,26 @@ const ManageProducts = () => {
       formData.append('Quantity', updatedProduct.quantity);
       formData.append('Status', updatedProduct.status);
       formData.append('Category', updatedProduct.category);
-
       if (updatedProduct.imageUrl instanceof File) {
         formData.append('image', updatedProduct.imageUrl);
       }
-
+  
       const response = await api.put(`Flowers/${currentProduct.flowerId}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
-
+  
       if (response.status === 204) {
         await fetchProducts();
         setIsModalVisible(false);
-        message.success('Cập nhật sản phẩm thành công!');
+        notification.success({ message: 'Cập nhật sản phẩm thành công!' });
       } else {
         throw new Error('Unexpected response status');
       }
     } catch (error) {
       console.error('Lỗi khi cập nhật sản phẩm:', error);
-      message.error('Cập nhật sản phẩm thất bại!');
+      notifyError({ message: 'Cập nhật sản phẩm thất bại!' });
     }
   };
 
@@ -135,7 +124,7 @@ const ManageProducts = () => {
 
   return (
     <>
-    <Header />
+      <Header />
       <div className="container mx-auto py-24">
         <h1 className="text-2xl font-bold mb-6">Quản lý sản phẩm của bạn</h1>
         <button

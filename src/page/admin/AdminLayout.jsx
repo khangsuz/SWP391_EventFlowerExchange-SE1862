@@ -62,6 +62,11 @@ const AdminLayout = () => {
       icon: <CustomerServiceOutlined />,
       label: <Link to="/admin/quanlidanhgia">Quản lý đánh giá</Link>,
     },
+    {
+      key: "9",
+      icon: <CustomerServiceOutlined />,
+      label: <Link to="/admin/quanlibaocao">Quản lý báo cáo</Link>,
+    },
 
   ];
 

@@ -91,6 +91,12 @@ const Products = () => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
   };
 
+  const addToCart = (item, quantity) => {
+    // ...
+    const updatedCart = [...storedCart, { ...item, quantity: quantity, sellerName: flower.sellerName }];
+    // ...
+  };
+
   return (
     <div className="products__main">
       <Notification />

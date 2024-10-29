@@ -15,6 +15,26 @@ const App = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Hàm để format ngày
+  const formatDate = (dateString) => {
+    return dateString.slice(0, 10); // Lấy 10 ký tự đầu tiên của chuỗi ngày
+  };
+
+  // Xử lý dữ liệu sau khi fetch
+  const processDailyIncomeData = (data) => {
+    return data.map(item => ({
+      ...item,
+      date: formatDate(item.date)
+    }));
+  };
+
+  const processOrderStatsData = (data) => {
+    return data.map(item => ({
+      ...item,
+      date: formatDate(item.date)
+    }));
+  };
+
   const fetchDashboardStats = async (token) => {
     try {
       const response = await axios.get('https://localhost:7288/api/admin/dashboard/stats', {
@@ -39,7 +59,7 @@ const App = () => {
         timeout: 5000,
       });
 
-      setDailyIncomeData(response.data);
+      setDailyIncomeData(processDailyIncomeData(response.data));
     } catch (error) {
       console.error("Error fetching daily income:", error);
       setError("Lỗi khi tải dữ liệu thu nhập hàng ngày.");
@@ -53,7 +73,7 @@ const App = () => {
         timeout: 5000,
       });
 
-      setOrderStatsData(response.data); 
+      setOrderStatsData(processOrderStatsData(response.data));
     } catch (error) {
       console.error("Error fetching order stats:", error);
       setError("Lỗi khi tải dữ liệu thống kê đơn hàng.");

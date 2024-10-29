@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '../../component/header';
 import Footer from '../../component/footer';
 import api from '../../config/axios';
@@ -8,6 +8,8 @@ import { Notification, notifySuccess, notifyError } from "../../component/alert"
 
 function CheckoutPage() {
     const navigate = useNavigate();
+    const location = useLocation();
+    const { sellerName, items, subtotal } = location.state || {};
     const [districts, setDistricts] = useState([]);
     const [wards, setWards] = useState([]);
     const [selectedDistrict, setSelectedDistrict] = useState('');
@@ -31,10 +33,35 @@ function CheckoutPage() {
     const [fullAddress, setFullAddress] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [note, setNote] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);  // Add this new state
+
+    const groupCartItemsBySeller = (items) => {
+        return items.reduce((acc, item) => {
+            const sellerName = item.sellerName || 'Unknown Seller';
+            if (!acc[sellerName]) {
+                acc[sellerName] = [];
+            }
+            acc[sellerName].push(item);
+            return acc;
+        }, {});
+    };
+
+    useEffect(() => {
+        if (items) {
+            setCartItems(items);
+        } else {
+            navigate('/cart');
+        }
+    }, [items, navigate]);
 
     useEffect(() => {
         const storedCart = JSON.parse(localStorage.getItem('cart')) || [];
+        console.log('Stored Cart:', storedCart);
         setCartItems(storedCart);
+        // Xóa hoặc comment out dòng dưới đây
+        // const grouped = groupCartItemsBySeller(storedCart);
+        // console.log('Grouped Cart:', grouped);
+        // setGroupedCartItems(grouped);
         fetchUserInfo();
         fetchDistricts();
     }, []);
@@ -60,8 +87,8 @@ function CheckoutPage() {
     }, [userInfo.address, selectedWardName, selectedDistrictName]);
 
     const calculateTotalWeight = useCallback(() => {
-        return cartItems.reduce((total, item) => total + 5000 * item.quantity, 0);
-    }, [cartItems]);
+        return items.reduce((total, item) => total + 5000 * item.quantity, 0);
+    }, [items]);
 
     const handleShippingFeeCalculation = useCallback(async () => {
         if (!selectedDistrict || !selectedWard) {
@@ -170,51 +197,56 @@ function CheckoutPage() {
     };
 
     const calculateTotal = () => {
-        const total = cartItems.reduce((total, item) => total + item.price * item.quantity, 0) + shippingFee;
+        const total = items.reduce((total, item) => total + item.price * item.quantity, 0) + shippingFee;
         return total >= 0 ? total : 0;
     };
 
+    const tamtinh = () => {
+        const total = items.reduce((total, item) => total + item.price * item.quantity, 0);
+        return total >= 0 ? total : 0;
+    };
+
+    // Trong CheckoutPage.js
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Submitting with selectedWard:', selectedWard);
+        
+        if (isSubmitting) return;
+        
+        if (!window.confirm('Bạn có chắc chắn muốn đặt hàng?')) {
+            return;
+        }
+
+        setIsSubmitting(true);
+        setIsButtonDisabled(true);
+        setIsProcessing(true);
+
         const token = localStorage.getItem('token');
-        if (isButtonDisabled) return;
         if (!token) {
             notifyError('Vui lòng đăng nhập trước khi thanh toán');
             navigate('/login');
+            setIsSubmitting(false);
+            setIsButtonDisabled(false);
+            setIsProcessing(false);
             return;
         }
-
-        if (!selectedDistrict || !selectedWard) {
-            notifyError('Vui lòng chọn quận/huyện và phường/xã trong TP. Hồ Chí Minh.');
-            return;
-        }
-
-        if (!paymentMethod) {
-            notifyError('Vui lòng chọn phương thức thanh toán.');
-            return;
-        }
-
-        setIsProcessing(true);
-        setIsButtonDisabled(true); 
 
         try {
-            await handleShippingFeeCalculation();
-
-            const cartItemsToSend = cartItems.map((item) => ({
+            // Tạo đơn hàng
+            const cartItemsToSend = items.map(item => ({
                 flowerId: item.flowerId,
                 quantity: item.quantity
             }));
 
             const checkoutResponse = await api.post(
-                `Orders/checkout`,
+                'Orders/checkout',
                 cartItemsToSend,
                 {
                     params: {
-                        fullAddress: fullAddress,
+                        fullAddress: userInfo.address,
                         wardCode: selectedWard,
                         wardName: selectedWardName,
-                        toDistrictId: parseInt(selectedDistrict, 10)
+                        toDistrictId: parseInt(selectedDistrict, 10),
+                        note: note
                     },
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -223,12 +255,19 @@ function CheckoutPage() {
                 }
             );
 
+            if (checkoutResponse.data && checkoutResponse.data.message === "Đặt hàng thành công") {
+                // Xóa giỏ hàng
+                localStorage.setItem('cart', JSON.stringify([]));
+                updateCartItemCount(0);
+                
+                // Chuyển hướng đến trang thanh toán VNPay
                 const paymentResponse = await api.post(
                     'Payments/createVnpPayment',
                     {
                         Amount: calculateTotal(),
                         FullName: userInfo.fullName,
-                        FullAddress: fullAddress
+                        FullAddress: fullAddress,
+                        OrderId: checkoutResponse.data.orderId
                     },
                     {
                         headers: {
@@ -237,32 +276,32 @@ function CheckoutPage() {
                         }
                     }
                 );
-                
+
                 if (paymentResponse.data && paymentResponse.data.paymentUrl) {
-                    notifySuccess('Đặt hàng thành công. Chuyển đến trang thanh toán');
-                    localStorage.setItem('pendingOrderId', checkoutResponse.data.orderId);
-                    updateCartItemCount(0);
-                    localStorage.setItem('cart', JSON.stringify([]));
                     window.location.href = paymentResponse.data.paymentUrl;
-                } else {
-                    notifyError('Invalid response from payment server');
-                    setIsButtonDisabled(false); 
+                    return;
                 }
+            }
         } catch (error) {
+            console.error('Checkout error:', error);
             handlePaymentError(error);
-            setIsButtonDisabled(false);
         } finally {
             setIsProcessing(false);
+            setIsButtonDisabled(false);
+            setIsSubmitting(false);
         }
     };
 
     const handlePaymentError = (error) => {
         console.error('Payment error:', error);
         if (error.response) {
+            console.error('Error response data:', error.response.data);
             notifyError(`Thanh toán thất bại: ${error.response.data}`);
         } else if (error.request) {
+            console.error('Error request:', error.request);
             notifyError('Lỗi mạng. Vui lòng kiểm tra kết nối và thử lại.');
         } else {
+            console.error('Error message:', error.message);
             notifyError('Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.');
         }
     };
@@ -276,7 +315,6 @@ function CheckoutPage() {
         } else {
             setSelectedDistrictName('');
         }
-        // Chỉ reset selectedWard nếu quận/huyện thực sự thay đổi
         if (districtId !== selectedDistrict) {
             setSelectedWard('');
             setShippingFee(0);
@@ -306,8 +344,18 @@ function CheckoutPage() {
     }, [userInfo.wardCode, selectedWard]);
 
     const handleNoteChange = (e) => {
-        setNote(e.target.value);
+        setNote(e.target.value || '');
     };
+
+    const validatePhoneNumber = (phone) => {
+        const phoneRegex = /^(03|05|07|08|09)\d{8}$/;
+        return phoneRegex.test(phone);
+    };
+
+    const validateEmail = (email) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+      };
 
     return (
         <>
@@ -335,7 +383,7 @@ function CheckoutPage() {
                                 name="phone"
                                 value={userInfo.phone}
                                 onChange={handleInputChange}
-                                className="w-full p-2 border rounded"
+                                className={`w-full p-2 border rounded ${!validatePhoneNumber(userInfo.phone) && userInfo.phone ? 'border-red-500' : ''}`}
                                 required
                             />
                         </div>
@@ -346,7 +394,7 @@ function CheckoutPage() {
                                 name="email"
                                 value={userInfo.email}
                                 onChange={handleInputChange}
-                                className="w-full p-2 border rounded"
+                                className={`w-full p-2 border rounded ${!validateEmail(userInfo.email) && userInfo.email ? 'border-red-500' : ''}`}
                                 required
                             />
                         </div>
@@ -368,7 +416,7 @@ function CheckoutPage() {
                             </select>
                         </div>
                         <div className="mb-4">
-                            <label className="block font-bold mb-2">Phường/Xã *</label>
+                            <label className="block font-bold mb-2">Phưng/Xã *</label>
                             <select
                                 name="ward"
                                 value={selectedWard}
@@ -401,7 +449,7 @@ function CheckoutPage() {
                             <label className="block font-bold mb-2">Ghi chú</label>
                             <textarea
                                 name="note"
-                                value={note}
+                                value={note || ''}
                                 onChange={handleNoteChange}
                                 className="w-full p-2 border rounded"
                                 placeholder="Nhập ghi chú cho đơn hàng (nếu có)"
@@ -415,17 +463,18 @@ function CheckoutPage() {
                     <div className="border p-4 rounded">
                         <div className="flex justify-between">
                             <span className="text-lg font-bold">SẢN PHẨM</span>
-                            <span className="text-lg font-bold">TẠM TÍNH</span>
+                            <span className="text-lg font-bold">TM TÍNH</span>
                         </div>
-                        {cartItems.map((item) => (
+                        {items && items.map((item) => (
                             <div key={item.flowerId} className="mb-2 flex border-t pt-2 mt-2 justify-between">
                                 <span>{item.flowerName} x {item.quantity}</span>
                                 <span className="text-red-500 font-bold">{(item.price * item.quantity).toLocaleString()}₫</span>
                             </div>
                         ))}
                         <div className="flex justify-between border-t pt-2 mt-2">
-                            <span className="font-bold">Tạm tính</span>
-                            <span className="text-red-500 font-bold">{cartItems.reduce((total, item) => total + item.price * item.quantity, 0).toLocaleString()}₫</span>
+                            <span >Tạm tính</span>
+                            <span className="text-red-500 font-bold ">{tamtinh().toLocaleString()}₫</span>
+                            
                         </div>
                         <div className="flex justify-between mt-2">
                             <span>Phí giao hàng</span>
@@ -433,7 +482,7 @@ function CheckoutPage() {
                         </div>
                         <div className="flex justify-between border-t pt-2 mt-2 font-bold">
                             <span>Tổng</span>
-                            <span>{calculateTotal().toLocaleString()}₫</span>
+                            <span className="text-red-600 font-bold">{calculateTotal().toLocaleString()}₫</span>
                         </div>
                         
                     </div>
@@ -450,10 +499,14 @@ function CheckoutPage() {
                     </div>
                     <button
                         onClick={handleSubmit}
-                        className="w-full bg-green-500 text-white p-4 rounded"
-                        disabled={isProcessing || !paymentMethod}
+                        className={`w-full p-4 rounded ${
+                            isSubmitting || isProcessing || !paymentMethod
+                                ? 'bg-gray-400 cursor-not-allowed'
+                                : 'bg-green-500 hover:bg-green-600'
+                        } text-white`}
+                        disabled={isSubmitting || isProcessing || !paymentMethod}
                     >
-                        {isProcessing ? 'Đang xử lý...' : 'Đặt hàng'}
+                        {isProcessing ? 'Đang xử lý...' : isSubmitting ? 'Đã đặt hàng' : 'Đặt hàng'}
                     </button>
                 </div>
             </div>

@@ -5,7 +5,8 @@ import api from "../../config/axios";
 import Footer from "../../component/footer";
 import ProductCard from "../../component/product-card";
 import { Link } from "react-router-dom";
-import LoadingComponent from '../../component/loading'; // Import LoadingComponent
+import LoadingComponent from '../../component/loading';
+import FloatingChatButton from "../chat/FloatingButton";
 
 const Home = () => {
   const [bestSellingFlowers, setBestSellingFlowers] = useState([]);
@@ -140,6 +141,7 @@ const Home = () => {
         </div>
       </div>
       <Footer />
+      <FloatingChatButton />
     </div>
   );
 };

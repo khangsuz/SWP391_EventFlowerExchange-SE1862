@@ -3,6 +3,8 @@ import api from "../../config/axios";
 import { useNavigate } from 'react-router-dom';
 import Header from '../../component/header';
 import Footer from '../../component/footer';
+import { FaArrowLeft, FaMoneyCheckAlt } from 'react-icons/fa';
+import { getFullImageUrl } from '../../utils/imageHelpers';
 
 const CreateProduct = () => {
   const [categories, setCategories] = useState([]);
@@ -40,14 +42,14 @@ const CreateProduct = () => {
     const fetchCurrentUser = async () => {
       try {
         const response = await api.get("/Users/current-user");
-        setUserId(response.data.userId); // Lưu userId vào state
+        setUserId(response.data.userId);
       } catch (error) {
         console.error("Error fetching current user:", error);
       }
     };
 
     fetchCategories();
-    fetchCurrentUser(); // Gọi hàm fetchCurrentUser để lấy thông tin người dùng
+    fetchCurrentUser();
     return () => {
       imageFile && URL.revokeObjectURL(imageFile.preview);
     };
@@ -71,8 +73,13 @@ const CreateProduct = () => {
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    file.preview = URL.createObjectURL(file);
-    setImageFile(file);
+    if (file) {
+      const previewUrl = URL.createObjectURL(file);
+      setImageFile({
+        file,
+        preview: previewUrl
+      });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -88,7 +95,7 @@ const CreateProduct = () => {
       formData.append('Quantity', flower.Quantity.toString());
       formData.append('CategoryId', flower.CategoryId.toString());
       if (imageFile) {
-        formData.append('image', imageFile);
+        formData.append('image', imageFile.file);
       }
 
       const response = await api.post('Flowers', formData, {
@@ -110,19 +117,19 @@ const CreateProduct = () => {
         if (!currentUser || !currentUser.userId) {
           throw new Error('Invalid user information');
         }
-        
+
         await api.post('Notification', {
           Message: `Sản phẩm mới đã được thêm: ${newFlower.flowerName}`,
           NotificationDate: new Date().toISOString(),
           IsRead: false,
-          SellerId: currentUser.userId 
+          SellerId: currentUser.userId
         });
         console.log("Thông báo đã được tạo thành công");
       } catch (notificationError) {
         console.error("Lỗi khi tạo thông báo:", notificationError.message);
       }
 
-      
+
       alert('Sản phẩm đã được tạo thành công!');
       navigate(`/manage-products/${userId}`); // Sử dụng userId đã lưu để điều hướng
     } catch (error) {
@@ -143,7 +150,13 @@ const CreateProduct = () => {
   return (
     <>
       <Header />
-      <div style={{ border: '1px solid red', padding: '20px', margin: '20px' }}>
+      <div className="p-20">
+        <button
+          className="bg-blue-600 text-white font-bold py-2 px-6 rounded transition duration-300 ease-in-out transform hover:bg-blue-500 hover:scale-105 shadow-md hover:shadow-lg"
+          onClick={() => navigate(`/personal-product/${userId}`)}
+        >
+          <FaArrowLeft className="inline-block mr-2" /> Quay Về Cửa Hàng
+        </button>
         <div className="max-w-md mx-auto mt-10">
           <h2 className="text-2xl font-bold mb-5">Tạo Sản Phẩm Mới</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -216,8 +229,24 @@ const CreateProduct = () => {
               />
             </div>
             {imageFile && (
-              <div>
-                <img src={imageFile.preview} alt={flower.FlowerName} className="w-full mt-2" />
+              <div className="relative">
+                <img 
+                  src={imageFile.preview} 
+                  alt="Preview" 
+                  className="w-full mt-2 rounded-lg max-h-64 object-contain"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    URL.revokeObjectURL(imageFile.preview);
+                    setImageFile(null);
+                  }}
+                  className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </button>
               </div>
             )}
             <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">

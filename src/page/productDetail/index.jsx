@@ -9,6 +9,7 @@ import { getFullImageUrl } from '../../utils/imageHelpers';
 import { Notification, notifySuccess, notifyError } from "../../component/alert";
 import UserAvatar from "../user/UserAvatar";
 import LoadingComponent from "../../component/loading";
+import ChatButton from "../../component/chatButton";
 
 const ProductDetail = () => {
   const { updateCartItemCount } = useCart();
@@ -162,29 +163,41 @@ const ProductDetail = () => {
     }
   };
 
-  const handleAddToCart = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-
+  const handleAddToCart = async () => {
     const token = localStorage.getItem("token");
+    if (!token) {
+      notifyError("Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng!");
+      return;
+    }
 
+    setLoading(true);
     try {
-      await api.post("Orders/addtocart", null, {
-        params: {
-          flowerId: flower.flowerId,
-          quantity: quantity,
+      const response = await api.post(
+        "Cart/add-item",
+        {
+          FlowerId: flower.flowerId,
+          Quantity: quantity,
+          Price: flower.price,
+          IsCustomOrder: false
         },
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      addToCart(flower);
-      updateCartItemCount();
-      notifySuccess("Thêm vào giỏ hàng thành công!");
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (response.data.success) {
+        notifySuccess(`${flower.flowerName} đã được thêm vào giỏ hàng!`);
+        updateCartItemCount();
+      } else {
+        notifyError(response.data.message || "Thêm vào giỏ hàng thất bại!");
+      }
     } catch (err) {
       console.error("Error adding to cart:", err);
       const errorMessage = err.response?.data?.message || "Thêm vào giỏ hàng thất bại!";
-      alert(errorMessage);
+      notifyError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -363,20 +376,43 @@ const ProductDetail = () => {
                 </div>
               </div>
               <div className="flex">
-                <button className="px-4 text-lg border-2 py-2 text-gray-800 font-bold rounded hover:bg-gray-300 transition duration-300 ease-in-out disabled:cursor-not-allowed"
+                <button 
+                  className="px-4 text-lg border-2 py-2 text-gray-800 font-bold rounded hover:bg-gray-300 transition duration-300 ease-in-out disabled:cursor-not-allowed"
                   onClick={() => setQuantity(quantity - 1)}
-                  disabled={quantity <= 1}>
+                  disabled={quantity <= 1 || loading}
+                >
                   -
                 </button>
                 <span className="mt-1 mx-4 text-4xl font-semibold">{quantity}</span>
-                <button className="px-4 text-lg border-2 py-2  text-gray-800 font-bold rounded hover:bg-gray-300 transition duration-300 ease-in-out"
-                  onClick={() => setQuantity(quantity + 1)}>
+                <button 
+                  className="px-4 text-lg border-2 py-2 text-gray-800 font-bold rounded hover:bg-gray-300 transition duration-300 ease-in-out"
+                  onClick={() => setQuantity(quantity + 1)}
+                  disabled={loading}
+                >
                   +
                 </button>
-                <button className="flex ml-2 text-lg border-2 border-0 py-2 px-6 focus:outline-none hover:bg-gray-300 rounded"
+                <button 
+                  className={`flex ml-2 text-white font-bold text-lg py-2 px-6 rounded transition duration-300 ease-in-out ${
+                    loading 
+                      ? 'bg-gray-400 cursor-not-allowed' 
+                      : 'bg-indigo-600 hover:bg-indigo-700'
+                  }`}
                   onClick={handleAddToCart}
-                  disabled={loading}>
-                  {loading ? "Đang thêm..." : "Thêm vào giỏ"}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <span className="flex items-center">
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Đang thêm...
+                    </span>
+                  ) : (
+                    <span className="flex items-center">
+                      Thêm vào giỏ
+                    </span>
+                  )}
                 </button>
               </div>
             </div>

@@ -96,17 +96,26 @@ const ManageRevenue = () => {
   const fetchRevenue = async () => {
     setLoading(true);
     try {
-      const response = await api.get(`Users/revenue/${userId}`);
-      console.log("Revenue Response:", response.data); 
-      setRevenue(response.data.totalRevenue); 
-      setRevenueData(response.data.details || []);
+        const response = await api.get(`Users/revenue/${userId}`);
+        console.log("Revenue Response:", response.data);
+        
+        setRevenue(response.data.netRevenue);
+        setCommission(response.data.commission);
+        
+        const details = response.data.details;
+        setRevenueData(details.map(item => ({
+            date: item.date || 'Không có ngày',
+            amount: item.amount || 0
+        })));
+        
     } catch (err) {
-      console.error("Error fetching revenue:", err);
-      message.error('Không thể tải dữ liệu doanh thu. Vui lòng thử lại sau.');
+        console.error("Error fetching revenue:", err);
+        const errorMessage = err.response?.data?.message || 'Không thể tải dữ liệu doanh thu. Vui lòng thử lại sau.';
+        message.error(errorMessage);
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+};
 
   const fetchCurrentIncome = async () => {
     setLoading(true);

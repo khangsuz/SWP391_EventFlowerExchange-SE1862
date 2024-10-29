@@ -1,12 +1,12 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Header from "../../component/header";
 import Footer from "../../component/footer";
 import api from "../../config/axios";
+import { useCart } from "../../contexts/CartContext";
 import ProductCard from "../../component/product-card";
-import { Notification } from "../../component/alert";
-import LoadingComponent from '../../component/loading';
 import UserAvatar from "../user/UserAvatar";
+import ChatButton from "../../component/chatButton";
 
 const PersonalProduct = () => {
   const navigate = useNavigate();
@@ -16,52 +16,68 @@ const PersonalProduct = () => {
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(null);
-  const [totalReviews, setTotalReviews] = useState(0);
+  const [followerCount, setFollowerCount] = useState(0);
+  const [reviewCount, setReviewCount] = useState(0);
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
+  const fetchCurrentUser = async () => {
     try {
-      const [currentUserResponse, sellerProductsResponse, sellerProfileResponse, followersCountResponse] = await Promise.all([
-        api.get("/Users/current-user"),
-        api.get(`Flowers/seller/${userId}`),
-        api.get(`Users/${userId}`),
-        api.get(`/SellerFollow/followers-count/${userId}`)
-      ]);
-
-      setCurrentUserId(currentUserResponse.data.userId);
-      setSellerProducts(sellerProductsResponse.data);
-      setSellerProfile({
-        ...sellerProfileResponse.data,
-        followers: followersCountResponse.data
-      });
-
-      if (currentUserResponse.data.userId) {
-        const isFollowingResponse = await api.get(`/SellerFollow/is-following`, {
-          params: {
-            userId: currentUserResponse.data.userId,
-            sellerId: userId
-          }
-        });
-        setIsFollowing(isFollowingResponse.data);
-      }
-
-      let totalReviewsCount = 0;
-      for (const product of sellerProductsResponse.data) {
-        const reviewCountResponse = await api.get(`/Reviews/count/${product.flowerId}`);
-        totalReviewsCount += reviewCountResponse.data;
-      }
-      setTotalReviews(totalReviewsCount);
-
+      const response = await api.get("/Users/current-user");
+      setCurrentUserId(response.data.userId);
     } catch (err) {
-      console.error("Error fetching data:", err);
-    } finally {
-      setLoading(false);
+      console.error("Error fetching current user:", err);
     }
+  };
+
+  const fetchSellerProducts = async () => {
+    try {
+      const response = await api.get(`Flowers/seller/${userId}`);
+      setSellerProducts(response.data);
+    } catch (err) {
+      console.error("Error fetching seller products:", err);
+      setSellerProducts([]); // Set empty array if error
+    }
+  };
+
+  const fetchSellerProfile = async () => {
+    try {
+      const response = await api.get(`Users/${userId}`);
+      setSellerProfile(response.data);
+    } catch (err) {
+      console.error("Error fetching seller profile:", err);
+      setSellerProfile(null);
+    }
+  };
+
+  const fetchIsFollowing = async () => {
+    try {
+      const response = await api.get(`/SellerFollow/is-following`, {
+        params: {
+          userId: currentUserId,
+          sellerId: userId
+        }
+      });
+      setIsFollowing(response.data);
+      console.log(response.data)
+    } catch (err) {
+      console.error("Error checking following status:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (currentUserId && userId) {
+      fetchIsFollowing();
+    }
+  }, [currentUserId, userId]);
+
+  useEffect(() => {
+    fetchCurrentUser();
+    fetchSellerProducts();
+    fetchSellerProfile();
   }, [userId]);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    setLoading(false);
+  }, [sellerProducts, sellerProfile]);
 
   const handleChat = () => {
     navigate(`/chat/${userId}`);
@@ -79,12 +95,15 @@ const PersonalProduct = () => {
     try {
       if (isFollowing) {
         await api.post(`/SellerFollow/unfollow`, { userId: currentUserId, sellerId: userId });
+        setFollowerCount(prev => prev - 1);
       } else {
         await api.post(`/SellerFollow/follow`, { userId: currentUserId, sellerId: userId });
+        setFollowerCount(prev => prev + 1);
       }
-      await fetchData(); // Refresh all data after follow/unfollow
+      setIsFollowing(!isFollowing);
     } catch (err) {
       console.error("Error handling follow/unfollow:", err);
+      fetchFollowerCount();
     }
   };
 
@@ -96,54 +115,88 @@ const PersonalProduct = () => {
     navigate(`/manage-orders/${userId}`);
   };
 
-  if (loading) return <LoadingComponent />; // Show loading component
+  const fetchFollowerCount = async () => {
+    try {
+      const response = await api.get(`SellerFollow/followers-count/${userId}`);
+      setFollowerCount(response.data);
+    } catch (error) {
+      console.error('Error fetching follower count:', error);
+      setFollowerCount(0);
+    }
+  };
+
+  useEffect(() => {
+    if (userId) {
+      fetchFollowerCount();
+    }
+  }, [userId]);
+
+  const fetchReviewCount = async () => {
+    try {
+      const response = await api.get(`Reviews/count-all-flowers/${userId}`);
+      setReviewCount(response.data);
+    } catch (error) {
+      console.error('Error fetching review count:', error);
+      setReviewCount(0);
+    }
+  };
+
+  useEffect(() => {
+    if (userId) {
+      fetchReviewCount();
+    }
+  }, [userId]);
+
+  if (loading) return <div>Loading...</div>;
 
   return (
     <>
-      <Notification />
       <Header />
       <div className="container mx-auto py-24">
         {sellerProfile && (
           <div className="mb-6 p-4 border border-gray-200 rounded">
             <div className="flex items-center">
-              <UserAvatar/>
-              <div className="ml-2">
+              <UserAvatar 
+                userId={sellerProfile.userId} 
+                userName={sellerProfile.fullName} 
+              />
+              <div className="ml-4">
                 <h2 className="text-xl font-bold">{sellerProfile.fullName}</h2>
+
                 <div className="flex mt-2">
                   <div className="mr-6">
-                    <span>Đánh Giá: </span><strong>{totalReviews}</strong>
+                    <span>Đánh Giá: </span>
+                    <strong>{reviewCount}</strong>
                   </div>
                   <div className="mr-6">
                     <span>Sản Phẩm: </span><strong>{sellerProducts.length}</strong>
                   </div>
-                  <div className="mr-6">
-                    <span>Người Theo Dõi: </span><strong>{sellerProfile.followers}</strong>
+                  <div>
+                    <span>Người Theo Dõi: </span>
+                    <strong>{followerCount}</strong>
                   </div>
                 </div>
-                <div className="flex mt-2 gap-2">
+                <div className="flex mt-2">
+                <ChatButton sellerId={sellerProfile.userId} />
+                {console.log('Product seller ID:', sellerProfile.userId)}
+                {currentUserId !== parseInt(userId) && (
+                    <button
+                      className={`text-sm border border-gray-300 rounded-lg py-2 px-5 mr-2 hover:bg-gray-100 ${isFollowing ? 'text-sm border bg-red-500 border-red-500 rounded-lg py-2 px-5 mr-2 hover:bg-red-400' : ''}`}
+                      onClick={handleFollow}
+                    >
+                      {isFollowing ? "Bỏ Yêu Thích" : "Yêu Thích"}
+                    </button>
+                  )}
                   {currentUserId === parseInt(userId) && (
                     <>
-                      <button className="text-sm border border-gray-300 rounded-lg py-2 px-5 hover:bg-gray-200 hover:text-black" onClick={handleManageProducts}>
-                        Quản lí sản phẩm
+                      <button className="text-sm border border-gray-300 rounded-lg py-2 px-5 mr-2 hover:bg-gray-100" onClick={handleManageProducts}>
+                        Quản lý sản phẩm
                       </button>
-                      <button className="text-sm border border-gray-300 rounded-lg py-2 px-5 hover:bg-gray-200 hover:text-black" onClick={handleRevenue}>
+                      <button className="text-sm border border-gray-300 rounded-lg py-2 px-5 mr-2 hover:bg-gray-100" onClick={handleRevenue}>
                         Xem Doanh Thu
                       </button>
-                      <button className="text-sm border border-gray-300 rounded-lg py-2 px-5 hover:bg-gray-200 hover:text-black" onClick={handleOrders}>
+                      <button className="text-sm border border-gray-300 rounded-lg py-2 px-5 hover:bg-gray-100" onClick={handleOrders}>
                         Xem Đơn Hàng
-                      </button>
-                    </>
-                  )}
-                      <button className="chat-button text-sm border border-gray-300 rounded py-1 px-2 mr-2 w-20" onClick={handleChat}>
-                        Chat
-                      </button>
-                      {currentUserId !== parseInt(userId) && (
-                        <>
-                      <button
-                        className={`text-sm border border-gray-300 rounded py-1 px-2 ${isFollowing ? 'bg-red-500 text-white' : ''}`}
-                        onClick={handleFollow}
-                      >
-                        {isFollowing ? "Bỏ Yêu Thích" : "Yêu Thích"}
                       </button>
                     </>
                   )}
@@ -181,4 +234,3 @@ const PersonalProduct = () => {
 };
 
 export default PersonalProduct;
-
