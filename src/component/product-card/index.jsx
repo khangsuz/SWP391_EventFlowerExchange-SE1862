@@ -15,6 +15,31 @@ function ProductCard({ flower }) {
   const [averageRating, setAverageRating] = useState(0);
   const { updateCartItemCount } = useCart();
   const [categories, setCategories] = useState({});
+  const [isExpired, setIsExpired] = useState(false);
+  
+
+  const addToCart = (item, quantity) => {
+    const storedCart = JSON.parse(localStorage.getItem('cart')) || [];
+    const existingItem = storedCart.find((cartItem) => cartItem.flowerId === item.flowerId);
+
+    if (existingItem) {
+      if (existingItem.quantity + quantity > item.quantity) {
+        notifyError(`Không thể thêm quá số lượng trong kho!`);
+        return;
+      }
+      const updatedCart = storedCart.map((cartItem) =>
+        cartItem.flowerId === item.flowerId
+          ? { ...cartItem, quantity: cartItem.quantity + quantity }
+          : cartItem
+      );
+      localStorage.setItem('cart', JSON.stringify(updatedCart));
+      notifySuccess(`${item.flowerName} đã được thêm vào giỏ hàng!`);
+    } else {
+      const updatedCart = [...storedCart, { ...item, quantity: quantity }];
+      localStorage.setItem('cart', JSON.stringify(updatedCart));
+      notifySuccess(`${item.flowerName} đã được thêm vào giỏ hàng!`);
+    }
+  };
 
   const handleAddToCart = async (e) => {
     e.preventDefault();
@@ -63,6 +88,7 @@ function ProductCard({ flower }) {
       setLoading(false);
     }
   };
+
 
   const handleViewDetails = () => {
     navigate(`/product/${flower.flowerId}`);
@@ -121,6 +147,30 @@ function ProductCard({ flower }) {
         return "bg-gray-500 text-white";
     }
   };
+  const renderTimeRemaining = (listingDate) => {
+    const listingTime = new Date(listingDate).getTime();
+    const currentTime = new Date().getTime();
+
+    const localListingTime = listingTime + 7 * 60 * 60 * 1000;
+
+    const timeRemaining = (24 * 60 * 60 * 1000 + 48 * 60 * 60 * 1000) - (currentTime - localListingTime);
+
+    if (timeRemaining > 0) {
+        const hours = Math.floor(timeRemaining / (1000 * 60 * 60));
+        const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+        return `${hours}h ${minutes}m còn lại`;
+    }
+
+    return 'Hết hạn';
+};
+  useEffect(() => {
+    const timeRemainingMessage = renderTimeRemaining(flower.listingDate);
+    if (timeRemainingMessage === 'Hết hạn') {
+        setIsExpired(true);
+    } else {
+        setIsExpired(false);
+    }
+}, [flower.listingDate]);
 
   if (!flower) return null;
 
@@ -141,7 +191,7 @@ function ProductCard({ flower }) {
           {flower.flowerName} ({flower.quantity})
         </p>
         <p className="price text-center text-red-500 font-bold">
-          {Number(flower.price).toLocaleString()}₫
+        {flower.price > 0 ? Number(flower.price).toLocaleString() + '₫' : '???đ'}
         </p>
         <div className="rating justify-center items-center space-x-1 mt-2">
           {[...Array(fullStars)].map((_, index) => (
@@ -153,17 +203,29 @@ function ProductCard({ flower }) {
           ))}
           {averageRating === 0 && <p className="text-gray-500 text-sm mt-1">Chưa có đánh giá</p>}
         </div>
+        <div className="time-remaining text-center text-gray-500 text-sm mt-2">
+          {renderTimeRemaining(flower.listingDate)} 
+        </div>
         <div className="text-center pb-4">
-          {flower.quantity > 0 ? (
-            <button onClick={handleAddToCart} disabled={loading}>
-              {loading ? (
-                <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
+          {flower.price > 0 ? (
+            <>
+              {flower.quantity > 0 && !isExpired ? (
+                <button onClick={handleAddToCart} disabled={loading}>
+                  {loading ? (
+                    <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
+                  ) : (
+                    <p className="">{isExpired ? "không thể mua" : "Thêm vào giỏ hàng"}</p>
+                  )}
+                </button>
               ) : (
-                <p className="">Thêm vào giỏ hàng</p>
+                <p className="text-red-500 mt-5">{isExpired ? "Sản phẩm này đã hết hạn" : "Hết hàng"}</p>
               )}
-            </button>
+              {isExpired && flower.quantity > 0 && (
+                <p className="text-red-500 mt-1"></p>
+              )}
+            </>
           ) : (
-            <p className="text-red-500 mt-5 font-medium">Hết hàng</p>
+            <p className="text-gray-500 mt-5">Liên hệ người bán</p>
           )}
         </div>
       </div>

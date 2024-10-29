@@ -106,7 +106,7 @@ const WithdrawalRequests = () => {
       title: 'Số tiền rút', 
       dataIndex: 'amount', 
       key: 'amount',
-      width: 150,
+      width: 130,
       render: (value) => `${value.toLocaleString()} VNĐ`
     },
     { 
@@ -124,7 +124,7 @@ const WithdrawalRequests = () => {
       title: 'Ngày yêu cầu', 
       dataIndex: 'requestDate', 
       key: 'requestDate',
-      width: 150,
+      width: 100,
       render: (text) => text ? new Date(text).toLocaleDateString() : 'Không có ngày'
     },
     { 
@@ -144,7 +144,7 @@ const WithdrawalRequests = () => {
       title: 'Ghi chú', 
       dataIndex: 'remarks', 
       key: 'remarks',
-      width: 200
+      width: 120
     },
     {
       title: 'Hành động',
