@@ -17,6 +17,7 @@ const CreateProduct = () => {
     Price: 0,
     Quantity: 0,
     CategoryId: '',
+    Condition: '',
   });
   const [userId, setUserId] = useState(null);
 
@@ -84,7 +85,7 @@ const CreateProduct = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!flower.FlowerName || flower.Price <= 0 || flower.Quantity <= 0 || !flower.CategoryId) {
+    if (!flower.FlowerName || flower.Quantity <= 0 || !flower.CategoryId) {
       alert('Vui lòng điền đầy đủ thông tin và giá trị hợp lệ.');
       return;
     }
@@ -93,6 +94,7 @@ const CreateProduct = () => {
       formData.append('FlowerName', flower.FlowerName);
       formData.append('Price', flower.Price.toString());
       formData.append('Quantity', flower.Quantity.toString());
+      formData.append('Condition', flower.Condition.toString());
       formData.append('CategoryId', flower.CategoryId.toString());
       if (imageFile) {
         formData.append('image', imageFile.file);
@@ -180,7 +182,7 @@ const CreateProduct = () => {
                 onChange={handleChange}
                 className="w-full border rounded px-3 py-2"
                 required
-                min="0.01"
+                min="0"
                 step="0.01"
               />
             </div>
@@ -196,6 +198,21 @@ const CreateProduct = () => {
                 min="1"
               />
             </div>
+            <div>
+            <label className="block mb-1">Condition:</label>
+              <select
+              name="Condition"
+              value={flower.Condition}
+              onChange={handleChange}
+              className="w-full border rounded px-3 py-2"
+              required
+            >
+              <option value="">Chọn điều kiện</option>
+              <option value="100">100%</option>
+              <option value="80">80%</option>
+              <option value="60">60%</option>
+            </select>
+          </div>
             <div>
               <label className="block mb-1">Danh mục:</label>
               {loading ? (

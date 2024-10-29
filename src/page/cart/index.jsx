@@ -149,6 +149,11 @@ function Cart() {
                 subtotal: calculateSellerSubtotal(items)
             };
     
+            localStorage.setItem('itemsBeingPurchased', JSON.stringify({
+                sellerFullName,
+                itemIds: items.map(item => item.cartItemId)
+            }));
+    
             navigate('/checkout', { state: checkoutData });
         } catch (error) {
             console.error('Payment processing error:', error);
@@ -157,6 +162,28 @@ function Cart() {
             setIsCheckingOut(false);
         }
     };
+
+    // Thêm useEffect để lắng nghe kết quả thanh toán
+    useEffect(() => {
+        const handlePaymentResult = async () => {
+            const paymentSuccess = localStorage.getItem('paymentSuccess');
+            if (paymentSuccess) {
+                try {
+                    await fetchCartItems(); // Refresh cart after payment
+                    notifySuccess('Đơn hàng đã được thanh toán thành công');
+                    
+                    // Xóa dữ liệu tạm
+                    localStorage.removeItem('paymentSuccess');
+                    localStorage.removeItem('itemsBeingPurchased');
+                } catch (error) {
+                    console.error('Error updating cart after payment:', error);
+                    notifyError('Có lỗi xảy ra khi cập nhật giỏ hàng');
+                }
+            }
+        };
+
+        handlePaymentResult();
+    }, []);
 
     if (loading) {
         return <LoadingComponent />;
