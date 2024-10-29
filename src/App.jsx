@@ -22,23 +22,26 @@ import WithdrawalRequests from "./page/admin/WithdrawalRequests";
 import PaymentButton from "./component/button/PaymentButton";
 import PaymentResult from "./page/payment/paymentResult";
 import CheckoutPage from './page/payment/checkOutPage';
-import PersonalProduct from "./page/seller";
-import ManageProducts from "./page/seller/ManageProducts";
+import PersonalProduct from "./page/personalProduct";
+import ManageProducts from "./page/personalProduct/ManageProducts";
 import RegisterSeller from "./page/user/RegisterSeller";
-import ChatPage from "./page/chat/chatPage";
+import ChatPage from "./page/chat/ChatPage";
 import Events from "./page/events";
 import SearchResult from "./page/searchResult";
-import ManageRevenue from "./page/seller/ManageRevenue";
-import ManageOrders from "./page/seller/ManageOrders";
+import ManageRevenue from "./page/personalProduct/ManageRevenue";
+import ManageOrders from "./page/personalProduct/ManageOrders";
 import ChangePassword from "./page/user/ChangePassword";
 import OrderHistory from "./page/user/OrderHistory";
+import SellerOrderManagement from "./page/personalProduct/SellerOrderManagement";
+import AdminReviewManagement from "./page/admin/AdminReviewManagement";
 import DamCuoi from "./page/events/DamCuoi";
-import VanPhong from "./page/events/VanPhong";
-import ThienNhien from "./page/events/ThienNhien";
+import KhaiTruong from "./page/events/KhaiTruong";
+import KiNiem from "./page/events/KiNiem";
 import SinhNhat from "./page/events/SinhNhat";
 import Policy from "./component/policy";
-import AdminReviewManagement from "./page/admin/AdminReviewManagement";
-
+import ChucMung from "./page/events/ChucMung";
+import Address from "./page/user/Address";
+import QuanLiBaoCao from "./page/admin/QuanLiBaoCao";
 
 const App = () => {
   const router = createBrowserRouter([
@@ -70,6 +73,10 @@ const App = () => {
           path: "change-password",
           element: <ChangePassword />,
         },
+        {
+          path: "address",
+          element: <Address />,
+        }
       ],
     },
     {
@@ -93,45 +100,30 @@ const App = () => {
           element: <SinhNhat />
         },
         {
-          path: "hoa-van-phong",
-          element: <VanPhong />
+          path: "hoa-khai-truong",
+          element: <KhaiTruong />
         },
         {
           path: "hoa-dam-cuoi",
           element: <DamCuoi />
         },
         {
-          path: "hoa-thien-nhien",
-          element: <ThienNhien />
-        },
-      ],
-      element: <Events />,
-      children: [
-        {
-          path: "hoa-sinh-nhat",
-          element: <SinhNhat />
+          path: "hoa-ki-niem",
+          element: <KiNiem />
         },
         {
-          path: "hoa-van-phong",
-          element: <VanPhong />
-        },
-        {
-          path: "hoa-dam-cuoi",
-          element: <DamCuoi />
-        },
-        {
-          path: "hoa-thien-nhien",
-          element: <ThienNhien />
+          path: "hoa-chuc-mung",
+          element: <ChucMung />
         },
       ],
     },
     {
-      path: "/search", 
-      element: <SearchResult />, 
+      path: "/search",
+      element: <SearchResult />,
     },
     {
-      path: "personal-product/:userId", 
-      element: <PersonalProduct />, 
+      path: "personal-product/:userId",
+      element: <PersonalProduct />,
     },
     {
       path: "manage-products/:userId",
@@ -152,28 +144,36 @@ const App = () => {
       element: <CheckoutPage />
     },
     {
-      path: "/chat/:conversationId",
-      element: <ChatPage />,
+      path: "/seller/:userId/orders",
+      element: <SellerOrderManagement />
+    },
+    {
+      path: "chat",
+      element: <PrivateRoute>
+        <ChatPage />
+      </PrivateRoute>
+    },
+    {
+      path: "chat/:conversationId",
+      element: <PrivateRoute>
+        <ChatPage />
+      </PrivateRoute>
     },
     {
       path: "/forgot-password",
       element: <ForgotPassword />,
     },
     {
-      path: "manage-product", 
+      path: "manage-product",
       element: <PrivateRoute requiredRole="Seller">
         <CreateProduct />
       </PrivateRoute>
     },
     {
-      path: "policy",
-      element: <Policy />,
-    },
-    {
       path: "admin",
       element: (
-        <PrivateRoute requiredRole="Admin"> 
-          <AdminLayout /> 
+        <PrivateRoute requiredRole="Admin">
+          <AdminLayout />
         </PrivateRoute>
       ),
       children: [
@@ -182,8 +182,8 @@ const App = () => {
           element: <Dashboard />,
         },
         {
-          path: "personal-product/:userId", 
-          element: <PersonalProduct />, 
+          path: "personal-product/:userId",
+          element: <PersonalProduct />,
         },
         {
           path: "quanlinguoidung",
@@ -195,15 +195,11 @@ const App = () => {
         },
         {
           path: "quanlisanpham",
-          element: <QuanLiSanPham />, 
+          element: <QuanLiSanPham />,
         },
         {
           path: "quanlidonhang",
           element: <QuanLiDonHang />,
-        },
-        {
-          path: "quanlidanhgia",
-          element: <AdminReviewManagement />,
         },
         {
           path: "WithdrawalRequests",
@@ -213,6 +209,10 @@ const App = () => {
           path: "quanlidanhgia",
           element: <AdminReviewManagement />,
         },
+        {
+          path: "quanlibaocao",
+          element: <QuanLiBaoCao />,
+        }
       ],
     },
     {
@@ -220,15 +220,19 @@ const App = () => {
       element: <PaymentButton />,
     },
     {
-      path: "payment-result", 
+      path: "payment-result",
       element: <PaymentResult />,
     },
+    {
+      path: "policy",
+      element: <Policy />,
+    }
   ]);
 
-  return(
-    <CartProvider>
-      <RouterProvider router={router} />
-    </CartProvider>
+  return (
+      <CartProvider>
+        <RouterProvider router={router} />
+      </CartProvider>
   );
 };
 
