@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import "../../index.css";
 import { useNavigate } from "react-router-dom";
@@ -9,6 +9,7 @@ import { useCart } from "../../contexts/CartContext";
 import { getFullImageUrl } from '../../utils/imageHelpers';
 import { Link } from "react-router-dom";
 import { Notification, notifySuccess, notifyError } from "../../component/alert";
+import UserAvatar from '../user/UserAvatar';
 
 const ProductDetail = () => {
   const { updateCartItemCount } = useCart();
@@ -29,6 +30,7 @@ const ProductDetail = () => {
   const [starFilter, setStarFilter] = useState(0);
   const [categories, setCategories] = useState({});
   const [isExpired, setIsExpired] = useState(false);
+  const productDetailRef = useRef(null);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -325,19 +327,32 @@ const ProductDetail = () => {
     if (timeRemaining > 0) {
         const hours = Math.floor(timeRemaining / (1000 * 60 * 60));
         const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
-        return `${hours}h ${minutes}m còn lại`;
+        const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+        return `${hours}h ${minutes}m ${seconds}s`;
     }
 
     return 'Hết hạn';
 };
   
+  useEffect(() => {
+    if (productDetailRef.current) {
+      productDetailRef.current.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  }, [id]);
+
   if (!flower) return <div>Loading...</div>;
 
   return (
     <>
       <Notification />
       <Header />
-      <div className="text-gray-700 body-font overflow-hidden bg-white product-detail">
+      <div 
+        ref={productDetailRef} 
+        className="text-gray-700 body-font overflow-hidden bg-white product-detail"
+      >
         <div className="container px-5 py-24 mx-auto">
           <div className="lg:w-3/5 mx-auto flex flex-wrap">
             <img alt="ecommerce" className="lg:w-3/6 w-full object-cover object-center rounded border border-gray-200" src={imageUrl || "https://i.postimg.cc/Jz0MW07g/top-view-roses-flowers-Photoroom.png"} />
@@ -346,7 +361,7 @@ const ProductDetail = () => {
               <span className="title-font font-medium text-xl text-[#bc0000]">{flower.price.toLocaleString()}₫</span> */}
               <h1 className="text-gray-900 text-4xl title-font font-medium mb-1 mt-3">{flower.flowerName}</h1>
               <p className="title-font mt-2 font-medium text-xl text-[#bc0000]">
-                {flower.price > 0 ? flower.price.toLocaleString() + '₫' : '???đ'}
+                {flower.price > 0 ? flower.price.toLocaleString() + '₫' : '??????'}
               </p>
               <div className="flex items-center mt-2">
                 {/* <span className="text-yellow-500 text-lg font-semibold">{averageRating.toFixed(1)} sao</span> */}
@@ -368,7 +383,7 @@ const ProductDetail = () => {
                 </p>
                 
               )}
-               <p className="text-gray-600 text-xl mt-2">Độ tươi: {flower.condition === 'New' ? 100 : flower.condition}%</p>
+               <p className="text-gray-600 text-xl mt-2">Độ mới: <strong>{flower.condition === 'New' ? 100 : flower.condition}%</strong></p>
               <div className="flex mb-4"></div>
               {/* <p className="leading-relaxed">Lưu ý : Sản phẩm thực tế có thể sẽ khác đôi chút so với sản phẩm mẫu do đặc tính cắm, gói hoa thủ công. Các loại hoa không có sẵn, hoặc hết mùa sẽ được thay thế bằng các loại hoa khác, nhưng vẫn đảm bảo về định lượng hoa, tone màu, kiểu dáng và độ thẩm mỹ như sản phẩm mẫu.</p> */}
               <p className="leading-relaxed"><strong className="text-xl">Lưu ý</strong> : Sản phẩm thực tế có thể sẽ khác đôi chút so với sản phẩm mẫu do đặc tính cắm, gói hoa thủ công. Các loại hoa không có sẵn, hoặc hết mùa sẽ được thay thế bằng các loại hoa khác, nhưng vẫn đảm bảo về định lượng hoa, tone màu, kiểu dáng và độ thẩm mỹ như sản phẩm mẫu.</p>
@@ -407,7 +422,7 @@ const ProductDetail = () => {
                         </button>
                       </>
                     ) : (
-                      <p className="text-gray-500 mt-5">Vui lòng liên hệ người bán</p> 
+                      <p className="text-gray-500 mt-5 text-red-500 font-bold">Liên hệ người bán để biết thêm chi tiết</p> 
                     )}
                   </>
                 )}
@@ -416,36 +431,6 @@ const ProductDetail = () => {
           </div>
         </div>
       </div>
-
-      {/* {seller && (
-        <div className="seller-info container mx-auto mt-6 p-7 border border-gray-200 rounded shadow-sm">
-          <div className="flex flex-nowrap items-center">
-            <img src={seller.profileImageUrl ? `https://localhost:7288${seller.profileImageUrl}` : 'default-image-url'}
-             alt={seller.name} className="w-20 h-20 rounded-full mr-2" />
-            <div className="ml-2 mr-2">
-              <p className="text-lg text-center">{seller.name || "Không xác đnh"}</p>
-              <div className="flex mt-2">
-                <button className="chat-button text-sm border border-gray-300 rounded py-2 px-3 mr-2">Chat Ngay</button>
-                <button className="text-sm border border-gray-300 rounded py-1 px-2" onClick={() => navigate(`/personal-product/${seller.userId}`)}>
-                  Xem Shop
-                </button>
-              </div>
-            </div>
-            <div className="mx-2 border-l h-16"></div>
-            <div className="flex mt-2 ml-6">
-              <div className="mr-6">
-                <span>Đánh Giá: </span><strong>{seller.rating || 0}</strong>
-              </div>
-              <div className="mr-6">
-                <span>Sản Phẩm: </span><strong>{seller.productCount || 0}</strong>
-              </div>
-              <div>
-                <span>Người Theo Dõi: </span><strong>{seller.followers || 0}</strong>
-              </div>
-            </div>
-          </div>
-        </div>
-      )} */}
 
       {/* Reviews Section */}
       <div className="reviews-section container px-5 py-12 mx-auto">
@@ -530,24 +515,19 @@ const ProductDetail = () => {
 
         {/* Display Reviews */}
         <div className="reviews-list">
-          {/* {reviews.length > 0 ? (
-            reviews.map((review) => (
-              <div key={review.reviewId} className="review-item border-b py-4">
-                {editingReviewId === review.reviewId ? (
-                  <form onSubmit={(e) => handleReviewSubmit(e, review.reviewId)} className="mb-4">
-                    <div className="mb-2">
-                      <label className="block mb-1">Đánh giá:</label> */}
-                      {/* Hiển thị đánh giá của người dùng trước */}
           {userReview && (
             <div className="flex border-b py-4">
-              <img
-                  src={userReview.profileImageUrl ? `https://localhost:7288${userReview.profileImageUrl}` : 'default-image-url'}  
-                  alt="Profile" 
-                  className="w-10 h-10 rounded-full" 
-                />
-              <div key={userReview.reviewId} className="review-item w-full ml-3">
+              <UserAvatar
+                userId={userReview.userId}
+                userName={userReview.userName || "Người dùng ẩn danh"}
+                size="medium"
+                className="flex-shrink-0 mr-3"
+              />
+              <div className="review-item w-full">
                 <div className="flex items-center mb-2">
-                  <span className="font-bold mr-2">{userReview.userName ? userReview.userName : "Người dùng ẩn danh"}</span>
+                  <span className="font-medium text-gray-900 mr-2">
+                    {userReview.userName || "Người dùng ẩn danh"}
+                  </span>
                   {/* SVG Stars */}
                   <div className="flex items-center">
                     {Array.from({ length: userReview.rating }, (_, index) => (
@@ -627,48 +607,54 @@ const ProductDetail = () => {
                   </>
                 )}
               </div>
-              </div>
+            </div>
           )}
           {/* Hiển thị các đánh giá khác */}
           {reviews.length > 0 ? (
-            reviews.filter(review => review.userId !== JSON.parse(localStorage.getItem("user"))?.userId).map((review) => (
-              <div key={review.reviewId} className="flex border-b py-4">
-                <img 
-                  src={review.profileImageUrl ? `https://localhost:7288${review.profileImageUrl}` : 'default-image-url'}
-                  alt="Profile" 
-                  className="w-10 h-10 rounded-full" 
-                />
-                <div className="review-item w-full ml-3">
-                  <div className="flex items-center mb-2">
-                    <span className="font-bold mr-2">{review.userName ? review.userName : "Người dùng ẩn danh"}</span>
-                    {/* SVG Stars */}
-                    <div className="flex items-center">
-                      {Array.from({ length: review.rating }, (_, index) => (
-                        <svg key={index} xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" className="w-5 h-5 text-yellow-500">
-                          <path d="M12 .587l3.668 7.568 8.332 1.207-6.004 5.848 1.417 8.267L12 18.896l-7.413 3.895 1.417-8.267-6.004-5.848 8.332-1.207z" />
-                        </svg>
-                      ))}
-                      {Array.from({ length: 5 - review.rating }, (_, index) => (
-                        <svg key={index} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="w-5 h-5 text-yellow-500">
-                          <path d="M12 .587l3.668 7.568 8.332 1.207-6.004 5.848 1.417 8.267L12 18.896l-7.413 3.895 1.417-8.267-6.004-5.848 8.332-1.207z" stroke="currentColor" strokeWidth="2" />
-                        </svg>
-                      ))}
+            reviews
+              .filter(review => review.userId !== JSON.parse(localStorage.getItem("user"))?.userId)
+              .map((review) => (
+                <div key={review.reviewId} className="flex border-b py-4">
+                  <UserAvatar
+                    userId={review.userId}
+                    userName={review.userName || "Người dùng ẩn danh"}
+                    size="medium"
+                    className="flex-shrink-0 mr-3"
+                  />
+                  <div className="review-item w-full">
+                    <div className="flex items-center mb-2">
+                      <span className="font-medium text-gray-900 mr-2">
+                        {review.userName || "Người dùng ẩn danh"}
+                      </span>
+                      {/* SVG Stars */}
+                      <div className="flex items-center">
+                        {Array.from({ length: review.rating }, (_, index) => (
+                          <svg key={index} xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" className="w-5 h-5 text-yellow-500">
+                            <path d="M12 .587l3.668 7.568 8.332 1.207-6.004 5.848 1.417 8.267L12 18.896l-7.413 3.895 1.417-8.267-6.004-5.848 8.332-1.207z" />
+                          </svg>
+                        ))}
+                        {Array.from({ length: 5 - review.rating }, (_, index) => (
+                          <svg key={index} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="w-5 h-5 text-yellow-500">
+                            <path d="M12 .587l3.668 7.568 8.332 1.207-6.004 5.848 1.417 8.267L12 18.896l-7.413 3.895 1.417-8.267-6.004-5.848 8.332-1.207z" stroke="currentColor" strokeWidth="2" />
+                          </svg>
+                        ))}
+                      </div>
                     </div>
+                    <p className="text-gray-700 mb-1">{review.reviewComment}</p>
+                    <span className="text-sm text-gray-500">
+                      {new Date(review.reviewDate).toLocaleDateString()}
+                    </span>
                   </div>
-                  <p>{review.reviewComment}</p>
-                  <span className="text-sm text-gray-500">{new Date(review.reviewDate).toLocaleDateString()}</span>
                 </div>
-              </div>
-            ))
+              ))
           ) : (
-            <p>Chưa có đánh giá nào cho sản phẩm này.</p>
+            <p className="text-gray-500 mt-5 text-2xl">Chưa có đánh giá nào cho sản phẩm này.</p>
           )}
         </div>
       </div>
 
       {/* Related Products Section */}
       {relatedFlowers && relatedFlowers.length > 0 && (
-        // <div className="related-products container mx-auto px-5 py-12">
         <div className="related-products container mx-auto px-5 pb-12">
           <h2 className="text-2xl font-bold mb-6 text-center">Sản phẩm liên quan</h2>
           <div className="related-products-grid overflow-x-auto">
@@ -677,7 +663,16 @@ const ProductDetail = () => {
                 <Link
                   key={relatedFlower.flowerId}
                   to={`/product/${relatedFlower.flowerId}`}
-                  className="related-product-item mb-2 bg-white shadow-lg rounded-lg overflow-hidden transition-transform transform w-1/4 min-w-[200px]"
+                  className="related-product-item mb-2 bg-white shadow-lg rounded-lg overflow-hidden transition-transform transform hover:scale-105 w-1/4 min-w-[200px]"
+                  onClick={(e) => {
+                    if (id === relatedFlower.flowerId) {
+                      e.preventDefault();
+                      productDetailRef.current?.scrollIntoView({ 
+                        behavior: 'smooth',
+                        block: 'start'
+                      });
+                    }
+                  }}
                 >
                   <img
                     src={relatedFlower.imageUrl}

@@ -10,15 +10,14 @@ import OrderHistory from "./OrderHistory";
 import ChangePassword from "./ChangePassword";
 import UserAvatar from "./UserAvatar";
 import Address from "./Address";
+import { Notification, notifySuccess, notifyError } from "../../component/alert";
 
 const Profile = () => {
     const navigate = useNavigate();
     const [userData, setUserData] = useState(null);
-    const [error, setError] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [userType, setUserType] = useState(null);
     const [editedData, setEditedData] = useState({});
-    const [success, setSuccess] = useState(null);
     const { updateCartItemCount } = useCart();
     const [profileImage, setProfileImage] = useState(null);
     const location = useLocation();
@@ -31,7 +30,7 @@ const Profile = () => {
             const storedImage = localStorage.getItem('profileImageUrl');
         } catch (error) {
             console.error("Error fetching user data:", error);
-            setError("Failed to load user data. Please try again later.");
+            notifyError("Không thể tải dữ liệu người dùng. Vui lòng thử lại sau.");
         }
     };
 
@@ -60,16 +59,12 @@ const Profile = () => {
 
     const handleEdit = () => {
         setIsEditing(true);
-        setError(null);
-        setSuccess(null);
     };
 
     const handleCancel = () => {
         setIsEditing(false);
         setEditedData(userData);
         setProfileImage(null);
-        setError(null);
-        setSuccess(null);
     };
 
     const handleChange = (e) => {
@@ -86,26 +81,19 @@ const Profile = () => {
 
     const handleSave = async () => {
         let isValid = true;
-        if (editedData.name !== userData.name) {
-            const nameRegex = /^[^\s!@#$%^&*()_+={}\[\]:;"'<>,.?~]+$/;
-            if (!nameRegex.test(editedData.name)) {
-                alert("Tên không được chứa dấu cách hoặc ký tự đặc biệt.");
-                isValid = false;
-            }
-        }
 
         if (editedData.email !== userData.email) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(editedData.email)) {
-                alert("Email không hợp lệ.");
+                notifyError("Email không hợp lệ.");
                 isValid = false;
             }
         }
 
         if (editedData.phone !== userData.phone) {
-            const phoneRegex = /^\d{10}$/;
+            const phoneRegex = /^(03|05|07|08|09)\d{8}$/;
             if (!phoneRegex.test(editedData.phone)) {
-                alert("Số điện thoại phải có 10 số.");
+                notifyError("Số điện thoại chưa hợp lệ.");
                 isValid = false;
             }
         }
@@ -125,13 +113,10 @@ const Profile = () => {
                 const response = await api.put('/Users/profile', formData);
                 setUserData(response.data);
                 setIsEditing(false);
-                setSuccess("Profile updated successfully!");
-                setError(null);
-                setTimeout(() => setSuccess(null), 3000);
+                notifySuccess("Cập nhật thông tin thành công!");
             } catch (error) {
                 console.error("Error updating user data:", error.response ? error.response.data : error.message);
-                setError("Failed to update user data. Please try again.");
-                setSuccess(null);
+                notifyError(error.response?.data?.message || "Không thể cập nhật thông tin. Vui lòng thử lại.");
             }
         }
     };
@@ -143,17 +128,8 @@ const Profile = () => {
     return (
         <>
             <Header />
+            <Notification />
             <div className="bg-slate-100 p-20">
-                {error && (
-                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative text-center mb-4" role="alert">
-                        <span className="block sm:inline">{error}</span>
-                    </div>
-                )}
-                {success && (
-                    <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative text-center mb-4" role="alert">
-                        <span className="block sm:inline">{success}</span>
-                    </div>
-                )}
                 <div className="flex max-w-6xl mx-auto">
                     <div className="w-1/4 bg-white shadow-md rounded-lg p-5">
                         <div className="text-center mb-5">

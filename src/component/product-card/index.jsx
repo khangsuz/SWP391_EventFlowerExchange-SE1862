@@ -7,6 +7,7 @@ import { getFullImageUrl } from '../../utils/imageHelpers';
 import { Notification, notifySuccess, notifyError } from "../../component/alert";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStar, faStarHalfAlt, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { styleText } from "util";
 
 function ProductCard({ flower }) {
   const navigate = useNavigate();
@@ -158,7 +159,8 @@ function ProductCard({ flower }) {
     if (timeRemaining > 0) {
         const hours = Math.floor(timeRemaining / (1000 * 60 * 60));
         const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
-        return `${hours}h ${minutes}m còn lại`;
+        const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+        return `Hết hạn sau: ${hours}h ${minutes}m ${seconds}s`;
     }
 
     return 'Hết hạn';
@@ -191,7 +193,7 @@ function ProductCard({ flower }) {
           {flower.flowerName} ({flower.quantity})
         </p>
         <p className="price text-center text-red-500 font-bold">
-        {flower.price > 0 ? Number(flower.price).toLocaleString() + '₫' : '???đ'}
+        {flower.price > 0 ? Number(flower.price).toLocaleString() + '₫' : '?????'}
         </p>
         <div className="rating justify-center items-center space-x-1 mt-2">
           {[...Array(fullStars)].map((_, index) => (
@@ -225,7 +227,7 @@ function ProductCard({ flower }) {
               )}
             </>
           ) : (
-            <p className="text-gray-500 mt-5">Liên hệ người bán</p>
+            <p className="text-gray-500 mt-5 text-red-500 font-bold">Vui lòng liên hệ người bán</p>
           )}
         </div>
       </div>

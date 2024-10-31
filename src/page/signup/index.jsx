@@ -1,44 +1,94 @@
-import { Button, Form, Input, message, Alert } from "antd";
-import React, { useState } from 'react';
+import { Button, Form, Input, Alert, Modal } from "antd";
+import React, { useState, useEffect } from 'react';
 import "../../index.css";
 import Header from "../../component/header";
 import api from "../../config/axios";
 import { Link, useNavigate } from "react-router-dom";
 import Footer from "../../component/footer";
+import { Notification, notifyError, notifySuccess } from "../../component/alert";
 
 const SignUp = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [error, setError] = useState(null);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [registrationData, setRegistrationData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+
+  useEffect(() => {
+    let timer;
+    if (isVerifying && countdown > 0) {
+      timer = setInterval(() => {
+        setCountdown(c => c - 1);
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [isVerifying, countdown]);
 
   const handleSignUp = async (values) => {
-    console.log("Form values:", values);
+    setIsLoading(true);
     setError(null);
 
     try {
-      const response = await api.post("Users/register", values);
-      navigate("/login");
+      const response = await api.post("Users/register", {
+        name: values.name,
+        email: values.email,
+        password: values.password,
+        fullName: values.fullName,
+        phone: values.phone
+      });
+
+      if (response.data.requireVerification) {
+        setRegistrationData(values);
+        setIsVerifying(true);
+        setCountdown(60);
+        notifySuccess("Thông báo", "Mã xác thực đã được gửi đến email của bạn");
+      }
     } catch (err) {
       console.error("Registration error:", err.response?.data);
-      console.error("Registration error:", err.response?.data);
-      if (err.response && err.response.data) {
-        if (typeof err.response.data === 'string') {
-          setError(err.response.data);
+      
+      if (err.response?.data) {
+        if (Array.isArray(err.response.data)) {
+          notifyError("Lỗi", err.response.data[0]?.description || "Đã xảy ra lỗi trong quá trình đăng ký");
+        } else if (typeof err.response.data === 'string') {
+          notifyError("Lỗi", err.response.data);
         } else if (err.response.data.errors) {
-          const errorFields = err.response.data.errors.map(error => ({
-            name: error.field,
-            errors: error.errors,
-          }));
-          form.setFields(errorFields);
-          setError("Please correct the errors in the form.");
+          const firstError = Object.values(err.response.data.errors)[0];
+          notifyError("Lỗi", Array.isArray(firstError) ? firstError[0] : "Vui lòng kiểm tra lại thông tin");
         } else if (err.response.data.message) {
-          setError(err.response.data.message);
+          notifyError("Lỗi", err.response.data.message);
         } else {
-          setError("An error occurred during registration.");
+          notifyError("Lỗi", "Đã xảy ra lỗi trong quá trình đăng ký");
         }
       } else {
-        setError("An error occurred. Please try again.");
+        notifyError("Lỗi kết nối", "Không thể kết nối đến server. Vui lòng thử lại sau");
       }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerification = async () => {
+    try {
+      const response = await api.post("Users/verify-email", {
+        email: registrationData.email,
+        code: verificationCode,
+        registrationData: {
+          name: registrationData.name,
+          email: registrationData.email,
+          password: registrationData.password,
+          fullName: registrationData.fullName,
+          phone: registrationData.phone
+        }
+      });
+
+      notifySuccess("Thành công", "Đăng ký tài khoản thành công!");
+      navigate("/login");
+    } catch (err) {
+      console.error("Verification error:", err);
+      notifyError("Lỗi", err.response?.data?.message || "Mã xác thực không đúng");
     }
   };
 
@@ -53,25 +103,36 @@ const SignUp = () => {
           />
         </div>
 
-        <div className="login__form">
+        <div className="signup__form">
           <div className="form-wrapper">
             {error && (
               <Alert
-                message="Registration Error"
-                description={error}
+                message={
+                  <div className="font-semibold">Thông báo</div>
+                }
+                description={
+                  <ul className="list-disc pl-4">
+                    {Array.isArray(error) ? (
+                      error.map((err, index) => (
+                        <li key={index} className="text-red-600">{err}</li>
+                      ))
+                    ) : (
+                      <li className="text-red-600">{error}</li>
+                    )}
+                  </ul>
+                }
                 type="error"
                 showIcon
                 closable
                 onClose={() => setError(null)}
-                style={{ marginBottom: 16 }}
+                className="mb-4 shadow-sm"
               />
             )}
+            
             <Form
               form={form}
               className="form"
-              labelCol={{
-                span: 24,
-              }}
+              labelCol={{ span: 24 }}
               onFinish={handleSignUp}
             >
               <h2 className="text-3xl font-bold mb-6 mt-6 text-center text-gray-800">
@@ -91,6 +152,22 @@ const SignUp = () => {
                     min: 4,
                     message: "Tài khoản phải ít nhất 4 kí tự!",
                   },
+                  {
+                    max: 20,
+                    message: "Tài khoản không được vượt quá 20 kí tự!",
+                  },
+                  {
+                    pattern: /^[a-zA-Z0-9_]+$/,
+                    message: "Tài không hợp lệ!",
+                  },
+                  {
+                    pattern: /^(?![0-9])/,
+                    message: "Tài khoản không được bắt đầu bằng số!",
+                  },
+                  {
+                    whitespace: true,
+                    message: "Tài khoản không được chứa khoảng trắng!",
+                  }
                 ]}
               >
                 <Input type="text" placeholder="username" />
@@ -138,8 +215,8 @@ const SignUp = () => {
                     message: "Vui lòng nhập số điện thoại!",
                   },
                   {
-                    pattern: /^\d{10}$/,
-                    message: "Số điện thoại phải có 10 chữ số!",
+                    pattern: /^(03|05|07|08|09)\d{8}$/,
+                    message: "Số điện thoại chưa hợp lệ!",
                   },
                 ]}
               >
@@ -191,8 +268,10 @@ const SignUp = () => {
                   className="w-full bg-blue-500 text-white p-3 rounded-md font-semibold hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-300 ease-in-out transform hover:scale-105 mt-2"
                   type="primary"
                   htmlType="submit"
+                  loading={isLoading}
+                  disabled={isLoading}
                 >
-                  Đăng ký
+                  {isLoading ? 'Đang xử lý...' : 'Đăng ký'}
                 </Button>
               </Form.Item>
               <p className="mt-4 text-center text-sm text-gray-600">
@@ -208,6 +287,23 @@ const SignUp = () => {
           </div>
         </div>
       </div>
+
+      <Modal
+        title="Xác thực email"
+        open={isVerifying}
+        onOk={handleVerification}
+        onCancel={() => setIsVerifying(false)}
+        okText="Xác nhận"
+        cancelText="Hủy"
+      >
+        <Input
+          placeholder="Nhập mã xác thực"
+          value={verificationCode}
+          onChange={(e) => setVerificationCode(e.target.value)}
+          style={{ marginTop: 16 }}
+        />
+      </Modal>
+
       <Footer />
     </>
   );

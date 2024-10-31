@@ -92,6 +92,7 @@ const ChatBox = ({ conversationId }) => {
   const [isSeller, setIsSeller] = useState(false);
   const [isConversationSeller, setIsConversationSeller] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedFlower, setSelectedFlower] = useState(null);
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -216,7 +217,7 @@ const ChatBox = ({ conversationId }) => {
 
         newConnection.onclose((error) => {
           console.error('Connection closed:', error);
-          setError("Kết nối đã bị đóng. Vui lòng tải lại trang.");
+          setError("Kết nối đã bị ng. Vui lòng tải lại trang.");
         });
 
         await newConnection.start();
@@ -297,7 +298,7 @@ const ChatBox = ({ conversationId }) => {
   const sendMessage = async () => {
     if (!connection) {
       console.error("No SignalR connection");
-      alert('Không có kết nối, vui lòng tải lại trang');
+      alert('Không có kết ni, vui lòng tải lại trang');
       return;
     }
 
@@ -388,7 +389,7 @@ const ChatBox = ({ conversationId }) => {
     if (error.response) {
       switch (error.response.status) {
         case 401:
-          setError("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+          setError("Phiên đăng nhập ã hết hạn. Vui lòng đăng nhập lại.");
           break;
         case 403:
           setError("Bạn không có quyền thc hiện hành động này.");
@@ -484,13 +485,13 @@ const ChatBox = ({ conversationId }) => {
             {senderName || 'Unknown User'}
           </span>
 
-          {/* Hiển thị ảnh riêng nếu có */}
+          {/* Hin th ảnh riêng nếu có */}
           {msg.imageUrl && (
             <div className="relative mb-1">
               <img
                 src={msg.imageUrl}
                 alt="Chat"
-                className="max-w-[300px] rounded-lg cursor-pointer hover:opacity-90 transition-opacity border-2 border-gray-900 shadow" // Tăng độ dày viền và thêm shadow
+                className="max-w-[300px] rounded-lg cursor-pointer hover:opacity-90 transition-opacity border-2 border-gray-900 shadow" // Tăng ộ dày viền và thêm shadow
                 onClick={() => window.open(msg.imageUrl, '_blank')}
                 onError={(e) => {
                   console.error("Image load error:", msg.imageUrl);
@@ -500,7 +501,7 @@ const ChatBox = ({ conversationId }) => {
             </div>
           )}
 
-          {/* Hiển thị text riêng nếu có */}
+          {/* Hin th text riêng nếu có */}
           {msg.messageContent && (
             <div className={`
               break-words rounded-2xl px-4 py-2 shadow-sm
@@ -542,73 +543,85 @@ const ChatBox = ({ conversationId }) => {
     checkSellerStatus();
   }, [sellerInfo]);
 
-  const handleCreateOrder = async (formData) => {
+  const handleCreateOrder = async (payload) => {
     try {
-        const token = localStorage.getItem("token");
-        console.log('Starting create order with data:', formData);
-        
-        const response = await api.post(
-            'Orders/create-custom-order',
-            formData,
-            {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'multipart/form-data',
-                }
-            }
-        );
+      const token = localStorage.getItem("token");
+      
+      if (!payload.quantity || payload.quantity < 1) {
+        antMessage.error('Số lượng không hợp lệ');
+        return false;
+      }
 
-        if (response.data.success) {
-            const cartData = {
-                FlowerId: parseInt(response.data.data.flowerId),
-                Quantity: parseInt(formData.get('Quantity')),
-                Price: parseFloat(formData.get('Price')),
-                IsCustomOrder: true,
-                BuyerId: buyerInfo.buyerId
-            };
+      const finalPayload = {
+        flowerId: payload.flowerId,
+        quantity: Math.floor(Number(payload.quantity)),
+        price: Math.floor(Number(payload.price)),
+        buyerId: payload.buyerId,
+        isCustomOrder: true
+      };
 
-            try {
-                const cartResponse = await api.post(
-                    'Cart/add-item',
-                    cartData,
-                    {
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json',
-                        }
-                    }
-                );
-                if (cartResponse.data.success) {
-                    antMessage.success('Đã thêm vào gi hàng của người mua thành công');
-                    setIsModalOpen(false);
-                }
-            } catch (cartError) {
-                console.error('Error adding to cart:', cartError);
-                antMessage.warning('Đã tạo sản phẩm nhưng chưa thêm được vào giỏ hàng');
-            }
+      console.log('Adding custom order to cart:', finalPayload);
+      
+      // Sử dụng Cart API endpoint
+      const response = await api.post(
+        'Cart/add-item',
+        finalPayload,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          }
         }
+      );
+
+      if (response.data.success) {
+        antMessage.success('Đã thêm vào giỏ hàng của người mua');
+        setIsModalOpen(false);
+        return true;
+      } else {
+        antMessage.error(response.data.message || 'Không thể thêm vào giỏ hàng');
+        return false;
+      }
     } catch (error) {
-        console.error('Error creating custom order:', error);
-        antMessage.error('Không thể tạo đơn hàng');
+      console.error('Error adding to cart:', error);
+      if (error.response?.data?.message) {
+        antMessage.error(error.response.data.message);
+      } else {
+        antMessage.error('Không thể thêm vào giỏ hàng');
+      }
+      return false;
     }
-};
+  };
 
-  const sendMessageViaApi = async (content) => {
-    const token = localStorage.getItem("token");
-    await api.post(
+  // Sửa lại hàm sendMessageViaApi
+  const sendMessageViaApi = async (content, conversationId) => {
+    if (!conversationId) {
+      console.error('ConversationId is missing');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      
+      // Tạo FormData
+      const formData = new FormData();
+      formData.append('conversationId', conversationId.toString());
+      formData.append('messageContent', content);
+      
+      await api.post(
         'Chat/send',
+        formData,
         {
-            conversationId: conversationId,
-            content: content
-        },
-        {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            }
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          }
         }
-    );
-};
+      );
+    } catch (error) {
+      console.error('Error sending message:', error);
+      antMessage.warning('Đã tạo đơn hàng thành công nhưng không thể gửi tin nhắn thông báo');
+    }
+  };
 
   console.log({
     isSeller,
@@ -623,10 +636,25 @@ const ChatBox = ({ conversationId }) => {
     console.log('Modal state changed:', isModalOpen);
   }, [isModalOpen]);
 
-  const handleOpenModal = () => {
-    console.log('Opening modal');
+  const handleOpenModal = (flower) => {
+    if (!buyerInfo?.buyerId || !sellerInfo?.seller?.userId) {
+      antMessage.error('Thiếu thông tin người mua hoặc người bán');
+      return;
+    }
+    setSelectedFlower(flower);
     setIsModalOpen(true);
   };
+
+  useEffect(() => {
+    if (buyerInfo || sellerInfo || selectedFlower) {
+      console.log('Current values:', {
+        buyerId: buyerInfo?.buyerId,
+        sellerId: sellerInfo?.seller?.userId,
+        flowerId: selectedFlower?.flowerId,
+        flowerName: selectedFlower?.flowerName
+      });
+    }
+  }, [buyerInfo, sellerInfo, selectedFlower]);
 
   if (error) {
     return (
@@ -755,6 +783,8 @@ const ChatBox = ({ conversationId }) => {
           onSubmit={handleCreateOrder}
           buyerId={buyerInfo?.buyerId}
           sellerId={sellerInfo?.seller?.userId}
+          flowerId={selectedFlower?.flowerId}
+          flowerName={selectedFlower?.flowerName || 'Không xác định'}
         />
       </div>
     </div>

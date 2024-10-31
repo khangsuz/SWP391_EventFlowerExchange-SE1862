@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import UserAvatar from '../user/UserAvatar';
 import { Loader2 } from 'lucide-react';
+import { format, parseISO, isToday } from 'date-fns';
+import { vi } from 'date-fns/locale';
 
 const ConversationList = ({ activeConversationId, onConversationSelect }) => {
   const [conversations, setConversations] = useState([]);
@@ -32,6 +34,21 @@ const ConversationList = ({ activeConversationId, onConversationSelect }) => {
   useEffect(() => {
     loadConversations();
   }, [loadConversations]); // Bỏ activeConversationId ra khỏi dependencies
+
+  const formatMessageTime = (dateString) => {
+    try {
+      const date = parseISO(dateString);
+      
+      if (isToday(date)) {
+        return format(date, 'HH:mm', { locale: vi });
+      }
+      
+      return format(date, 'dd/MM/yyyy', { locale: vi });
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Không xác định';
+    }
+  };
 
   if (loading) {
     return (
@@ -75,9 +92,9 @@ const ConversationList = ({ activeConversationId, onConversationSelect }) => {
           >
             <UserAvatar
               userId={otherUser.userId}
-              userName={otherUser.name}
+              userName={otherUser.fullName}
               size="medium"
-              className="mr-3"
+              className="flex-shrink-0 mr-3"
             />
             <div className="flex-1 min-w-0">
               <div className="flex justify-between items-baseline">
@@ -85,21 +102,23 @@ const ConversationList = ({ activeConversationId, onConversationSelect }) => {
                   {otherUser.fullName}
                 </h3>
                 {conv.lastMessage && (
-                  <span className="text-xs text-gray-500">
-                    {new Date(conv.lastMessage.sendTime).toLocaleTimeString()}
+                  <span className="text-xs text-gray-500 flex-shrink-0 ml-2">
+                    {formatMessageTime(conv.lastMessage.sendTime)}
                   </span>
                 )}
               </div>
-              {conv.lastMessage && (
-                <p className="text-sm text-gray-500 truncate">
-                  {conv.lastMessage.messageContent}
-                </p>
-              )}
-              {conv.lastMessage?.isCustomOrder && (
-                <span className="custom-order-badge ml-2">
-                  Đơn hàng tùy chỉnh
-                </span>
-              )}
+              <div className="flex items-center gap-2">
+                {conv.lastMessage && (
+                  <p className="text-sm text-gray-500 truncate">
+                    {conv.lastMessage.messageContent}
+                  </p>
+                )}
+                {conv.lastMessage?.isCustomOrder && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 flex-shrink-0">
+                    Đơn hàng tùy chỉnh
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         );
