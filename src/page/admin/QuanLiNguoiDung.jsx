@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Table, Spin, Button, Modal, Input, Select, Card, Space, Typography, Tag, message, Tooltip, Row, Col, Statistic } from 'antd';
 import { UserOutlined, EditOutlined, DeleteOutlined, SearchOutlined, ReloadOutlined, ExclamationCircleOutlined, UserSwitchOutlined, MailOutlined, PhoneOutlined, HomeOutlined, LockOutlined, ShopOutlined } from '@ant-design/icons';
-import axios from "axios";
+import api from "../../config/axios";
 
 const { Title, Text } = Typography;
 const { Column } = Table;
@@ -31,12 +31,13 @@ const QuanLiNguoiDung = () => {
   const fetchUsers = async () => {
     const token = localStorage.getItem("token");
     try {
-      const response = await axios.get('https://localhost:7288/api/admin/users', {
+      const response = await api.get('admin/users', {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUsers(response.data);
     } catch (error) {
       setError("Lỗi khi tải dữ liệu người dùng.");
+      message.error('Không thể tải dữ liệu người dùng');
     } finally {
       setLoading(false);
     }
@@ -54,7 +55,7 @@ const QuanLiNguoiDung = () => {
       cancelText: 'Hủy',
       async onOk() {
         try {
-          const response = await axios.delete(`https://localhost:7288/api/admin/users/${userId}`, {
+          const response = await api.delete(`admin/users/${userId}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           
@@ -118,17 +119,19 @@ const QuanLiNguoiDung = () => {
     };
 
     try {
-      await axios.put(`https://localhost:7288/api/admin/users/${currentUser.userId}`, userToUpdate, {
+      await api.put(`admin/users/${currentUser.userId}`, userToUpdate, {
         headers: { Authorization: `Bearer ${token}` },
       });
       // Cập nhật danh sách người dùng sau khi thay đổi
       setUsers(users.map(user => user.userId === currentUser.userId ? { ...user, ...userToUpdate } : user));
       setIsModalVisible(false);
+      message.success('Cập nhật thông tin người dùng thành công');
     } catch (error) {
       if (error.response) {
         console.log("Error data:", error.response.data);
       }
       setError("Lỗi khi cập nhật thông tin người dùng.");
+      message.error('Không thể cập nhật thông tin người dùng');
     }
   };
 
@@ -165,8 +168,8 @@ const QuanLiNguoiDung = () => {
   );
 
   return (
-    <div className="admin-users" style={{ padding: '24px' }}>
-      <Card className="page-header">
+    <div className="p-6">
+      <Card className="bg-white mb-4 rounded-lg shadow-sm">
         <Title level={2}>
           <Space>
             <UserOutlined />
@@ -175,9 +178,9 @@ const QuanLiNguoiDung = () => {
         </Title>
       </Card>
 
-      <Row gutter={16} style={{ marginTop: '16px' }}>
+      <Row gutter={16} className="mt-4">
         <Col span={8}>
-          <Card hoverable>
+          <Card hoverable className="rounded-lg shadow-sm">
             <Statistic
               title="Tổng số người dùng"
               value={users.length}
@@ -186,7 +189,7 @@ const QuanLiNguoiDung = () => {
           </Card>
         </Col>
         <Col span={8}>
-          <Card hoverable>
+          <Card hoverable className="rounded-lg shadow-sm">
             <Statistic
               title="Người bán"
               value={users.filter(u => u.userType === 'Seller').length}
@@ -195,7 +198,7 @@ const QuanLiNguoiDung = () => {
           </Card>
         </Col>
         <Col span={8}>
-          <Card hoverable>
+          <Card hoverable className="rounded-lg shadow-sm">
             <Statistic
               title="Người mua"
               value={users.filter(u => u.userType === 'Buyer').length}
@@ -205,11 +208,11 @@ const QuanLiNguoiDung = () => {
         </Col>
       </Row>
 
-      <Card style={{ marginTop: '16px' }}>
-        <Space style={{ marginBottom: '16px' }}>
+      <Card className="mt-4 rounded-lg shadow-sm">
+        <Space className="mb-4">
           <Search
             placeholder="Tìm kiếm người dùng..."
-            style={{ width: 300 }}
+            className="w-[300px]"
             allowClear
             prefix={<SearchOutlined />}
           />
@@ -224,6 +227,7 @@ const QuanLiNguoiDung = () => {
         <Table 
           dataSource={users} 
           rowKey="userId"
+          className="[&_.ant-table-thead>tr>th]:bg-gray-50 [&_.ant-table-thead>tr>th]:font-semibold"
           scroll={{ x: 1200 }}
           pagination={{
             pageSize: 10,
@@ -236,6 +240,7 @@ const QuanLiNguoiDung = () => {
             title="Tên người dùng" 
             dataIndex="name" 
             key="name"
+            width={180}
             render={(text) => (
               <Space>
                 <UserOutlined />
@@ -247,6 +252,7 @@ const QuanLiNguoiDung = () => {
             title="Email" 
             dataIndex="email" 
             key="email"
+            width={250}
             render={(text) => (
               <Space>
                 <MailOutlined />
@@ -258,6 +264,7 @@ const QuanLiNguoiDung = () => {
             title="Vai trò" 
             dataIndex="userType" 
             key="userType"
+            width={100}
             render={(text) => getUserTypeTag(text)}
             filters={[
               { text: 'Admin', value: 'Admin' },
@@ -270,6 +277,7 @@ const QuanLiNguoiDung = () => {
             title="Số điện thoại" 
             dataIndex="phone" 
             key="phone"
+            width={120}
             render={(text) => (
               <Space>
                 <PhoneOutlined />
@@ -294,7 +302,8 @@ const QuanLiNguoiDung = () => {
           <Column 
             title="Ngày đăng ký" 
             dataIndex="registrationDate" 
-            key="registrationDate" 
+            key="registrationDate"
+            width={120}
             render={(date) => (
               <Tooltip title={new Date(date).toLocaleString('vi-VN')}>
                 {new Date(date).toLocaleDateString('vi-VN')}
@@ -363,8 +372,9 @@ const QuanLiNguoiDung = () => {
           <Input
             prefix={<HomeOutlined />}
             placeholder="Địa chỉ"
-            value={updatedUser.address}
+            value={updatedUser.address || "Chưa đăng ký địa chỉ"} 
             onChange={(e) => setUpdatedUser({ ...updatedUser, address: e.target.value })}
+            style={{ color: !updatedUser.address ? '#999' : 'inherit' }}
           />
           <Input.Password
             prefix={<LockOutlined />}
@@ -383,23 +393,6 @@ const QuanLiNguoiDung = () => {
           </Select>
         </Space>
       </Modal>
-
-      <style jsx>{`
-        .page-header {
-          background: #fff;
-          margin-bottom: 16px;
-          border-radius: 8px;
-          box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-        }
-        .ant-card {
-          border-radius: 8px;
-          box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-        }
-        .ant-table-thead > tr > th {
-          background: #fafafa;
-          font-weight: 600;
-        }
-      `}</style>
     </div>
   );
 };

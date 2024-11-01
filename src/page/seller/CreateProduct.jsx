@@ -155,9 +155,9 @@ const CreateProduct = () => {
       <div className="p-20">
         <button
           className="bg-blue-600 text-white font-bold py-2 px-6 rounded transition duration-300 ease-in-out transform hover:bg-blue-500 hover:scale-105 shadow-md hover:shadow-lg"
-          onClick={() => navigate(`/personal-product/${userId}`)}
+          onClick={() => navigate(`/manage-products/${userId}`)}
         >
-          <FaArrowLeft className="inline-block mr-2" /> Quay Về Cửa Hàng
+          <FaArrowLeft className="inline-block mr-2" /> Quay Lại
         </button>
         <div className="max-w-md mx-auto mt-10">
           <h2 className="text-2xl font-bold mb-5">Tạo Sản Phẩm Mới</h2>

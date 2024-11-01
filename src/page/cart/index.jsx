@@ -221,7 +221,7 @@ function Cart() {
                             <div className="lg:col-span-3">
                                 {Object.entries(groupedCartItems).map(([sellerFullName, items]) => (
                                     <div key={sellerFullName} className="mb-8 border-2 border-gray-200 rounded-3xl p-4">
-                                        <h3 className="font-manrope font-bold text-2xl text-indigo-500">
+                                        <h3 className="font-manrope ml-2 mb-2 font-bold text-2xl text-indigo-500">
                                             {sellerFullName}
                                         </h3>
                                         {items.map((item) => (
@@ -268,7 +268,8 @@ function Cart() {
                                                             <input
                                                                 type="text"
                                                                 value={item.quantity}
-                                                                readOnly
+                                                                onChange={(e) => updateQuantity(item.cartItemId, Math.max(1, parseInt(e.target.value) || 1))}
+                                                                onFocus={(e) => e.target.select()}
                                                                 className="border border-gray-200 rounded-full w-10 aspect-square outline-none text-gray-900 font-semibold text-sm py-1.5 px-3 bg-gray-100 text-center"
                                                             />
                                                             <button
@@ -296,7 +297,7 @@ function Cart() {
                                             {isCheckingOut ? 'Đang xử lý...' : `Thanh toán đơn hàng từ ${sellerFullName}`}
                                         </button>
                                         <div className="flex justify-between items-center mt-4">
-                                            <h5 className="text-gray-900 font-manrope font-semibold text-2xl">
+                                            <h5 className="text-gray-900 mt-2 ml-2 font-manrope font-semibold text-2xl">
                                                 Tổng đơn hàng
                                             </h5>
                                             <h6 className="font-manrope font-bold text-3xl text-indigo-600">
@@ -308,7 +309,7 @@ function Cart() {
                             </div>
     
                             <div className="lg:col-span-1">
-                                <div className="bg-white rounded-2xl shadow-sm p-6 sticky top-24">
+                                <div className="bg-white rounded-2xl border-2 p-6 sticky top-24 shadow-gray-400">
                                     <h3 className="text-lg font-semibold mb-4">Tổng đơn hàng</h3>
                                     <div className="space-y-3">
                                         {Object.entries(groupedCartItems).map(([sellerFullName, items]) => (
@@ -321,7 +322,7 @@ function Cart() {
                                                 </span>
                                             </div>
                                         ))}
-                                        <div className="border-t pt-3 mt-3">
+                                        <div className="border-t pt-3">
                                             <div className="flex justify-between text-lg font-semibold">
                                                 <span>Tổng cộng</span>
                                                 <span className="text-indigo-600">

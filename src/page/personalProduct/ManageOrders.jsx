@@ -5,8 +5,6 @@ import { Table, Tag, Typography, Space, Button, Modal, Form, Input, message, Sel
 import { EditOutlined, DeleteOutlined, HomeOutlined, CheckCircleOutlined, CheckOutlined } from '@ant-design/icons';
 import Header from "../../component/header";
 import Footer from "../../component/footer";
-import { Notification, notifySuccess, notifyError } from "../../component/alert";
-
 
 const { Title } = Typography;
 const { Option } = Select;

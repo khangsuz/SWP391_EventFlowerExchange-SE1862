@@ -7,6 +7,7 @@ import { useCart } from "../../contexts/CartContext";
 import ProductCard from "../../component/product-card";
 import UserAvatar from "../user/UserAvatar";
 import ChatButton from "../../component/chatButton";
+import { Notification, notifySuccess, notifyError } from "../../component/alert";
 
 const PersonalProduct = () => {
   const navigate = useNavigate();
@@ -34,7 +35,7 @@ const PersonalProduct = () => {
       setSellerProducts(response.data);
     } catch (err) {
       console.error("Error fetching seller products:", err);
-      setSellerProducts([]); // Set empty array if error
+      setSellerProducts([]);
     }
   };
 
@@ -151,6 +152,7 @@ const PersonalProduct = () => {
 
   return (
     <>
+    <Notification />
       <Header />
       <div className="container mx-auto py-24">
         {sellerProfile && (
