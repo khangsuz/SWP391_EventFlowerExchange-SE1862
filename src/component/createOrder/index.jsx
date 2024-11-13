@@ -82,7 +82,7 @@ const CreateOrderForm = ({ open, onClose, onSubmit, buyerId }) => {
               form.resetFields();
               setSelectedFlower(null);
               onClose();
-              antMessage.success('Đã tạo đơn hàng thành công');
+              
             }
           } catch (error) {
             console.error('Submit error:', error);

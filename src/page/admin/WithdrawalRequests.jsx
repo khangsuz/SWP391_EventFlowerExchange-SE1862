@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { Table, Spin, message, Button, Input, Space, Tag, Card, Tooltip, DatePicker, Row, Col, Typography, Statistic } from "antd";
+import { Table, message, Button, Input, Space, Tag, Card, Tooltip, Row, Col, Typography, Statistic } from "antd";
 import { 
   MoneyCollectOutlined,
   SearchOutlined,
-  ReloadOutlined,
   ClockCircleOutlined,
   CheckCircleOutlined,
-  CloseCircleOutlined
+  ReloadOutlined,
 } from '@ant-design/icons';
 import axios from "axios";
 
@@ -18,16 +17,16 @@ const WithdrawalRequests = () => {
   const [error, setError] = useState(null);
   const [searchText, setSearchText] = useState('');
   const [filteredData, setFilteredData] = useState([]);
-  const [dateRange, setDateRange] = useState([]);
-  const { RangePicker } = DatePicker;
+ 
 
   // Thêm function search
   const handleSearch = (value) => {
     setSearchText(value);
     const filtered = withdrawalRequests.filter(item => 
-      item.fullName.toLowerCase().includes(value.toLowerCase()) ||
-      item.phone.includes(value) ||
-      item.accountNumber.includes(value)
+      item.sellerName?.toLowerCase().includes(value.toLowerCase()) ||
+      item.fullName?.toLowerCase().includes(value.toLowerCase()) ||
+      item.accountNumber?.includes(value) ||
+      item.phone?.includes(value)
     );
     setFilteredData(filtered);
   };
@@ -39,20 +38,7 @@ const WithdrawalRequests = () => {
     fetchWithdrawalRequests(token);
   };
 
-  // Thêm function filter by date
-  const handleDateRangeChange = (dates) => {
-    setDateRange(dates);
-    if (!dates) {
-      setFilteredData(withdrawalRequests);
-      return;
-    }
-    const [start, end] = dates;
-    const filtered = withdrawalRequests.filter(item => {
-      const requestDate = new Date(item.requestDate);
-      return requestDate >= start && requestDate <= end;
-    });
-    setFilteredData(filtered);
-  };
+  
 
   const getStatusTag = (status) => {
     const statusColors = {
@@ -76,7 +62,14 @@ const WithdrawalRequests = () => {
       fixed: 'left'
     },
     { 
-      title: 'Tên người dùng', 
+      title: 'Tên người bán', 
+      dataIndex: 'sellerName', 
+      key: 'sellerName',
+      width: 150,
+      sorter: (a, b) => a.sellerName.localeCompare(b.sellerName)
+    },
+    { 
+      title: 'Tên người dùng tài khoản', 
       dataIndex: 'fullName', 
       key: 'fullName',
       width: 150,
@@ -102,6 +95,8 @@ const WithdrawalRequests = () => {
       render: (value) => `${value.toLocaleString()} VNĐ`,
       sorter: (a, b) => a.currentBalance - b.currentBalance
     },
+    
+    
     { 
       title: 'Số tiền rút', 
       dataIndex: 'amount', 
@@ -109,17 +104,7 @@ const WithdrawalRequests = () => {
       width: 150,
       render: (value) => `${value.toLocaleString()} VNĐ`
     },
-    { 
-      title: 'Số tiền sau khi rút', 
-      dataIndex: 'balanceAfterWithdrawal', 
-      key: 'balanceAfterWithdrawal',
-      width: 150,
-      render: (value) => (
-        <span style={{ color: value >= 0 ? 'green' : 'red' }}>
-          {`${value.toLocaleString()} VNĐ`}
-        </span>
-      )
-    },
+    
     { 
       title: 'Ngày yêu cầu', 
       dataIndex: 'requestDate', 
@@ -192,6 +177,7 @@ const WithdrawalRequests = () => {
             return {
               ...request,
               currentBalance: balanceResponse.data.currentIncome || 0,
+              
               balanceAfterWithdrawal: (balanceResponse.data.currentIncome - request.amount) || 0
             };
           } catch (error) {
@@ -199,6 +185,7 @@ const WithdrawalRequests = () => {
             return {
               ...request,
               currentBalance: 0,
+              currentAtRequestBalance: 0,
               balanceAfterWithdrawal: 0
             };
           }
@@ -282,19 +269,14 @@ const WithdrawalRequests = () => {
         <Space direction="vertical" style={{ width: '100%' }} size="middle">
           {/* Search and Filter Section */}
           <Row gutter={16} align="middle">
-            <Col flex="300px">
+            <Col flex="400px">
               <Input.Search
-                placeholder="Tìm kiếm theo tên, SĐT, STK..."
+                placeholder="Tìm theo tên người bán, tên tài khoản, STK, SĐT..."
                 onSearch={handleSearch}
+                onChange={(e) => handleSearch(e.target.value)}
                 allowClear
                 prefix={<SearchOutlined />}
-              />
-            </Col>
-            <Col flex="auto">
-              <RangePicker 
-                onChange={handleDateRangeChange}
                 style={{ width: '100%' }}
-                placeholder={['Từ ngày', 'Đến ngày']}
               />
             </Col>
             <Col>

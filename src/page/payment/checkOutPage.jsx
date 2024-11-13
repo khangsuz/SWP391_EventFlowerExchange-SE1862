@@ -4,6 +4,8 @@ import Header from '../../component/header';
 import Footer from '../../component/footer';
 import api from '../../config/axios';
 import { useCart } from "../../contexts/CartContext";
+import { Modal } from 'antd';
+import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { Notification, notifySuccess, notifyError } from "../../component/alert";
 
 function CheckoutPage() {
@@ -207,111 +209,168 @@ function CheckoutPage() {
         return total >= 0 ? total : 0;
     };
 
-    // Trong CheckoutPage.js
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
-        if (isSubmitting) return;
-        
-        if (!window.confirm('Bạn có chắc chắn muốn đặt hàng?')) {
+
+        // Kiểm tra nếu đang xử lý thì không cho submit nữa
+        if (isSubmitting || isProcessing) {
             return;
         }
 
-        setIsSubmitting(true);
-        setIsButtonDisabled(true);
-        setIsProcessing(true);
-
-        const token = localStorage.getItem('token');
-        if (!token) {
-            notifyError('Vui lòng đăng nhập trước khi thanh toán');
-            navigate('/login');
-            setIsSubmitting(false);
-            setIsButtonDisabled(false);
-            setIsProcessing(false);
+        if (userInfo.fullName === '' || userInfo.phone === '' || userInfo.email === '' || userInfo.address === '' || selectedDistrict === '' || selectedWard === '') {
+            notifyError('Vui lòng nhập đầy đủ thông tin');
+            return;
+        }
+        
+        // Kiểm tra phương thức thanh toán
+        if (!paymentMethod) {
+            notifyError('Vui lòng chọn phương thức thanh toán');
             return;
         }
 
-        try {
-            // Group items by seller
-            const itemsBySeller = groupCartItemsBySeller(items);
-            
-            // Process each seller's items separately
-            for (const [sellerName, sellerItems] of Object.entries(itemsBySeller)) {
-                // Create order items array
-                const cartItemsToSend = sellerItems.map((item) => ({
-                    flowerId: item.flowerId,
-                    quantity: item.quantity,
-                    sellerId: item.sellerId
-                }));
+        // Kiểm tra địa chỉ
+        if (!selectedDistrict || !selectedWard || !userInfo.address) {
+            notifyError('Vui lòng nhập đầy đủ thông tin địa chỉ');
+            return;
+        }
 
-                // Create order
-                const checkoutResponse = await api.post(
-                    'Orders/checkout',
-                    cartItemsToSend,
-                    {
-                        params: {
-                            fullAddress: fullAddress,
-                            wardCode: selectedWard,
-                            wardName: selectedWardName,
-                            toDistrictId: parseInt(selectedDistrict, 10),
-                            note: note
-                        },
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        }
-                    }
-                );
+        // Hiển thị modal xác nhận
+        Modal.confirm({
+            title: 'Xác nhận đặt hàng',
+            icon: <ExclamationCircleOutlined />,
+            content: (
+                <div>
+                    <p>Bạn có chắc chắn muốn đặt đơn hàng này?</p>
+                    <div className="mt-4 p-3 bg-gray-50 rounded">
+                        <div className="mb-4">
+                            <span className="font-medium">Sản phẩm:</span>
+                            <div className="mt-2 space-y-2">
+                                {items.map((item, index) => (
+                                    <div key={index} className="flex justify-between items-center">
+                                        <div className="flex items-center">
+                                            {item.flowerName} x {item.quantity}
+                                        </div>
+                                        <span className="font-medium">
+                                            {(item.price * item.quantity).toLocaleString()}₫
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="flex justify-between mb-2">
+                            <span className='font-medium'>Phí giao hàng:</span>
+                            <span className="font-medium">{shippingFee.toLocaleString()}₫</span>
+                        </div>
+                        <div className="flex justify-between pt-2 border-t border-gray-200">
+                            <span className="font-bold">Tổng cộng:</span>
+                            <span className="font-bold text-red-600">{calculateTotal().toLocaleString()}₫</span>
+                        </div>
+                    </div>
+                </div>
+            ),
+            okText: 'Xác nhận',
+            cancelText: 'Hủy',
+            async onOk() {
+                try {
+                    // Đặt các flag để prevent double submit
+                    setIsSubmitting(true);
+                    setIsButtonDisabled(true);
+                    setIsProcessing(true);
 
-                if (checkoutResponse.data) {
-                    // Create payment
-                    const paymentResponse = await api.post(
-                        'Payments/createVnpPayment',
-                        {
-                            Amount: calculateSellerTotal(sellerItems)
-                        },
-                        {
-                            headers: {
-                                Authorization: `Bearer ${token}`,
-                                'Content-Type': 'application/json'
-                            }
-                        }
-                    );
-
-                    if (paymentResponse.data && paymentResponse.data.paymentUrl) {
-                        // Update cart
-                        const currentCart = JSON.parse(localStorage.getItem('cart') || '[]');
-                        const updatedCart = currentCart.filter(item => 
-                            !sellerItems.some(sellerItem => 
-                                sellerItem.flowerId === item.flowerId
-                            )
-                        );
-                        localStorage.setItem('cart', JSON.stringify(updatedCart));
-                        updateCartItemCount(updatedCart.length);
-                        
-                        // Store payment amount
-                        localStorage.setItem('paymentAmount', calculateSellerTotal(sellerItems));
-                        
-                        // Redirect to payment URL
-                        window.location.href = paymentResponse.data.paymentUrl;
+                    const token = localStorage.getItem('token');
+                    if (!token) {
+                        notifyError('Vui lòng đăng nhập trước khi thanh toán');
+                        navigate('/login');
                         return;
                     }
+
+                    // Group items by seller
+                    const itemsBySeller = groupCartItemsBySeller(items);
+
+                    // Process each seller's items separately
+                    for (const [sellerName, sellerItems] of Object.entries(itemsBySeller)) {
+                        const cartItemsToSend = sellerItems.map((item) => ({
+                            flowerId: item.flowerId,
+                            quantity: item.quantity,
+                            sellerId: item.sellerId
+                        }));
+
+                        // Create order
+                        const checkoutResponse = await api.post(
+                            'Orders/checkout',
+                            cartItemsToSend,
+                            {
+                                params: {
+                                    fullAddress: fullAddress,
+                                    wardCode: selectedWard,
+                                    wardName: selectedWardName,
+                                    toDistrictId: parseInt(selectedDistrict, 10),
+                                    note: note
+                                },
+                                headers: {
+                                    Authorization: `Bearer ${token}`,
+                                    'Content-Type': 'application/json'
+                                }
+                            }
+                        );
+
+                        if (checkoutResponse.data) {
+                            // Create payment
+                            const paymentResponse = await api.post(
+                                'Payments/createVnpPayment',
+                                {
+                                    Amount: calculateSellerTotal(sellerItems)
+                                },
+                                {
+                                    headers: {
+                                        Authorization: `Bearer ${token}`,
+                                        'Content-Type': 'application/json'
+                                    }
+                                }
+                            );
+
+                            if (paymentResponse.data && paymentResponse.data.paymentUrl) {
+                                // Update cart
+                                const currentCart = JSON.parse(localStorage.getItem('cart') || '[]');
+                                const updatedCart = currentCart.filter(item =>
+                                    !sellerItems.some(sellerItem =>
+                                        sellerItem.flowerId === item.flowerId
+                                    )
+                                );
+                                localStorage.setItem('cart', JSON.stringify(updatedCart));
+                                updateCartItemCount(updatedCart.length);
+
+                                // Store payment amount
+                                localStorage.setItem('paymentAmount', calculateSellerTotal(sellerItems));
+
+                                // Redirect to payment URL
+                                window.location.href = paymentResponse.data.paymentUrl;
+                                return;
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('Checkout error:', error);
+                    if (error.response?.data) {
+                        notifyError(`Lỗi: ${error.response.data}`);
+                    } else {
+                        notifyError('Đã xảy ra lỗi trong quá trình đặt hàng. Vui lòng thử lại.');
+                    }
+                } finally {
+                    setIsProcessing(false);
+                    setIsButtonDisabled(false);
+                    setIsSubmitting(false);
                 }
-            }
-        } catch (error) {
-            console.error('Checkout error:', error);
-            if (error.response?.data) {
-                notifyError(`Lỗi: ${error.response.data}`);
-            } else {
-                notifyError('Đã xảy ra lỗi trong quá trình đặt hàng. Vui lòng thử lại.');
-            }
-        } finally {
-            setIsProcessing(false);
-            setIsButtonDisabled(false);
-            setIsSubmitting(false);
-        }
+            },
+            onCancel() {
+                // Reset các state khi người dùng hủy
+                setIsProcessing(false);
+                setIsButtonDisabled(false);
+                setIsSubmitting(false);
+            },
+        });
     };
-    
+
     // Helper function to calculate total for a seller's items
     const calculateSellerTotal = (sellerItems) => {
         return sellerItems.reduce((total, item) => total + item.price * item.quantity, 0) + shippingFee;
@@ -380,7 +439,7 @@ function CheckoutPage() {
     const validateEmail = (email) => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
-      };
+    };
 
     return (
         <>
@@ -499,7 +558,7 @@ function CheckoutPage() {
                         <div className="flex justify-between border-t pt-2 mt-2">
                             <span >Tạm tính</span>
                             <span className="text-red-500 font-bold ">{tamtinh().toLocaleString()}₫</span>
-                            
+
                         </div>
                         <div className="flex justify-between mt-2">
                             <span>Phí giao hàng</span>
@@ -509,7 +568,7 @@ function CheckoutPage() {
                             <span>Tổng</span>
                             <span className="text-red-600 font-bold">{calculateTotal().toLocaleString()}₫</span>
                         </div>
-                        
+
                     </div>
                     <h3 className="text-xl font-bold mt-6 mb-4">Thanh toán</h3>
                     <div className="flex mb-4">
@@ -518,17 +577,16 @@ function CheckoutPage() {
                             name="paymentMethod"
                             value="VnPay"
                             onChange={(e) => setPaymentMethod(e.target.value)}
-                        /> 
+                        />
                         <label className="mt-5 ml-4">Thanh toán VnPay</label>
                         <img className="h-16 ml-auto" src="https://vinadesign.vn/uploads/images/2023/05/vnpay-logo-vinadesign-25-12-57-55.jpg" alt="VnPay" />
                     </div>
                     <button
                         onClick={handleSubmit}
-                        className={`w-full p-4 rounded ${
-                            isSubmitting || isProcessing || !paymentMethod
+                        className={`w-full p-4 rounded ${isSubmitting || isProcessing || !paymentMethod
                                 ? 'bg-gray-400 cursor-not-allowed'
                                 : 'bg-green-500 hover:bg-green-600'
-                        } text-white`}
+                            } text-white`}
                         disabled={isSubmitting || isProcessing || !paymentMethod}
                     >
                         {isProcessing ? 'Đang xử lý...' : isSubmitting ? 'Đã đặt hàng' : 'Đặt hàng'}

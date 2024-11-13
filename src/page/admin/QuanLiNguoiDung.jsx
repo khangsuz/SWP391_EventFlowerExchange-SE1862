@@ -23,6 +23,7 @@ const QuanLiNguoiDung = () => {
     userType: '',
     password: '',
   });
+  const [searchText, setSearchText] = useState('');
 
   useEffect(() => {
     fetchUsers();
@@ -145,6 +146,16 @@ const QuanLiNguoiDung = () => {
     );
   };
 
+  const filteredUsers = users.filter(user => {
+    const searchLower = searchText.toLowerCase();
+    return (
+      user.name?.toLowerCase().includes(searchLower) ||
+      user.email?.toLowerCase().includes(searchLower) ||
+      user.phone?.toLowerCase().includes(searchLower) ||
+      user.address?.toLowerCase().includes(searchLower)
+    );
+  });
+
   if (loading) return (
     <div style={{ textAlign: 'center', padding: '50px' }}>
       <Spin size="large" />
@@ -208,10 +219,12 @@ const QuanLiNguoiDung = () => {
       <Card style={{ marginTop: '16px' }}>
         <Space style={{ marginBottom: '16px' }}>
           <Search
-            placeholder="Tìm kiếm người dùng..."
+            placeholder="Tìm kiếm theo tên, email, SĐT hoặc địa chỉ..."
             style={{ width: 300 }}
             allowClear
             prefix={<SearchOutlined />}
+            value={searchText}
+            onChange={e => setSearchText(e.target.value)}
           />
           <Button 
             icon={<ReloadOutlined />}
@@ -222,7 +235,7 @@ const QuanLiNguoiDung = () => {
         </Space>
 
         <Table 
-          dataSource={users} 
+          dataSource={filteredUsers} 
           rowKey="userId"
           scroll={{ x: 1200 }}
           pagination={{

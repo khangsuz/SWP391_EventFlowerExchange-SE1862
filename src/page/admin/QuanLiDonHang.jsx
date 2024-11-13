@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Table, Spin, Button, Modal, Form, Select, message, Space, Tag, Card, Typography, Row, Col, Statistic, Input } from 'antd';
+import { Table, Spin, Button, Modal, Form, Select, message, Space, Tag, Card, Typography, Row, Col, Statistic, Input, Image } from 'antd';
 import { 
   EyeOutlined, 
   EditOutlined, 
@@ -25,6 +25,7 @@ const QuanLiDonHang = () => {
   const [isUpdateStatusModalVisible, setIsUpdateStatusModalVisible] = useState(false);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
   const [newStatus, setNewStatus] = useState("");
+  const [searchText, setSearchText] = useState('');
 
   useEffect(() => {
     fetchOrders();
@@ -149,7 +150,6 @@ const QuanLiDonHang = () => {
   const getDeliveryStatusColor = (status) => {
     const statusColors = {
       'ChờXửLý': 'default',
-      'ĐangXửLý': 'processing',
       'ĐãGửiHàng': 'warning',
       'ĐãGiaoHàng': 'success',
       'ĐãHủy': 'error'
@@ -161,6 +161,18 @@ const QuanLiDonHang = () => {
   const isOrderEditable = (status) => {
     return status !== 'Completed' && status !== 'Cancelled';
   };
+
+  const filteredOrders = orders.filter(order => {
+    const searchLower = searchText.toLowerCase();
+    const orderDate = formatDate(order.orderDate); // Sử dụng hàm formatDate đã có
+
+    return (
+      order.userName?.toLowerCase().includes(searchLower) ||
+      order.deliveryAddress?.toLowerCase().includes(searchLower) ||
+      order.wardName?.toLowerCase().includes(searchLower) ||
+      orderDate.toLowerCase().includes(searchLower)
+    );
+  });
 
   if (loading) return <Spin />;
   if (error) return <p style={{ color: 'red' }}>{error}</p>;
@@ -216,10 +228,12 @@ const QuanLiDonHang = () => {
         <Card style={{ marginTop: '16px', width: '100%' }}>
           <Space style={{ marginBottom: '16px', width: '100%', justifyContent: 'space-between' }}>
             <Search
-              placeholder="Tìm kiếm đơn hàng..."
+              placeholder="Tìm theo người mua, địa chỉ hoặc ngày đặt hàng..."
               allowClear
-              style={{ width: 300 }}
+              style={{ width: 400 }}
               prefix={<SearchOutlined />}
+              value={searchText}
+              onChange={e => setSearchText(e.target.value)}
             />
             <Button 
               icon={<ReloadOutlined />}
@@ -230,7 +244,7 @@ const QuanLiDonHang = () => {
           </Space>
 
           <Table
-            dataSource={orders}
+            dataSource={filteredOrders}
             rowKey="orderId"
             loading={loading}
             pagination={{
@@ -276,6 +290,18 @@ const QuanLiDonHang = () => {
                 </Tag>
               )}
             />
+            
+            <Column
+              title="Trạng thái giao hàng"
+              dataIndex="orderDelivery"
+              key="orderDelivery"
+              width={150}
+              render={(status) => (
+                <Tag color={getDeliveryStatusColor(status)}>
+                  {status}
+                </Tag>
+              )}
+            />
             <Column
               title="Địa chỉ giao hàng"
               key="address"
@@ -306,6 +332,29 @@ const QuanLiDonHang = () => {
               width={130}
               render={(amount) => formatCurrency(amount)}
             />
+            <Column
+              title="Ảnh giao hàng"
+              key="deliveryImage"
+              render={(_, record) => {
+                // Chỉ hiển thị ảnh khi đơn hàng đã giao
+                if (record.orderDelivery === "ĐãGiaoHàng" && record.deliveryImageUrl) {
+                  return (
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <Image
+                        src={`https://localhost:7288${record.deliveryImageUrl}`}
+                        alt="Ảnh giao hàng"
+                        width={100}
+                        preview={{
+                          maskClassName: 'customize-mask',
+                          mask: <div>Xem ảnh</div>
+                        }}
+                      />
+        </div>
+      );
+    }
+    return null;
+  }}
+/>
             <Column
               title="Hành động"
               key="action"

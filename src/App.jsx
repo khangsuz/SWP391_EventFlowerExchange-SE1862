@@ -32,7 +32,6 @@ import ManageRevenue from "./page/personalProduct/ManageRevenue";
 import ManageOrders from "./page/personalProduct/ManageOrders";
 import ChangePassword from "./page/user/ChangePassword";
 import OrderHistory from "./page/user/OrderHistory";
-import SellerOrderManagement from "./page/personalProduct/SellerOrderManagement";
 import AdminReviewManagement from "./page/admin/AdminReviewManagement";
 import DamCuoi from "./page/events/DamCuoi";
 import KhaiTruong from "./page/events/KhaiTruong";
@@ -142,10 +141,6 @@ const App = () => {
     {
       path: "/checkout",
       element: <CheckoutPage />
-    },
-    {
-      path: "/seller/:userId/orders",
-      element: <SellerOrderManagement />
     },
     {
       path: "chat",

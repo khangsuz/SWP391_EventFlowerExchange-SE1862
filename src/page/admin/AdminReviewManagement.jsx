@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Input, Card, Statistic, message, Tabs, Row, Col, Rate, Badge, Space, Tag, Typography, Button } from 'antd';
-import { StarOutlined, CommentOutlined, UserOutlined, ShopOutlined, FilterOutlined, ReloadOutlined } from '@ant-design/icons';
+import { Table, Input, Card, Statistic, message, Tabs, Row, Col, Rate, Badge, Space, Tag, Typography, Button, Dropdown, Menu } from 'antd';
+import { StarOutlined, CommentOutlined, UserOutlined, ShopOutlined, FilterOutlined, ReloadOutlined, DownOutlined } from '@ant-design/icons';
 import api from "../../config/axios";
 
 const { TabPane } = Tabs;
@@ -12,6 +12,7 @@ const AdminReviewManagement = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [stats, setStats] = useState({ averageRating: 0, totalReviews: 0 });
     const [loading, setLoading] = useState(false);
+    const [searchType, setSearchType] = useState('all');
   
     useEffect(() => {
       fetchReviews();
@@ -149,16 +150,46 @@ const AdminReviewManagement = () => {
             sorter: (a, b) => new Date(a.reviewDate) - new Date(b.reviewDate),
         },
     ];
+// hàm chuyển đổi tiếng Việt
+    const removeVietnameseTones = (str) => {
+      str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g,"a"); 
+      str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g,"e"); 
+      str = str.replace(/ì|í|ị|ỉ|ĩ/g,"i"); 
+      str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g,"o"); 
+      str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g,"u"); 
+      str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g,"y"); 
+      str = str.replace(/đ/g,"d");
+      return str;
+    }
 
     const handleSearch = (value) => {
         setSearchTerm(value);
         if (value) {
-            const filteredReviews = reviews.filter(review => 
-                review.reviewComment?.toLowerCase().includes(value.toLowerCase()) ||
-                review.userName?.toLowerCase().includes(value.toLowerCase()) ||
-                review.flowerName?.toLowerCase().includes(value.toLowerCase())
-            );
-            setReviews(filteredReviews);
+            const searchLower = value.toLowerCase();
+            const searchNoTone = removeVietnameseTones(searchLower);
+            
+            const filtered = reviews.filter(review => {
+                const userName = review.userName?.toLowerCase() || '';
+                const userNameNoTone = removeVietnameseTones(userName);
+                const flowerName = review.flowerName?.toLowerCase() || '';
+                const flowerNameNoTone = removeVietnameseTones(flowerName);
+                
+                switch(searchType) {
+                    case 'user':
+                        return userNameNoTone.includes(searchNoTone) || 
+                               userName.includes(searchLower);
+                    case 'flower':
+                        return flowerNameNoTone.includes(searchNoTone) || 
+                               flowerName.includes(searchLower);
+                    case 'all':
+                    default:
+                        return userNameNoTone.includes(searchNoTone) || 
+                               userName.includes(searchLower) ||
+                               flowerNameNoTone.includes(searchNoTone) || 
+                               flowerName.includes(searchLower);
+                }
+            });
+            setReviews(filtered);
         } else {
             fetchReviews();
         }
@@ -246,12 +277,35 @@ const AdminReviewManagement = () => {
 
             <Card style={{ marginTop: '16px' }}>
                 <Space style={{ marginBottom: '16px' }}>
+                    <Dropdown
+                        overlay={
+                            <Menu
+                                selectedKeys={[searchType]}
+                                onClick={({ key }) => setSearchType(key)}
+                            >
+                                <Menu.Item key="all">Tất cả</Menu.Item>
+                                <Menu.Item key="user">User</Menu.Item>
+                                <Menu.Item key="flower">Flower</Menu.Item>
+                            </Menu>
+                        }
+                    >
+                        <Button>
+                            <Space>
+                                <FilterOutlined />
+                                {searchType === 'user' ? 'User' : 
+                                 searchType === 'flower' ? 'Flower' : 
+                                 'Tất cả'}
+                                <DownOutlined />
+                            </Space>
+                        </Button>
+                    </Dropdown>
+
                     <Input.Search
                         placeholder="Tìm kiếm đánh giá..."
                         onSearch={handleSearch}
+                        onChange={(e) => handleSearch(e.target.value)}
                         style={{ width: 300 }}
                         allowClear
-                        prefix={<FilterOutlined />}
                     />
                     <Button 
                         icon={<ReloadOutlined />}

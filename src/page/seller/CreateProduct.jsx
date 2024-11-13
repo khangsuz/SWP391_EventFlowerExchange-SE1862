@@ -3,8 +3,8 @@ import api from "../../config/axios";
 import { useNavigate } from 'react-router-dom';
 import Header from '../../component/header';
 import Footer from '../../component/footer';
-import { FaArrowLeft, FaMoneyCheckAlt } from 'react-icons/fa';
-import { getFullImageUrl } from '../../utils/imageHelpers';
+import { Form, Input, InputNumber, Select, Upload, Button, message } from 'antd';
+import { UploadOutlined, ArrowLeftOutlined, DeleteOutlined } from '@ant-design/icons';
 
 const CreateProduct = () => {
   const [categories, setCategories] = useState([]);
@@ -12,15 +12,8 @@ const CreateProduct = () => {
   const [error, setError] = useState(null);
   const [imageFile, setImageFile] = useState();
   const navigate = useNavigate();
-  const [flower, setFlower] = useState({
-    FlowerName: '',
-    Price: 0,
-    Quantity: 0,
-    CategoryId: '',
-    Condition: '',
-  });
   const [userId, setUserId] = useState(null);
-
+  const [form] = Form.useForm();
   useEffect(() => {
     const fetchCategories = async () => {
       setLoading(true);
@@ -56,6 +49,13 @@ const CreateProduct = () => {
     };
   }, [imageFile]);
 
+  const normFile = (e) => {
+    if (Array.isArray(e)) {
+      return e;
+    }
+    return e?.fileList;
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === 'Price' || name === 'Quantity') {
@@ -72,30 +72,28 @@ const CreateProduct = () => {
     }
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
+  const handleImageChange = ({ file }) => {
     if (file) {
-      const previewUrl = URL.createObjectURL(file);
+      const previewUrl = URL.createObjectURL(file.originFileObj || file);
       setImageFile({
-        file,
+        file: file.originFileObj || file,
         preview: previewUrl
       });
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!flower.FlowerName || flower.Quantity <= 0 || !flower.CategoryId) {
-      alert('Vui lòng điền đầy đủ thông tin và giá trị hợp lệ.');
+  const handleSubmit = async (values) => {
+    if (!values.FlowerName || values.Quantity <= 0 || !values.CategoryId) {
+      message.error('Vui lòng điền đầy đủ thông tin và giá trị hợp lệ.');
       return;
     }
     try {
       const formData = new FormData();
-      formData.append('FlowerName', flower.FlowerName);
-      formData.append('Price', flower.Price.toString());
-      formData.append('Quantity', flower.Quantity.toString());
-      formData.append('Condition', flower.Condition.toString());
-      formData.append('CategoryId', flower.CategoryId.toString());
+      formData.append('FlowerName', values.FlowerName);
+      formData.append('Price', values.Price.toString());
+      formData.append('Quantity', values.Quantity.toString());
+      formData.append('Condition', values.Condition.toString());
+      formData.append('CategoryId', values.CategoryId.toString());
       if (imageFile) {
         formData.append('image', imageFile.file);
       }
@@ -107,9 +105,6 @@ const CreateProduct = () => {
       });
 
       const newFlower = response.data;
-      console.log("Sản phẩm mới:", newFlower);
-
-      // Tạo thông báo mới
       try {
         const userString = localStorage.getItem('user');
         if (!userString) {
@@ -126,25 +121,21 @@ const CreateProduct = () => {
           IsRead: false,
           SellerId: currentUser.userId
         });
-        console.log("Thông báo đã được tạo thành công");
+        message.success('Thông báo đã được tạo thành công');
       } catch (notificationError) {
         console.error("Lỗi khi tạo thông báo:", notificationError.message);
       }
 
-
-      alert('Sản phẩm đã được tạo thành công!');
-      navigate(`/manage-products/${userId}`); // Sử dụng userId đã lưu để điều hướng
+      message.success('Đã tạo sản phẩm thành công');
+      navigate(`/manage-products/${userId}`);
     } catch (error) {
       console.error('Error creating product:', error);
       if (error.response) {
-        console.error('Error data:', error.response.data);
-        console.error('Error status:', error.response.status);
-        console.error('Error headers:', error.response.headers);
-        alert(`Lỗi: ${error.response.status} - ${JSON.stringify(error.response.data)}`);
+        message.error(`Lỗi: ${error.response.status} - ${JSON.stringify(error.response.data)}`);
       } else if (error.request) {
-        alert('Không nhận được phản hồi từ server. Vui lòng thử lại sau.');
+        message.error('Không nhận được phản hồi từ server. Vui lòng thử lại sau.');
       } else {
-        alert('Có lỗi xảy ra khi tạo sản phẩm: ' + error.message);
+        message.error('Có lỗi xảy ra khi tạo sản phẩm: ' + error.message);
       }
     }
   };
@@ -152,124 +143,188 @@ const CreateProduct = () => {
   return (
     <>
       <Header />
-      <div className="p-20">
-        <button
-          className="bg-blue-600 text-white font-bold py-2 px-6 rounded transition duration-300 ease-in-out transform hover:bg-blue-500 hover:scale-105 shadow-md hover:shadow-lg"
-          onClick={() => navigate(`/personal-product/${userId}`)}
-        >
-          <FaArrowLeft className="inline-block mr-2" /> Quay Về Cửa Hàng
-        </button>
-        <div className="max-w-md mx-auto mt-10">
-          <h2 className="text-2xl font-bold mb-5">Tạo Sản Phẩm Mới</h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block mb-1">Tên Hoa:</label>
-              <input
-                type="text"
-                name="FlowerName"
-                value={flower.FlowerName}
-                onChange={handleChange}
-                className="w-full border rounded px-3 py-2"
-                required
-              />
-            </div>
-            <div>
-              <label className="block mb-1">Giá:</label>
-              <input
-                type="number"
-                name="Price"
-                value={flower.Price}
-                onChange={handleChange}
-                className="w-full border rounded px-3 py-2"
-                required
-                min="0"
-                step="0.01"
-              />
-            </div>
-            <div>
-              <label className="block mb-1">Số lượng:</label>
-              <input
-                type="number"
-                name="Quantity"
-                value={flower.Quantity}
-                onChange={handleChange}
-                className="w-full border rounded px-3 py-2"
-                required
-                min="1"
-              />
-            </div>
-            <div>
-            <label className="block mb-1">Condition:</label>
-              <select
-              name="Condition"
-              value={flower.Condition}
-              onChange={handleChange}
-              className="w-full border rounded px-3 py-2"
-              required
+      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto">
+          <Button
+            icon={<ArrowLeftOutlined />}
+            onClick={() => navigate(`/personal-product/${userId}`)}
+            className="mb-8 flex items-center hover:bg-blue-50"
+          >
+            Quay Về Cửa Hàng
+          </Button>
+
+          <div className="bg-white rounded-lg shadow-md p-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">
+              Tạo Sản Phẩm Mới
+            </h2>
+
+            <Form
+              form={form}
+              layout="vertical"
+              onFinish={handleSubmit}
+              initialValues={{
+                FlowerName: '',
+                Price: 0,
+                Quantity: 1,
+                Condition: '',
+                CategoryId: ''
+              }}
             >
-              <option value="">Chọn điều kiện</option>
-              <option value="100">100%</option>
-              <option value="80">80%</option>
-              <option value="60">60%</option>
-            </select>
-          </div>
-            <div>
-              <label className="block mb-1">Danh mục:</label>
-              {loading ? (
-                <p>Đang tải danh mục...</p>
-              ) : error ? (
-                <p className="text-red-500">{error}</p>
-              ) : (
-                <select
-                  name="CategoryId"
-                  value={flower.CategoryId}
-                  onChange={handleChange}
-                  className="w-full border rounded px-3 py-2"
-                  required
+              <Form.Item
+                label="Tên Hoa"
+                name="FlowerName"
+                rules={[{ required: true, message: 'Vui lòng nhập tên hoa' }]}
+              >
+                <Input placeholder="Nhập tên hoa" />
+              </Form.Item>
+
+              <div className="grid grid-cols-2 gap-4">
+                <Form.Item
+                  label="Giá"
+                  name="Price"
+                  rules={[{ required: true, message: 'Vui lòng nhập giá' }]}
                 >
-                  <option value="">Chọn danh mục</option>
-                  {categories.map(category => (
-                    <option key={category.categoryId} value={category.categoryId}>
-                      {category.categoryName}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
-            <div>
-              <label className="block mb-1">Hình ảnh:</label>
-              <input
-                type="file"
-                onChange={handleImageChange}
-                accept="image/*"
-                className="w-full border rounded px-3 py-2"
-              />
-            </div>
-            {imageFile && (
-              <div className="relative">
-                <img 
-                  src={imageFile.preview} 
-                  alt="Preview" 
-                  className="w-full mt-2 rounded-lg max-h-64 object-contain"
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    URL.revokeObjectURL(imageFile.preview);
-                    setImageFile(null);
-                  }}
-                  className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
+                  <InputNumber
+                    className="w-full"
+                    min={0}
+                    step={1000}
+                    formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                    parser={value => value.replace(/\$\s?|(,*)/g, '')}
+                    placeholder="Nhập giá"
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  label="Số lượng"
+                  name="Quantity"
+                  rules={[{ required: true, message: 'Vui lòng nhập số lượng' }]}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                </button>
+                  <InputNumber
+                    className="w-full"
+                    min={1}
+                    max={50}
+                    placeholder="Nhập số lượng"
+                  />
+                </Form.Item>
               </div>
-            )}
-            <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-              Tạo Sản Phẩm
-            </button>
-          </form>
+
+              <div className="grid grid-cols-2 gap-4">
+                <Form.Item
+                  label="Tình trạng"
+                  name="Condition"
+                  rules={[{ required: true, message: 'Vui lòng chọn tình trạng' }]}
+                >
+                  <Select placeholder="Chọn tình trạng">
+                    <Select.Option value="90">90%</Select.Option>
+                    <Select.Option value="80">80%</Select.Option>
+                    <Select.Option value="70">70%</Select.Option>
+                    <Select.Option value="60">60%</Select.Option>
+                  </Select>
+                </Form.Item>
+
+                <Form.Item
+                  label="Danh mục"
+                  name="CategoryId"
+                  rules={[{ required: true, message: 'Vui lòng chọn danh mục' }]}
+                >
+                  <Select
+                    placeholder="Chọn danh mục"
+                    loading={loading}
+                    disabled={loading}
+                  >
+                    {categories.map(category => (
+                      <Select.Option key={category.categoryId} value={category.categoryId}>
+                        {category.categoryName}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </div>
+
+              {/* Image Upload Section */}
+              <div className="mt-8 mb-8">
+                <label className="block text-sm font-medium text-gray-700 mb-4">
+                  Hình ảnh sản phẩm
+                </label>
+                <div className="flex flex-col items-center">
+                  <div className="w-[400px] h-[400px] relative">
+                    {imageFile ? (
+                      <div className="w-full h-full relative">
+                        <img
+                          src={imageFile.preview}
+                          alt="Preview"
+                          className="w-full h-full object-contain rounded-lg border"
+                        />
+                        <div className="absolute inset-0 flex flex-col items-center justify-center 
+                                      bg-black bg-opacity-50 opacity-0 hover:opacity-100 
+                                      transition-opacity rounded-lg">
+                          <label className="cursor-pointer text-white text-lg mb-2">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="absolute inset-0 opacity-0 cursor-pointer"
+                              onChange={(e) => {
+                                const file = e.target.files[0];
+                                if (file) {
+                                  handleImageChange({ file });
+                                }
+                              }}
+                            />
+                            Thay đổi
+                          </label>
+                          <Button
+                            type="text"
+                            danger
+                            icon={<DeleteOutlined />}
+                            onClick={() => {
+                              URL.revokeObjectURL(imageFile.preview);
+                              setImageFile(null);
+                            }}
+                          >
+                            Xóa ảnh
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <label className="w-full h-full flex flex-col items-center justify-center 
+                                     border-2 border-dashed border-gray-300 rounded-lg 
+                                     hover:border-blue-500 hover:bg-blue-50 transition-all 
+                                     cursor-pointer bg-white relative overflow-hidden">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="absolute inset-0 opacity-0 cursor-pointer"
+                          onChange={(e) => {
+                            const file = e.target.files[0];
+                            if (file) {
+                              handleImageChange({ file });
+                            }
+                          }}
+                        />
+                        <div className="text-center pointer-events-none">
+                          <UploadOutlined className="text-4xl text-gray-400" />
+                          <div className="mt-4">
+                            <div className="text-gray-500 text-lg font-medium">Tải ảnh lên</div>
+                            <div className="text-gray-400 text-sm mt-2">Định dạng: JPG, PNG</div>
+                          </div>
+                        </div>
+                      </label>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <Form.Item>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  className="w-full h-12 bg-blue-500 hover:bg-blue-600"
+                >
+                  Tạo Sản Phẩm
+                </Button>
+              </Form.Item>
+            </Form>
+          </div>
         </div>
       </div>
       <Footer />

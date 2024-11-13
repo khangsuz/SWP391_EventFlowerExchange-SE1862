@@ -664,14 +664,6 @@ const ChatBox = ({ conversationId }) => {
     );
   }
 
-  if (!currentUser) {
-    return (
-      <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-600 text-center">
-        Vui lòng đăng nhập để chat
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-col h-[600px] bg-white rounded-xl shadow-lg border border-gray-200">
       {/* Sử dụng ChatHeader component */}

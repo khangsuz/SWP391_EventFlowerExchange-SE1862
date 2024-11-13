@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../../config/axios";
-import { Table, Modal, Input, Button, message, Form } from "antd";
+import { Table, Modal, Input, Button, message } from "antd";
 import { Line } from 'react-chartjs-2'; 
 import Header from "../../component/header";
 import Footer from "../../component/footer";
+import LoadingComponent from "../../component/loading"; // Import LoadingComponent
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -21,9 +22,8 @@ ChartJS.register(CategoryScale, LinearScale, LineElement, PointElement, Tooltip,
 const ManageRevenue = () => {
   const { userId } = useParams();
   const navigate = useNavigate();
-  
+  const [loading, setLoading] = useState(true); // Loading state
   const [revenue, setRevenue] = useState(0);
-  
   const [currentIncome, setCurrentIncome] = useState(0); 
   const [totalWithdrawn, setTotalWithdrawn] = useState(0); 
   const [commission, setCommission] = useState(0);
@@ -32,40 +32,6 @@ const ManageRevenue = () => {
   const [currentUserId, setCurrentUserId] = useState(null);
   const [withdrawalRequests, setWithdrawalRequests] = useState([]); 
   const [isHistoryModalVisible, setIsHistoryModalVisible] = useState(false);
-
-  const [form] = Form.useForm();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Validation rules
-  const validationRules = {
-    accountNumber: [
-      { required: true, message: 'Vui lòng nhập số tài khoản!' },
-      { pattern: /^\d+$/, message: 'Số tài khoản chỉ được chứa số!' },
-      { min: 8, message: 'Số tài khoản phải có ít nhất 8 số!' }
-    ],
-    fullName: [
-      { required: true, message: 'Vui lòng nhập họ tên chủ tài khoản!' },
-      { min: 5, message: 'Họ tên phải có ít nhất 5 ký tự!' }
-    ],
-    phone: [
-      { required: true, message: 'Vui lòng nhập số điện thoại!' },
-      { pattern: /^[0-9]{10}$/, message: 'Số điện thoại không hợp lệ!' }
-    ],
-    amount: [
-      { required: true, message: 'Vui lòng nhập số tiền cần rút!' },
-      { 
-        validator: async (_, value) => {
-          const numericValue = Number(value?.replace(/[^0-9]/g, ''));
-          if (numericValue < 100000) {
-            throw new Error('Số tiền rút tối thiểu là 100,000 VNĐ!');
-          }
-          if (numericValue > currentIncome) {
-            throw new Error('Số tiền rút không được lớn hơn số dư hiện tại!');
-          }
-        }
-      }
-    ]
-  };
 
   const handleCancelRequest = async (requestId) => {
     if (!requestId) {
@@ -90,11 +56,14 @@ const ManageRevenue = () => {
     setIsHistoryModalVisible(false); 
   };
   const fetchWithdrawalRequests = async () => {
+    setLoading(true); // Set loading to true
     try {
       const response = await api.get(`Users/api/withdrawal-requests/${userId}`); 
       setWithdrawalRequests(response.data); 
     } catch (err) {
       console.error("Error fetching withdrawal requests:", err);
+    } finally {
+      setLoading(false); // Set loading to false
     }
   };
   const fetchCurrentUserId = async () => {
@@ -125,17 +94,31 @@ const ManageRevenue = () => {
   });
 
   const fetchRevenue = async () => {
+    setLoading(true);
     try {
         const response = await api.get(`Users/revenue/${userId}`);
-        console.log("Revenue Response:", response.data); 
-        setRevenue(response.data.totalRevenue); 
-        setRevenueData(response.data.details || []);
+        console.log("Revenue Response:", response.data);
+        
+        setRevenue(response.data.netRevenue);
+        setCommission(response.data.commission);
+        
+        const details = response.data.details;
+        setRevenueData(details.map(item => ({
+            date: item.date || 'Không có ngày',
+            amount: item.amount || 0
+        })));
+        
     } catch (err) {
         console.error("Error fetching revenue:", err);
+        const errorMessage = err.response?.data?.message || 'Không thể tải dữ liệu doanh thu. Vui lòng thử lại sau.';
+        message.error(errorMessage);
+    } finally {
+        setLoading(false);
     }
 };
 
   const fetchCurrentIncome = async () => {
+    setLoading(true);
     try {
       const response = await api.get(`Users/api/users/${userId}/revenue`); 
       setCurrentIncome(response.data.currentIncome); 
@@ -143,6 +126,9 @@ const ManageRevenue = () => {
       setCommission(response.data.commission); 
     } catch (err) {
       console.error("Error fetching current income:", err);
+      message.error('Không thể tải dữ liệu thu nhập hiện tại. Vui lòng thử lại sau.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -151,6 +137,8 @@ const ManageRevenue = () => {
     fetchCurrentIncome(); 
     fetchWithdrawalRequests();
   }, [userId]);
+
+  if (loading) return <LoadingComponent />; // Show loading component
 
   const chartData = {
     labels: revenueData.map(item => item.date),
@@ -167,59 +155,31 @@ const ManageRevenue = () => {
   };
 
   const handleWithdraw = async () => {
+    if (withdrawRequest.amount > revenue) {
+      message.error('Số tiền rút không được lớn hơn doanh thu thu được.');
+      return; 
+    }
+    
     try {
-      setIsSubmitting(true);
-      const values = await form.validateFields();
-      
-      const numericAmount = Number(values.amount.replace(/[^0-9]/g, ''));
-      
-      const withdrawalRequest = {
-        accountNumber: values.accountNumber,
-        fullName: values.fullName,
-        phone: values.phone,
-        amount: numericAmount,
-        remarks: values.remarks
-      };
-
-      const response = await api.post('Users/api/withdrawal', withdrawalRequest);
-      
-      message.success('Yêu cầu rút tiền đã được gửi thành công!');
+      const response = await api.post('Users/api/withdrawal', withdrawRequest);
+      console.log("Withdraw Response:", response.data);
+      message.success('Yêu cầu rút tiền đã được gửi!');
       setIsModalVisible(false);
-      form.resetFields();
-      
-      // Refresh data
-      fetchRevenue();
-      fetchCurrentIncome();
+      fetchRevenue(); 
+      fetchCurrentIncome(); 
       fetchWithdrawalRequests();
-      
     } catch (error) {
-      if (error.response?.data) {
-        message.error(error.response.data);
-      } else if (error.errorFields) {
-        // Form validation errors
-        message.error('Vui lòng kiểm tra lại thông tin!');
-      } else {
-        message.error('Có lỗi xảy ra khi gửi yêu cầu!');
-      }
-    } finally {
-      setIsSubmitting(false);
+      console.error("Error during withdrawal:", error);
+      message.error('Rút tiền không thành công!');
     }
   };
 
-  const showModal = () => {
-    form.setFieldsValue({
-      amount: formatCurrency(currentIncome)
-    });
-    setIsModalVisible(true);
-  };
-
-  const handleCancel = () => {
-    form.resetFields();
-    setIsModalVisible(false);
-  };
-
-  const formatCurrency = (value) => {
-    return Number(value).toLocaleString('vi-VN');
+  const showModal = () => setIsModalVisible(true);
+  const handleCancel = () => setIsModalVisible(false);
+  
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setWithdrawRequest({ ...withdrawRequest, [name]: value });
   };
 
   return (
@@ -350,143 +310,87 @@ const ManageRevenue = () => {
 
       {/* Modal để nhập thông tin rút tiền */}
       <Modal
-        title="Yêu Cầu Rút Tiền"
-        open={isModalVisible}
+        title="Thông Tin Rút Tiền"
+        visible={isModalVisible}
+        onOk={handleWithdraw}
         onCancel={handleCancel}
-        footer={[
-          <Button key="back" onClick={handleCancel}>
-            Hủy
-          </Button>,
-          <Button 
-            key="submit" 
-            type="primary" 
-            loading={isSubmitting}
-            onClick={handleWithdraw}
-          >
-            Gửi Yêu Cầu
-          </Button>
-        ]}
+        okText="Xác Nhận"
+        cancelText="Hủy"
       >
-        <Form
-          form={form}
-          layout="vertical"
-          initialValues={{
-            amount: formatCurrency(currentIncome)
-          }}
-        >
-          <Form.Item
-            name="accountNumber"
-            label="Số Tài Khoản"
-            rules={validationRules.accountNumber}
-          >
-            <Input placeholder="Nhập số tài khoản ngân hàng" />
-          </Form.Item>
-
-          <Form.Item
-            name="fullName"
-            label="Tên Chủ Tài Khoản"
-            rules={validationRules.fullName}
-          >
-            <Input placeholder="Nhập tên chủ tài khoản" />
-          </Form.Item>
-
-          <Form.Item
-            name="phone"
-            label="Số Điện Thoại"
-            rules={validationRules.phone}
-          >
-            <Input placeholder="Nhập số điện thoại" />
-          </Form.Item>
-
-          <Form.Item
-            name="amount"
-            label="Số Tiền Rút"
-            rules={validationRules.amount}
-          >
-            <Input 
-              placeholder="Nhập số tiền cần rút"
-              onChange={(e) => {
-                const numericValue = e.target.value.replace(/[^0-9]/g, '');
-                form.setFieldsValue({
-                  amount: formatCurrency(numericValue)
-                });
-              }}
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="remarks"
-            label="Ghi Chú"
-          >
-            <Input.TextArea 
-              placeholder="Nhập ghi chú (nếu có)"
-              maxLength={200}
-              showCount
-            />
-          </Form.Item>
-
-          <div className="text-sm text-gray-500 mt-4">
-            <p>Số dư khả dụng: {formatCurrency(currentIncome)} VNĐ</p>
-            <p>Số tiền rút tối thiểu: 100,000 VNĐ</p>
-            <p>Thời gian xử lý: 1-3 ngày làm việc</p>
-          </div>
-        </Form>
+        <p>Số tài khoản:</p>
+        <Input
+          name="accountNumber"
+          value={withdrawRequest.accountNumber}
+          onChange={handleInputChange}
+        />
+        
+        <p>Họ tên:</p>
+        <Input
+          name="fullName"
+          value={withdrawRequest.fullName}
+          onChange={handleInputChange}
+        />
+        
+        <p>Số điện thoại:</p>
+        <Input
+          name="phone"
+          value={withdrawRequest.phone}
+          onChange={handleInputChange}
+        />
+        
+        <p>Số tiền:</p>
+        <Input
+          type="number"
+          name="amount"
+          value={withdrawRequest.amount}
+          onChange={handleInputChange}
+        />
+        
+        <p>Ghi chú (không bắt buộc):</p>
+        <Input
+          name="remarks"
+          value={withdrawRequest.remarks}
+          onChange={handleInputChange}
+        />
       </Modal>
       {/* Modal để hiển thị lịch sử yêu cầu rút tiền */}
       <Modal
-        title="Lịch Sử Rút Tiền"
-        open={isHistoryModalVisible}
+        title="Lịch Sử Yêu Cầu Rút Tiền"
+        visible={isHistoryModalVisible}
         onCancel={handleHistoryCancel}
-        footer={null}
-        width={800}
+        footer={null} 
+        width={1000}
       >
         <Table
-          dataSource={withdrawalRequests}
-          columns={[
-            {
-              title: 'Ngày Yêu Cầu',
-              dataIndex: 'requestDate',
-              key: 'requestDate',
-              render: (date) => new Date(date).toLocaleDateString('vi-VN')
-            },
-            {
-              title: 'Số Tiền',
-              dataIndex: 'amount',
-              key: 'amount',
-              render: (amount) => `${formatCurrency(amount)} VNĐ`
-            },
-            {
-              title: 'Trạng Thái',
-              dataIndex: 'status',
-              key: 'status',
-              render: (status) => (
-                <span className={`
-                  ${status === 'Approved' ? 'text-green-500' : ''}
-                  ${status === 'Pending' ? 'text-yellow-500' : ''}
-                  ${status === 'Rejected' ? 'text-red-500' : ''}
-                `}>
-                  {status === 'Approved' ? 'Đã Duyệt' : 
-                   status === 'Pending' ? 'Đang Chờ' : 'Từ Chối'}
-                </span>
-              )
-            },
-            {
-              title: 'Thao Tác',
-              key: 'action',
-              render: (_, record) => (
-                record.status === 'Pending' && (
-                  <Button 
-                    type="link" 
-                    danger 
-                    onClick={() => handleCancelRequest(record.requestId)}
-                  >
-                    Hủy yêu cầu
-                  </Button>
-                )
-              )
-            }
-          ]}
-        />
+            dataSource={withdrawalRequests}
+            columns={[
+              { title: 'Số Tài Khoản', dataIndex: 'accountNumber', key: 'accountNumber' },
+              { title: 'Họ Tên', dataIndex: 'fullName', key: 'fullName' },
+              { title: 'Số Điện Thoại', dataIndex: 'phone', key: 'phone' },
+              { title: 'Số Tiền', dataIndex: 'amount', key: 'amount', render: (text) => `${(text || 0).toLocaleString()} VNĐ` },
+              { title: 'Trạng Thái', dataIndex: 'status', key: 'status', render: (text) => text || 'Chờ Xử Lý' },
+              { title: 'Ghi Chú', dataIndex: 'remarks', key: 'remarks' },
+              { title: 'Ngày Yêu Cầu', dataIndex: 'requestDate', key: 'requestDate', render: (text) => text ? new Date(text).toLocaleDateString() : 'Không có ngày' },
+              {
+                title: 'Hành Động',
+                key: 'action',
+                render: (text, record) => (
+                    record.status !== "Approved" ? (
+                            <Button 
+                                type="danger" 
+                                onClick={() => handleCancelRequest(record.requestId)}
+                            >
+                                Hủy
+                            </Button>
+                        ) : null
+                    ),
+                },
+            ]}
+            rowKey="requestDate" 
+            pagination={false}
+            bordered
+            className="bg-gray-100"
+          />
       </Modal>
 
       <Footer />

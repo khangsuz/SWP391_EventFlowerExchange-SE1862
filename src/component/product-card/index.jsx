@@ -154,7 +154,7 @@ function ProductCard({ flower }) {
 
     const localListingTime = listingTime + 7 * 60 * 60 * 1000;
 
-    const timeRemaining = (24 * 60 * 60 * 1000 + 48 * 60 * 60 * 1000) - (currentTime - localListingTime);
+    const timeRemaining = (3 * 24 * 60 * 60 * 1000) - (currentTime - localListingTime);
 
     if (timeRemaining > 0) {
         const hours = Math.floor(timeRemaining / (1000 * 60 * 60));

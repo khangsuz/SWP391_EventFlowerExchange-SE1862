@@ -22,6 +22,7 @@ const QuanLiNguoiBan = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [currentRequestId, setCurrentRequestId] = useState(null);
     const [currentUserId, setCurrentUserId] = useState(null);
+    const [searchText, setSearchText] = useState('');
 
     useEffect(() => {
         fetchRequests();
@@ -207,6 +208,15 @@ const QuanLiNguoiBan = () => {
         setModalVisible(true);
     };
 
+    const filteredRequests = requests.filter(request => {
+        const searchLower = searchText.toLowerCase();
+        return (
+            request.storeName?.toLowerCase().includes(searchLower) ||
+            request.email?.toLowerCase().includes(searchLower) ||
+            request.address?.toLowerCase().includes(searchLower)
+        );
+    });
+
     return (
         <div className="admin-seller-requests" style={{ padding: '24px' }}>
             <Card className="page-header">
@@ -221,10 +231,12 @@ const QuanLiNguoiBan = () => {
             <Card style={{ marginTop: '16px' }}>
                 <Space style={{ marginBottom: '16px' }}>
                     <Search
-                        placeholder="Tìm kiếm theo tên cửa hàng..."
-                        style={{ width: 300 }}
+                        placeholder="Tìm kiếm theo tên cửa hàng, email hoặc địa chỉ..."
+                        style={{ width: 400 }}
                         allowClear
                         prefix={<SearchOutlined />}
+                        value={searchText}
+                        onChange={e => setSearchText(e.target.value)}
                     />
                     <Button 
                         icon={<ReloadOutlined />}
@@ -237,7 +249,7 @@ const QuanLiNguoiBan = () => {
 
                 <Table
                     columns={columns}
-                    dataSource={requests}
+                    dataSource={filteredRequests}
                     loading={loading}
                     rowKey="requestId"
                     scroll={{ x: 'max-content' }}

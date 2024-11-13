@@ -8,7 +8,7 @@ import Header from "../../component/header";
 import Footer from "../../component/footer";
 import { getFullImageUrl } from '../../utils/imageHelpers';
 import { Notification, notifyError, notifySuccess } from '../../component/alert';
-import LoadingComponent from '../../component/loading'; 
+import LoadingComponent from '../../component/loading';
 
 function Cart() {
     const navigate = useNavigate();
@@ -31,7 +31,7 @@ function Cart() {
 
             if (response.data) {
                 const items = response.data.items || [];
-                
+
                 const transformedItems = items.map(item => ({
                     cartItemId: item.cartItemId,
                     flowerId: item.flowerId,
@@ -42,10 +42,10 @@ function Cart() {
                     sellerFullName: item.sellerFullName || "Unknown Seller",
                     isCustomOrder: item.isCustomOrder || false
                 }));
-                
+
                 const grouped = transformedItems.reduce((acc, item) => {
                     const key = item.sellerFullName;
-                    
+
                     if (!acc[key]) {
                         acc[key] = [];
                     }
@@ -78,8 +78,19 @@ function Cart() {
 
     const updateQuantity = async (cartItemId, newQuantity) => {
         try {
+            const cartItem = cartItems.find(item => item.cartItemId === cartItemId);
+            if (!cartItem) {
+                notifyError('Không tìm thấy sản phẩm');
+                return;
+            }
+    
+            if (cartItem.isCustomOrder) {
+                notifyError('Không thể thay đổi số lượng của sản phẩm tùy chỉnh');
+                return;
+            }
+    
             const token = localStorage.getItem('token');
-            await api.put('Cart/update-quantity', 
+            await api.put('Cart/update-quantity',
                 {
                     cartItemId: cartItemId,
                     quantity: newQuantity
@@ -90,7 +101,7 @@ function Cart() {
                     }
                 }
             );
-            
+    
             await fetchCartItems();
             notifySuccess('Đã cập nhật số lượng');
         } catch (error) {
@@ -107,7 +118,7 @@ function Cart() {
                     'Authorization': `Bearer ${token}`
                 }
             });
-            
+
             await fetchCartItems();
             notifySuccess('Đã xóa sản phẩm khỏi giỏ hàng');
         } catch (error) {
@@ -132,7 +143,7 @@ function Cart() {
             navigate('/login');
             return;
         }
-    
+
         setIsCheckingOut(true);
         try {
             const checkoutData = {
@@ -148,12 +159,12 @@ function Cart() {
                 })),
                 subtotal: calculateSellerSubtotal(items)
             };
-    
+
             localStorage.setItem('itemsBeingPurchased', JSON.stringify({
                 sellerFullName,
                 itemIds: items.map(item => item.cartItemId)
             }));
-    
+
             navigate('/checkout', { state: checkoutData });
         } catch (error) {
             console.error('Payment processing error:', error);
@@ -171,7 +182,7 @@ function Cart() {
                 try {
                     await fetchCartItems(); // Refresh cart after payment
                     notifySuccess('Đơn hàng đã được thanh toán thành công');
-                    
+
                     // Xóa dữ liệu tạm
                     localStorage.removeItem('paymentSuccess');
                     localStorage.removeItem('itemsBeingPurchased');
@@ -199,7 +210,7 @@ function Cart() {
             <div className="py-24 relative">
                 <div className="w-full max-w-7xl px-4 md:px-5 lg-6 mx-auto">
                     <h2 className="title font-manrope font-bold text-4xl leading-10 mb-8 text-center text-black">Giỏ hàng</h2>
-                    
+
                     {isCartEmpty ? (
                         <div className="text-center py-16">
                             <div className="mb-6">
@@ -209,7 +220,7 @@ function Cart() {
                             </div>
                             <h3 className="text-2xl font-semibold text-gray-900 mb-2">Giỏ hàng của bạn đang trống</h3>
                             <p className="text-gray-500 mb-8">Hãy thêm một vài sản phẩm vào giỏ hàng của bạn</p>
-                            <button 
+                            <button
                                 onClick={() => navigate('/products')}
                                 className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                             >
@@ -221,27 +232,29 @@ function Cart() {
                             <div className="lg:col-span-3">
                                 {Object.entries(groupedCartItems).map(([sellerFullName, items]) => (
                                     <div key={sellerFullName} className="mb-8 border-2 border-gray-200 rounded-3xl p-4">
-                                        <h3 className="font-manrope font-bold text-2xl text-indigo-500">
+                                        <h3 className="font-manrope font-bold text-2xl text-indigo-500 ml-1 m-2">
                                             {sellerFullName}
                                         </h3>
                                         {items.map((item) => (
                                             <div key={item.cartItemId} className="rounded-3xl border-2 border-gray-200 p-4 lg:p-8 grid grid-cols-12 mb-8 max-lg:max-w-lg max-lg:mx-auto gap-y-4">
                                                 <div className="col-span-12 lg:col-span-2 img box">
-                                                    <img 
-                                                        src={item.imageUrl || '/images/default-flower.jpg'} // Sử dụng ảnh mặc định
-                                                        alt={item.flowerName}
-                                                        className="max-lg:w-full lg:w-[180px] rounded-lg object-cover"
-                                                        onError={(e) => {
-                                                            e.target.src = '/images/default-flower.jpg'; // Fallback khi ảnh lỗi
-                                                            e.target.onerror = null; // Prevent infinite loop
-                                                        }}
-                                                    />
+                                                    <div className="w-full aspect-square">  {/* Thêm container có tỷ lệ 1:1 */}
+                                                        <img
+                                                            src={item.imageUrl || '/images/default-flower.jpg'}
+                                                            alt={item.flowerName}
+                                                            className="w-full h-full object-cover rounded-lg"
+                                                            onError={(e) => {
+                                                                e.target.src = '/images/default-flower.jpg';
+                                                                e.target.onerror = null;
+                                                            }}
+                                                        />
+                                                    </div>
                                                 </div>
                                                 <div className="col-span-12 lg:col-span-10 detail w-full lg:pl-3">
                                                     <div className="flex items-center justify-between w-full mb-4">
                                                         <h5 className="font-medium text-3xl leading-9 text-gray-900">
                                                             {item.flowerName}
-                                                            {item.isCustomOrder && 
+                                                            {item.isCustomOrder &&
                                                                 <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
                                                                     Tùy chỉnh
                                                                 </span>
@@ -266,10 +279,23 @@ function Cart() {
                                                                 </svg>
                                                             </button>
                                                             <input
-                                                                type="text"
-                                                                value={item.quantity}
-                                                                readOnly
-                                                                className="border border-gray-200 rounded-full w-10 aspect-square outline-none text-gray-900 font-semibold text-sm py-1.5 px-3 bg-gray-100 text-center"
+                                                            type="number"
+                                                            value={item.quantity}
+                                                            onChange={(e) => {
+                                                                const newValue = parseInt(e.target.value);
+                                                                if (!isNaN(newValue) && newValue > 0) {
+                                                                    updateQuantity(item.cartItemId, newValue);
+                                                                }
+                                                            }}
+                                                            onBlur={(e) => {
+                                                                const newValue = parseInt(e.target.value);
+                                                                if (isNaN(newValue) || newValue < 1) {
+                                                                    updateQuantity(item.cartItemId, 1);
+                                                                }
+                                                            }}
+                                                            min="1"
+                                                            max="50"
+                                                            className="border border-gray-200 rounded-full w-16 outline-none text-gray-900 font-semibold text-sm py-1.5 px-3 bg-gray-100 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                                             />
                                                             <button
                                                                 onClick={() => updateQuantity(item.cartItemId, item.quantity + 1)}
@@ -296,7 +322,7 @@ function Cart() {
                                             {isCheckingOut ? 'Đang xử lý...' : `Thanh toán đơn hàng từ ${sellerFullName}`}
                                         </button>
                                         <div className="flex justify-between items-center mt-4">
-                                            <h5 className="text-gray-900 font-manrope font-semibold text-2xl">
+                                            <h5 className="text-gray-900 font-manrope font-semibold text-2xl ml-1">
                                                 Tổng đơn hàng
                                             </h5>
                                             <h6 className="font-manrope font-bold text-3xl text-indigo-600">
@@ -306,9 +332,9 @@ function Cart() {
                                     </div>
                                 ))}
                             </div>
-    
+
                             <div className="lg:col-span-1">
-                                <div className="bg-white rounded-2xl shadow-sm p-6 sticky top-24">
+                                <div className="bg-white rounded-2xl shadow-sm p-6 sticky top-12">
                                     <h3 className="text-lg font-semibold mb-4">Tổng đơn hàng</h3>
                                     <div className="space-y-3">
                                         {Object.entries(groupedCartItems).map(([sellerFullName, items]) => (

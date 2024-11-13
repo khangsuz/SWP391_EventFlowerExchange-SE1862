@@ -1,8 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import api from "../../config/axios";
 import Header from '../../component/header';
 import Footer from '../../component/footer';
 import { Modal, Form, Input, Tooltip, Button, message, Select } from 'antd';
+
+
 
 function OrderHistory() {
     const [orders, setOrders] = useState([]);
@@ -15,21 +18,23 @@ function OrderHistory() {
     const [form] = Form.useForm();
     const [statusFilter, setStatusFilter] = useState('all');
     const [submitting, setSubmitting] = useState(false);
+    const [isCancelModalVisible, setIsCancelModalVisible] = useState(false);
+    const [cancelForm] = Form.useForm();
 
     useEffect(() => {
         fetchOrderHistory();
     }, []);
+    const deliveryStatuses = [
+  { value: 0, label: "Chờ Xử Lý" },
+  { value: 1, label: "Đã Gửi Hàng" },
+  { value: 2, label: "Đã Giao Hàng" },
+  { value: 3, label: "Đã Hủy" }
+];
 
-    const getStatusText = (status) => {
-        switch (Number(status)) {
-            case 0: return "Chờ xử lý";
-            case 1: return "Đã xác nhận";
-            case 2: return "Đang giao hàng";
-            case 3: return "Đã giao hàng";
-            case 4: return "Đã hủy";
-            default: return "Không xác định";
-        }
-    };
+const getStatusText = (status) => {
+  const deliveryStatus = deliveryStatuses.find(s => s.value === Number(status));
+  return deliveryStatus ? deliveryStatus.label : "Không xác định";
+};
 
     const fetchOrderHistory = async () => {
         try {
@@ -87,6 +92,29 @@ function OrderHistory() {
         }
     };
 
+    const handleCancelClick = (orderId) => {
+        setSelectedOrderId(orderId);
+        setIsCancelModalVisible(true);
+    };
+
+    const handleCancelModalSubmit = async (values) => {
+        try {
+            await api.post('/Orders/cancel-request', {
+                orderId: selectedOrderId,
+                fullName: values.fullName,
+                phone: values.phone,
+                reason: values.reason
+            });
+
+            message.success('Yêu cầu hủy đơn hàng đã được gửi!');
+            setIsCancelModalVisible(false);
+            cancelForm.resetFields();
+            fetchOrderHistory();
+        } catch (error) {
+            message.error('Không thể gửi yêu cầu hủy đơn hàng: ' + error.response?.data?.message);
+        }
+    };
+
     if (loading) return <div>Loading...</div>;
     if (error) return <div>{error}</div>;
 
@@ -103,19 +131,18 @@ function OrderHistory() {
                 >
                     <Select.Option value="all">Tất cả trạng thái</Select.Option>
                     <Select.Option value="0">Chờ xử lý</Select.Option>
-                    <Select.Option value="1">Đã xác nhận</Select.Option>
-                    <Select.Option value="2">Đang giao hàng</Select.Option>
-                    <Select.Option value="3">Đã giao hàng</Select.Option>
-                    <Select.Option value="4">Đã hủy</Select.Option>
+                    <Select.Option value="1">Đang giao hàng</Select.Option>
+                    <Select.Option value="2">Đã giao hàng</Select.Option>
+                    <Select.Option value="3">Đã hủy</Select.Option>
                 </Select>
             </div>
 
             <table className="w-full border-collapse">
                 <thead>
                     <tr className="bg-gray-100">
-                        <th className="border p-4">#</th>
                         <th className="border p-2">Mã đơn</th>
                         <th className="border p-2">Thông tin người nhận</th>
+                        <th className="border p-2">Thông tin người bán</th>
                         <th className="border p-2">Sản phẩm</th>
                         <th className="border p-2">Tổng tiền</th>
                         <th className="border p-2">Trạng thái</th>
@@ -125,7 +152,6 @@ function OrderHistory() {
                 <tbody>
                     {currentOrders.map((order, index) => (
                         <tr key={order.orderId} className="border-b">
-                            <td className="border p-2 text-center">{indexOfFirstOrder + index + 1}</td>
                             <td className="border p-2">
                                 <div className="text-center text-lg">{order.orderId}</div>
                             </td>
@@ -137,6 +163,18 @@ function OrderHistory() {
                                 <div><strong>Địa chỉ:</strong> {order.recipient?.address}</div>
                                 <div><strong>Ngày tạo:</strong> {new Date(order.orderDate).toLocaleDateString()}</div>
                                 <div><strong>Ghi chú:</strong> {order.note}</div>
+                            </td>
+                            <td className="border p-2">
+                                {order.orderItems && order.orderItems.length > 0 && order.orderItems[0].seller ? (
+                                    <div>
+                                        <div><strong>Người bán:</strong> {order.orderItems[0].seller.fullName}</div>
+                                        <div><strong>SĐT:</strong> {order.orderItems[0].seller.phone}</div>
+                                        <div><strong>Email:</strong> {order.orderItems[0].seller.email}</div>
+                                        <div><strong>Địa chỉ shop:</strong> {order.orderItems[0].seller.address}</div>
+                                    </div>
+                                ) : (
+                                    <div>Không có thông tin người bán</div>
+                                )}
                             </td>
                             <td className="border p-2">
                                 <ul>
@@ -154,29 +192,35 @@ function OrderHistory() {
                             </td>
                             <td className="border p-2 text-red-500 text-center">{order.totalAmount?.toLocaleString()}đ</td>
                             <td className="border p-2 text-center">
-                                <span className={`${(order.orderDelivery)}`}>
-                                    {getStatusText(order.orderDelivery)}
-                                </span>
+                                <span>{getStatusText(order.orderDelivery)}</span>
                             </td>
                             <td className="border p-2 text-center">
-                                <Tooltip title={
-                                    order.orderDelivery === 3
-                                        ? 'Đơn hàng đã hoàn thành, không thể yêu cầu hỗ trợ'
-                                        : 'Nhấn để yêu cầu hỗ trợ'
-                                }>
-                                    <Button
-                                        type="link"
-                                        onClick={() => handleReportClick(order.orderId)}
-                                        disabled={order.orderDelivery === 3}
-                                        className={
-                                            order.orderDelivery === 3
-                                                ? "text-gray-400 cursor-not-allowed"
-                                                : "text-blue-600 hover:text-blue-800"
-                                        }
-                                    >
-                                        Yêu cầu hỗ trợ
-                                    </Button>
-                                </Tooltip>
+                                <div className="flex flex-col space-y-2">
+                                    {order.orderDelivery === 3 ? (
+                                        <Tooltip title="Nhấn để yêu cầu hỗ trợ">
+                                            <Button
+                                                type="link"
+                                                onClick={() => handleReportClick(order.orderId)}
+                                                className="text-blue-600 hover:text-blue-800"
+                                            >
+                                                Yêu cầu hỗ trợ
+                                            </Button>
+                                        </Tooltip>
+                                    ) : order.orderDelivery === 4 ? (
+                                        <span className="text-gray-500">Đơn hàng đã hủy</span>
+                                    ) : (
+                                        <Tooltip title="Nhấn để hủy đơn hàng">
+                                            <Button
+                                                type="link"
+                                                danger
+                                                onClick={() => handleCancelClick(order.orderId)}
+                                                className="text-red-600 hover:text-red-800"
+                                            >
+                                                Hủy đơn hàng
+                                            </Button>
+                                        </Tooltip>
+                                    )}
+                                </div>
                             </td>
                         </tr>
                     ))}
@@ -210,6 +254,44 @@ function OrderHistory() {
                     <Form.Item>
                         <Button type="primary" htmlType="submit" loading={submitting}>
                             Gửi báo cáo
+                        </Button>
+                    </Form.Item>
+                </Form>
+            </Modal>
+            <Modal
+                title="Yêu cầu hủy đơn hàng"
+                visible={isCancelModalVisible}
+                onCancel={() => {
+                    setIsCancelModalVisible(false);
+                    cancelForm.resetFields();
+                }}
+                footer={null}
+            >
+                <Form form={cancelForm} onFinish={handleCancelModalSubmit} layout="vertical">
+                    <Form.Item
+                        name="fullName"
+                        label="Họ và tên"
+                        rules={[{ required: true, message: 'Vui lòng nhập họ tên!' }]}
+                    >
+                        <Input />
+                    </Form.Item>
+                    <Form.Item
+                        name="phone"
+                        label="Số điện thoại"
+                        rules={[{ required: true, message: 'Vui lòng nhập số điện thoại!' }]}
+                    >
+                        <Input />
+                    </Form.Item>
+                    <Form.Item
+                        name="reason"
+                        label="Lý do hủy đơn"
+                        rules={[{ required: true, message: 'Vui lòng nhập lý do hủy đơn!' }]}
+                    >
+                        <Input.TextArea rows={4} />
+                    </Form.Item>
+                    <Form.Item>
+                        <Button type="primary" danger htmlType="submit">
+                            Gửi yêu cầu hủy
                         </Button>
                     </Form.Item>
                 </Form>

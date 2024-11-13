@@ -1,16 +1,14 @@
-import { Button, Form, Input, Alert, Modal } from "antd";
+import { Button, Form, Input, Alert, Modal, message } from "antd";
 import React, { useState, useEffect } from 'react';
 import "../../index.css";
 import Header from "../../component/header";
 import api from "../../config/axios";
 import { Link, useNavigate } from "react-router-dom";
 import Footer from "../../component/footer";
-import { Notification, notifyError, notifySuccess } from "../../component/alert";
 
 const SignUp = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
-  const [error, setError] = useState(null);
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [registrationData, setRegistrationData] = useState(null);
@@ -29,7 +27,6 @@ const SignUp = () => {
 
   const handleSignUp = async (values) => {
     setIsLoading(true);
-    setError(null);
 
     try {
       const response = await api.post("Users/register", {
@@ -44,26 +41,46 @@ const SignUp = () => {
         setRegistrationData(values);
         setIsVerifying(true);
         setCountdown(60);
-        notifySuccess("Thông báo", "Mã xác thực đã được gửi đến email của bạn");
+        message.success("Mã xác thực đã được gửi đến email của bạn");
       }
     } catch (err) {
       console.error("Registration error:", err.response?.data);
       
       if (err.response?.data) {
         if (Array.isArray(err.response.data)) {
-          notifyError("Lỗi", err.response.data[0]?.description || "Đã xảy ra lỗi trong quá trình đăng ký");
+          message.error(err.response.data.map(error => error.description).join(", "));
         } else if (typeof err.response.data === 'string') {
-          notifyError("Lỗi", err.response.data);
+          message.error(err.response.data);
         } else if (err.response.data.errors) {
-          const firstError = Object.values(err.response.data.errors)[0];
-          notifyError("Lỗi", Array.isArray(firstError) ? firstError[0] : "Vui lòng kiểm tra lại thông tin");
+          const errorMessages = [];
+          Object.keys(err.response.data.errors).forEach(key => {
+            const error = err.response.data.errors[key];
+            if (Array.isArray(error)) {
+              errorMessages.push(`${key}: ${error.join(', ')}`);
+            } else {
+              errorMessages.push(`${key}: ${error}`);
+            }
+          });
+          message.error(errorMessages.join(", "));
         } else if (err.response.data.message) {
-          notifyError("Lỗi", err.response.data.message);
+          message.error(err.response.data.message);
         } else {
-          notifyError("Lỗi", "Đã xảy ra lỗi trong quá trình đăng ký");
+          switch (err.response.status) {
+            case 400:
+              message.error("Dữ liệu không hợp lệ");
+              break;
+            case 409:
+              message.error("Tài khoản hoặc email đã tồn tại");
+              break;
+            case 500:
+              message.error("Lỗi hệ thống");
+              break;
+            default:
+              message.error("Đã xảy ra lỗi trong quá trình đăng ký");
+          }
         }
       } else {
-        notifyError("Lỗi kết nối", "Không thể kết nối đến server. Vui lòng thử lại sau");
+        message.error("Không thể kết nối đến server");
       }
     } finally {
       setIsLoading(false);
@@ -84,11 +101,11 @@ const SignUp = () => {
         }
       });
 
-      notifySuccess("Thành công", "Đăng ký tài khoản thành công!");
+      message.success("Đăng ký tài khoản thành công!");
       navigate("/login");
     } catch (err) {
       console.error("Verification error:", err);
-      notifyError("Lỗi", err.response?.data?.message || "Mã xác thực không đúng");
+      message.error(err.response?.data?.message || "Mã xác thực không đúng");
     }
   };
 
@@ -105,30 +122,6 @@ const SignUp = () => {
 
         <div className="signup__form">
           <div className="form-wrapper">
-            {error && (
-              <Alert
-                message={
-                  <div className="font-semibold">Thông báo</div>
-                }
-                description={
-                  <ul className="list-disc pl-4">
-                    {Array.isArray(error) ? (
-                      error.map((err, index) => (
-                        <li key={index} className="text-red-600">{err}</li>
-                      ))
-                    ) : (
-                      <li className="text-red-600">{error}</li>
-                    )}
-                  </ul>
-                }
-                type="error"
-                showIcon
-                closable
-                onClose={() => setError(null)}
-                className="mb-4 shadow-sm"
-              />
-            )}
-            
             <Form
               form={form}
               className="form"
