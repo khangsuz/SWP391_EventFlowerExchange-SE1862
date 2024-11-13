@@ -93,7 +93,7 @@ const AdminReviewManagement = () => {
             title: 'User',
             dataIndex: 'userName',
             key: 'userName',
-            width: 150,
+            width: 200,
             render: (text) => (
                 <Space>
                     <UserOutlined />
@@ -115,7 +115,7 @@ const AdminReviewManagement = () => {
             title: 'Rating',
             dataIndex: 'rating',
             key: 'rating',
-            width: 150,
+            width: 200,
             render: (rating) => (
                 <Rate disabled defaultValue={rating} style={{ fontSize: '16px' }} />
             ),

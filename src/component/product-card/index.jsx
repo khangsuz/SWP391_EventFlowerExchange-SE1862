@@ -17,7 +17,7 @@ function ProductCard({ flower }) {
   const { updateCartItemCount } = useCart();
   const [categories, setCategories] = useState({});
   const [isExpired, setIsExpired] = useState(false);
-  
+  const [timeRemaining, setTimeRemaining] = useState('');
 
   const addToCart = (item, quantity) => {
     const storedCart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -148,31 +148,39 @@ function ProductCard({ flower }) {
         return "bg-gray-500 text-white";
     }
   };
-  const renderTimeRemaining = (listingDate) => {
+
+  const calculateTimeRemaining = (listingDate) => {
     const listingTime = new Date(listingDate).getTime();
     const currentTime = new Date().getTime();
-
     const localListingTime = listingTime + 7 * 60 * 60 * 1000;
 
     const timeRemaining = (3 * 24 * 60 * 60 * 1000) - (currentTime - localListingTime);
 
     if (timeRemaining > 0) {
-        const hours = Math.floor(timeRemaining / (1000 * 60 * 60));
-        const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
-        return `Hết hạn sau: ${hours}h ${minutes}m ${seconds}s`;
+      const hours = Math.floor(timeRemaining / (1000 * 60 * 60));
+      const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+      return `Hết hạn sau: ${hours}h ${minutes}m ${seconds}s`;
     }
-
     return 'Hết hạn';
-};
+  };
+
   useEffect(() => {
-    const timeRemainingMessage = renderTimeRemaining(flower.listingDate);
-    if (timeRemainingMessage === 'Hết hạn') {
-        setIsExpired(true);
-    } else {
-        setIsExpired(false);
-    }
-}, [flower.listingDate]);
+    // Cập nhật lần đầu
+    const initialTimeRemaining = calculateTimeRemaining(flower.listingDate);
+    setTimeRemaining(initialTimeRemaining);
+    setIsExpired(initialTimeRemaining === 'Hết hạn');
+
+    // Tạo interval để cập nhật mỗi giây
+    const timer = setInterval(() => {
+      const newTimeRemaining = calculateTimeRemaining(flower.listingDate);
+      setTimeRemaining(newTimeRemaining);
+      setIsExpired(newTimeRemaining === 'Hết hạn');
+    }, 1000);
+
+    // Cleanup interval khi component unmount
+    return () => clearInterval(timer);
+  }, [flower.listingDate]);
 
   if (!flower) return null;
 
@@ -206,7 +214,7 @@ function ProductCard({ flower }) {
           {averageRating === 0 && <p className="text-gray-500 text-sm mt-1">Chưa có đánh giá</p>}
         </div>
         <div className="time-remaining text-center text-gray-500 text-sm mt-2">
-          {renderTimeRemaining(flower.listingDate)} 
+          {timeRemaining}
         </div>
         <div className="text-center pb-4">
           {flower.price > 0 ? (

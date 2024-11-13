@@ -35,7 +35,7 @@ function CheckoutPage() {
     const [fullAddress, setFullAddress] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [note, setNote] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false);  // Add this new state
+    const [isSubmitting, setIsSubmitting] = useState(false); 
 
     const groupCartItemsBySeller = (items) => {
         return items.reduce((acc, item) => {
@@ -52,19 +52,11 @@ function CheckoutPage() {
         if (items) {
             setCartItems(items);
         } else {
-            // Redirect back to cart if no items are passed
             navigate('/cart');
         }
     }, [items, navigate]);
 
     useEffect(() => {
-        const storedCart = JSON.parse(localStorage.getItem('cart')) || [];
-        console.log('Stored Cart:', storedCart);
-        setCartItems(storedCart);
-        // Xóa hoặc comment out dòng dưới đây
-        // const grouped = groupCartItemsBySeller(storedCart);
-        // console.log('Grouped Cart:', grouped);
-        // setGroupedCartItems(grouped);
         fetchUserInfo();
         fetchDistricts();
     }, []);
